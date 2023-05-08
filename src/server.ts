@@ -1,11 +1,13 @@
 // Importing module
 import express from 'express';
 import {defaultRoute} from './routes/routes'
-import dotenv from 'dotenv'
+import * as dotenv from 'dotenv'
+import cors from 'cors'
 
-
+dotenv.config()
 const app = express();
-const PORT:Number=3000;
+
+app.use(cors())
 
 // // Handling GET / Request
 // app.get('/', (req, res) => {
@@ -15,7 +17,7 @@ const PORT:Number=3000;
 app.use('/api/v1',defaultRoute)
 
 // Server setup
-app.listen(PORT,() => {
+app.listen(process.env.SERVER_PORT,() => {
     console.log('The application is listening '
-          + 'on port http://localhost:'+PORT);
+          + 'on port http://localhost:'+process.env.SERVER_PORT);
 })
