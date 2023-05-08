@@ -14,7 +14,7 @@ app.use(cors())
 //     res.send('Welcome to typescript backend!');
 // })
 
-app.use('/api/v1',defaultRoute)
+app.use('/api/'+process.env.API_VER,defaultRoute)
 
 // Server setup
 app.listen(process.env.SERVER_PORT,() => {
