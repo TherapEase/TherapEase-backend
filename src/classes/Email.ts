@@ -5,4 +5,10 @@ class Email{
     testo: string;
     destinatario: Utente_registrato;
     tipo: Email_tipo;
+
+    constructor(testo: string, destinatario: Utente_registrato, tipo: Email_tipo){
+        this.testo = testo;
+        this.destinatario = destinatario;
+        this.tipo = tipo;
+    }
 }
