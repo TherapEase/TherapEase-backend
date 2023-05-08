@@ -1,23 +1,16 @@
 // Importing module
 import express from 'express';
-import {defaultRoute} from './routes/routes'
-import * as dotenv from 'dotenv'
-import cors from 'cors'
-
-dotenv.config()
+  
 const app = express();
-
-app.use(cors())
-
-// // Handling GET / Request
-// app.get('/', (req, res) => {
-//     res.send('Welcome to typescript backend!');
-// })
-
-app.use('/api/'+process.env.API_VER,defaultRoute)
-
+const PORT:Number=3000;
+  
+// Handling GET / Request
+app.get('/', (req, res) => {
+    res.send('Welcome to typescript backend!');
+})
+  
 // Server setup
-app.listen(process.env.SERVER_PORT,() => {
+app.listen(PORT,() => {
     console.log('The application is listening '
-          + 'on port http://localhost:'+process.env.SERVER_PORT);
+          + 'on port http://localhost:'+PORT);
 })
