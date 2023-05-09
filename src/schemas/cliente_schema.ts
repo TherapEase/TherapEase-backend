@@ -1,5 +1,5 @@
 import {Hash} from "crypto"
-import {Schema, model} from "mongoose"
+import {Schema, model} from 'mongoose'
 
 // MODELLO PER TESTING senza ELEMENTI REQUIRED
 export const Cliente= new Schema({
