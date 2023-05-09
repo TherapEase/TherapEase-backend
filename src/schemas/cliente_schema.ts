@@ -36,4 +36,4 @@ const schema= new Schema({
     })
 
 
-export const Cliente = model<Cliente>('Clienti', schema)
+export const Cliente = model<Cliente>('Cliente', schema)
