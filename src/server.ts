@@ -10,7 +10,6 @@ app.get('/', (req, res) => {
 })
   
 // Server setup
-app.listen(PORT,() => {
-    console.log('The application is listening '
-          + 'on port http://localhost:'+PORT);
+app.listen(process.env.SERVER_PORT,() => {
+    console.log('The application is listening on port http://localhost:'+process.env.SERVER_PORT);
 })
