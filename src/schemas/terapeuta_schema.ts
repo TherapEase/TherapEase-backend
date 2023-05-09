@@ -22,26 +22,4 @@ const Terapeuta= new Schema({
     recensioni:[{type:String, default:""}]
 })
 
-
-// MODELLO COMPLETO CON ELEMENTI REQUIRED
-// const Terapeuta= new Schema({
-//     username: {type: String, required:true},
-//     password: {type: Hash, required:true},
-//     ruolo : {type:Number, required:true}, //essendo enum consideriamo l'intero
-
-//     nome:{type: String, required:true},
-//     cognome:{type: String, required:true},
-//     email:{type: String, required:true},
-//     mail_confermata:{type:Boolean, default:false},
-//     cf: {type:String, required:true},
-//     foto_profilo: {type: Image, default:""},
-//     data_nascita: {type:Date, required:true},
-
-//     associati:[{type:String, default:""}],
-//     abilitato:{type: Boolean, default: false},
-//     limiteClienti: {type: Number, default: 30},
-//     indirizzo: {type:String, required:false},
-//     recensioni:[{type:String, default:""}]
-// })
-
 module.exports= model("terapeuti", Terapeuta)

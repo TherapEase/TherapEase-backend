@@ -1,9 +1,9 @@
 import { Seduta } from "./Seduta";
 
 class Calendario{
-    sedute: Seduta[];
+    sedute: Seduta[] = [];
 
-    constructor(sedute: Seduta[]) {
+    constructor(sedute?: Seduta[]) {
         this.sedute = sedute;
     }
 }
