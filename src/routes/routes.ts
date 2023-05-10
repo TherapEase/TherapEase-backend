@@ -12,9 +12,7 @@ defaultRoute.get('/',(req,res)=>{
 defaultRoute.use('/test',(req:Request,res:Response)=>{
     res.json(req.body)
 })
-defaultRoute.post('/registrazione',(req:Request,res:Response)=>{
-    registrazione(req,res)
-    res.json({
-        successful:true
-    })
+defaultRoute.post('/registrazione', async (req:Request,res:Response)=>{
+    let risposta= await registrazione(req,res)
+    res.status(risposta.status).json(risposta)
 })

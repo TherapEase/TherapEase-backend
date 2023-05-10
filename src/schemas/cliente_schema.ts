@@ -2,9 +2,9 @@ import {Hash} from "crypto"
 import {Schema, model} from 'mongoose'
 
 // MODELLO PER TESTING senza ELEMENTI REQUIRED
-export const Cliente= new Schema({
+export const Cliente=  model("cliente",new Schema({
     username: {type: String},
-    password: {type: Hash},
+    password: {type: String},
     ruolo : {type:Number}, //essendo enum consideriamo l'intero
 
     nome:{type: String},
@@ -12,14 +12,14 @@ export const Cliente= new Schema({
     email:{type: String},
     mail_confermata:{type:Boolean, default:false},
     cf: {type:String},
-    foto_profilo: {type: Image, default:""},
+    foto_profilo: {type: String, default:""},
     data_nascita: {type:Date},
 
     n_gettoni:{type: Number, default:0},
     // per i tipi user definied si considera l'id che il db salva automaticamente
     associato:{type: String , default:""},
     diario:{type: String , default:""}
-})
+}))
 
 
 
@@ -43,4 +43,4 @@ export const Cliente= new Schema({
 //     diario:{type: String , default:""}
 // })
 
-module.exports= model("cliente", Cliente)
+//module.exports= model("cliente", Cliente)

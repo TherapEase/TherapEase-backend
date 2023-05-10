@@ -7,6 +7,10 @@ import bodyParser from 'body-parser';
 const app = express();
 dotenv.config();
 
+//json and urlencoded requests
+app.use(express.json());
+app.use(express.urlencoded({extended:true}))
+
 //bodyparser
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded())
