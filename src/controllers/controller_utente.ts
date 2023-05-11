@@ -21,6 +21,7 @@ export async function login(req:Request,res:Response) {
 
     try {
         // recupero utente dal database
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const utente = await Utente.findOne({username: username})
     
         // se non esiste, ritorno un errore
@@ -31,18 +32,32 @@ export async function login(req:Request,res:Response) {
         } 
     
         // controllo la password
-        const passwordCorretta = await utente.checkPassword(password)
+        //const passwordCorretta = await utente.checkPassword(password)
+        const passwordCorretta = await Utente.schema.methods.checkPassword(password)
     
             if (!passwordCorretta)
-                return res.status(400).json({ success: false, message: "Password incorretta" })
+                return {
+                    status:400,
+                    successfull:false,
+                    message:"incorrect password"
+                }
     
             // se tutto va bene, creo il token aggiungendo i vari campi utili
    
     
             // res.status(200).json({ success: true, token: token })
+            return {
+                status:200,
+                successfull:true,
+                message:"authenticated"
+            }
     
         } catch (err) {
-            res.status(500).json({ success: false, error: "autenticazione fallita" })
+            return {
+                status:500,
+                successfull:false,
+                message:"Internal Error: auth failed"+err
+            }
         }
 }
 

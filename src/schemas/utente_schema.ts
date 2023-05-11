@@ -19,4 +19,4 @@ schema.methods.checkPassword = async function(password:string) {
     return match
 };
 
-export const Utente = model<Utente>('Utente', schema);
+export const Utente = model<Utente>('Utente', schema,"utente");
