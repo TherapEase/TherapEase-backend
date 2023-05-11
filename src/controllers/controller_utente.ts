@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt';
+//import { Utente } from '../classes/Utente'
 
 
 export async function login(req:Request,res:Response) {
@@ -22,19 +23,33 @@ export async function login(req:Request,res:Response) {
     try {
         // recupero utente dal database
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        const utente = await Utente.findOne({username: username})
-    
+        const utente_trovato = await Utente.findOne({username: username}).exec()
+        
+        /*******************PROBLEMA****************************************
+         *  findOne ritorna una Promise, che va risolta con exec 
+         *  viene tornato un Document, superclasse di Model
+         *  non è possibile accedere ai metodi neanche castando in quanto viene
+         *  creato un oggetto Document, non un Utente poi usato come Document
+         * 
+         *  ho provato ad usare le callback, non è più possibile inserirle in findOne o in exec()
+         *  si potrebbe provare il chaining usanto .then()
+         * 
+         *  l'alternativa è rinunciare ad includere i metodi che usano risultati delle query
+         *  negli schemi e crearli esterni
+         */
+
         // se non esiste, ritorno un errore
-        if (!utente)return{
+        if (!utente_trovato)return{
             status: 400,
             successful: false,
             message: "User not found"
         } 
-    
+        
+        const passwordCorretta=password==utente_trovato.password        //soluzione temporanea
+        console.log(utente_trovato)
         // controllo la password
         //const passwordCorretta = await utente.checkPassword(password)
-        const passwordCorretta = await Utente.schema.methods.checkPassword(password)
-    
+        //console.log(utente.password)
             if (!passwordCorretta)
                 return {
                     status:400,

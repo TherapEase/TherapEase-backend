@@ -15,8 +15,10 @@ export const schema : Schema= new Schema({
 });
 
 schema.methods.checkPassword = async function(password:string) {
-    const match= bcrypt.compare(password, this.password)
-    return match
+    //const match= bcrypt.compare(password, this.password)
+    //return match
+    console.log(this.password)
+    return password==this.password
 };
 
 export const Utente = model<Utente>('Utente', schema,"utente");
