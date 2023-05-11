@@ -2,7 +2,7 @@ import {Hash} from "crypto"
 import {Schema, model} from 'mongoose'
 
 // MODELLO PER TESTING senza ELEMENTI REQUIRED
-export const Cliente=  model("cliente",new Schema({
+export const Cliente=  model("Cliente",new Schema({
     username: {type: String},
     password: {type: String},
     ruolo : {type:Number}, //essendo enum consideriamo l'intero
@@ -19,7 +19,7 @@ export const Cliente=  model("cliente",new Schema({
     // per i tipi user definied si considera l'id che il db salva automaticamente
     associato:{type: String , default:""},
     diario:{type: String , default:""}
-}))
+}),"utente")
 
 
 

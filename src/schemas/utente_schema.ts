@@ -6,7 +6,7 @@ export const Utente= model('Utente', new Schema({
         username: {type: String},
         password: {type: String},
         ruolo : {type:Number}, //essendo enum consideriamo l'intero
-    }))
+    }),"utente")
 
 
 // MODELLO COMPLETO CON ELEMENTI REQUIRED
