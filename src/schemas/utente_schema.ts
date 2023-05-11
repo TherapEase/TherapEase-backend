@@ -2,10 +2,11 @@ import { Hash } from "crypto"
 import { Schema, model } from "mongoose"
 import bcrypt from 'bcrypt'
 
-interface Utente {
+export interface IUtente {
     username: String,
     password: String,
-    ruolo: Number //essendo enum consideriamo l'intero
+    ruolo: Number, //essendo enum consideriamo l'intero
+    checkPassword(password:String): boolean
 };
 
 export const schema : Schema= new Schema({
@@ -14,11 +15,11 @@ export const schema : Schema= new Schema({
     ruolo: { type: Number, required: true }, //essendo enum consideriamo l'intero
 });
 
-schema.methods.checkPassword = async function(password:string) {
+schema.methods.checkPassword = function(password:string) {
     //const match= bcrypt.compare(password, this.password)
     //return match
     console.log(this.password)
     return password==this.password
 };
 
-export const Utente = model<Utente>('Utente', schema,"utente");
+export const Utente = model<IUtente>('Utente', schema,"utente");
