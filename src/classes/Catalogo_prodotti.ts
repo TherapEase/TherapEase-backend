@@ -1,9 +1,9 @@
 import { Prodotto } from "./Prodotto";
 
 class Catalogo_prodotti{
-    prodotti: Prodotto[];
+    prodotti: Prodotto[] = [];
 
-    constructor(prodotti: Prodotto[]) {
+    constructor(prodotti?: Prodotto[]) {
         this.prodotti = prodotti;
     }
 

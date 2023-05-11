@@ -19,8 +19,6 @@ interface Terapeuta {
     indirizzo?: String,
     recensioni?:String[]
 }
-
-
 // MODELLO PER TESTING senza ELEMENTI REQUIRED
 // const schema= new Schema({
 //     username: {type: String},

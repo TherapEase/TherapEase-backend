@@ -3,9 +3,9 @@ import { Recensione } from "./Recensione";
 
 export class Raccolta_recensioni{
     terapeuta: Terapeuta;
-    recensioni: Recensione[];
+    recensioni: Recensione[] = []
 
-    constructor(terapeuta: Terapeuta, recensioni: Recensione[]) {
+    constructor(terapeuta: Terapeuta, recensioni?: Recensione[]) {
         this.terapeuta = terapeuta;
         this.recensioni = recensioni;
     }
