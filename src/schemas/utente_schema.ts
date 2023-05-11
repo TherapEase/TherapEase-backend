@@ -1,19 +1,22 @@
-import {Hash} from "crypto"
-import {Schema, model} from "mongoose"
+import { Hash } from "crypto"
+import { Schema, model } from "mongoose"
+import bcrypt from 'bcrypt'
 
-// MODELLO PER TESTING senza ELEMENTI REQUIRED
-const Utente= new Schema({
-        username: {type: String},
-        password: {type: Hash},
-        ruolo : {type:Number}, //essendo enum consideriamo l'intero
-    })
+interface Utente {
+    username: String,
+    password: String,
+    ruolo: Number //essendo enum consideriamo l'intero
+};
 
+export const schema : Schema= new Schema({
+    username: { type: String, required: true },
+    password: { type: String, required: true },
+    ruolo: { type: Number, required: true }, //essendo enum consideriamo l'intero
+});
 
-// MODELLO COMPLETO CON ELEMENTI REQUIRED
-// const Utente= new Schema({
-//     username: {type: String, required:true},
-//     password: {type: String, required:true},
-//     ruolo : {type:Number, required:true}, //essendo enum consideriamo l'intero
-// })
+schema.methods.checkPassword = async function(password:string) {
+    const match= bcrypt.compare(password, this.password)
+    return match
+};
 
-module.exports= model("utente", Utente)
+export const Utente = model<Utente>('Utente', schema);
