@@ -42,26 +42,22 @@ export async function registrazione(req:Request,res:Response) {
    console.log([username,password, ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind])
    
    if(!username||!password||!ruolo) return {
-    status:400,
-    succesfull:false,
-    message:"Not enough arguments"
+        status:400,
+        succesfull:false,
+        message:"Not enough arguments"
     }
    else if (ruolo<1||ruolo>2) return {
-    status:400,
-    succesfull:false,
-    message:"Invalid Role"
+        status:400,
+        succesfull:false,
+        message:"Invalid Role"
     }
 
    try{
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
-    let utente_presente:boolean = await Utente.findOne({username:username})    //check nel db
+    let utente_presente = await Utente.findOne({username:username}).exec()    //check nel db
     if(!utente_presente){
         let utente_schema
         if(ruolo==1){
-            //utente=new Cliente(username,password,ruolo,nome,cognome,email,false,cf,fp,dn,0,null,null)   //il costruttore dovrebbe occuparsi dei parametri di default
-            
-            //venfono salvati sulle relative collection: duplicare su user o unire le collection in una?
-            
             utente_schema= new Cliente({
                 username:username,
                 password:password,
@@ -92,8 +88,8 @@ export async function registrazione(req:Request,res:Response) {
             })
         }
         await utente_schema.save();
-        console.log("utente salvato")
-        console.log(utente_schema)
+        // console.log("utente salvato")
+        // console.log(utente_schema)
         return {
             status:200,
             succesfull:true,

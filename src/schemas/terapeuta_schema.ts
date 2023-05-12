@@ -1,8 +1,11 @@
 import {Hash} from "crypto"
 import {Schema, model} from "mongoose"
+import bcrypt from 'bcrypt'
+import dotenv from 'dotenv'
 
 // MODELLO PER TESTING senza ELEMENTI REQUIRED
-export const Terapeuta= model("Terapeuta", new Schema({
+
+const Terapeuta_schema=new Schema({
     username: {type: String},
     password: {type: String},
     ruolo : {type:Number}, //essendo enum consideriamo l'intero
@@ -20,7 +23,14 @@ export const Terapeuta= model("Terapeuta", new Schema({
     limiteClienti: {type: Number, default: 30},
     indirizzo: {type:String},
     recensioni:[{type:String, default:""}]
-}),"utente")
+})
+
+Terapeuta_schema.pre('save', async function (next) {
+    if(this.isModified('password'))
+        this.password= await bcrypt.hash(this.password,parseInt(process.env.SALT_ROUNDS))
+})
+
+export const Terapeuta= model("Terapeuta",Terapeuta_schema,"utente")
 
 
 // MODELLO COMPLETO CON ELEMENTI REQUIRED
