@@ -35,7 +35,7 @@ export async function login(req:Request,res:Response) {
 
         // controllo la password
         const modello_utente = new Utente<IUtente>(utente_trovato)
-        const passwordCorretta= modello_utente.checkPassword(password)
+        const passwordCorretta= await modello_utente.checkPassword(password)
 
         if (!passwordCorretta)return {
                 status:400,

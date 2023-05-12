@@ -15,11 +15,9 @@ export const schema : Schema= new Schema({
     ruolo: { type: Number, required: true }, //essendo enum consideriamo l'intero
 });
 
-schema.methods.checkPassword = function(password:string) {
-    //const match= bcrypt.compare(password, this.password)
-    //return match
-    console.log(this.password)
-    return password==this.password
+schema.methods.checkPassword = async function(password:string) {
+    const match = await bcrypt.compare(password, this.password)
+    return match
 };
 
 export const Utente = model<IUtente>('Utente', schema,"utente");
