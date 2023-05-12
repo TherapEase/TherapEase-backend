@@ -44,14 +44,18 @@ export async function login(req:Request,res:Response) {
         };
     
         //creo il token aggiungendo i vari campi utili
-   
+        
+        const token = jwt.sign({
+            _id: utente_trovato._id.toString(),
+            username: utente_trovato.username
+        },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
     
         // res.status(200).json({ success: true, token: token })
         return {
             status:200,
             successfull:true,
-            message:"authenticated"
-            //token: 
+            message:"authenticated",
+            token: token 
         }
     
     } catch (err) {
