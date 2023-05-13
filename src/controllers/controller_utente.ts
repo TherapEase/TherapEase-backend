@@ -8,6 +8,7 @@ import {Utente} from '../schemas/utente_schema'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import { Terapeuta } from '../schemas/terapeuta_schema'
+import jwt from 'jsonwebtoken'
 
 export async function registrazione(req:Request,res:Response) {
     /* STRUTTURA RICHIESTA: utente base
@@ -39,18 +40,23 @@ export async function registrazione(req:Request,res:Response) {
    const lim=req.body.limite_clienti
    const ind=req.body.indirizzo
    
-   console.log([username,password, ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind])
+   //console.log([username,password, ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind])
    
-   if(!username||!password||!ruolo) return {
-        status:400,
-        succesfull:false,
+   if(!username||!password||!ruolo) {
+    res.status(400)
+    return {
+        successful:false,
         message:"Not enough arguments"
     }
-   else if (ruolo<1||ruolo>2) return {
-        status:400,
-        succesfull:false,
+   }
+   else if (ruolo<1||ruolo>2) {
+    res.status(400)
+    return {
+        successful:false,
         message:"Invalid Role"
     }
+   }
+   
 
    try{
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
@@ -90,15 +96,24 @@ export async function registrazione(req:Request,res:Response) {
         await utente_schema.save();
         // console.log("utente salvato")
         // console.log(utente_schema)
+
+        const token = jwt.sign({
+            _id: utente_schema._id.toString(),
+            username: utente_schema.username
+        },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
+        //in alernativa usare res.redirect(/login) e sfruttare il login handler
+        res.status(200)
         return {
-            status:200,
-            succesfull:true,
-            message:"user saved correctly"
+            successful:true,
+            message:"user saved correctly",
+            token : token
         }
-    }else return{
-        status:400,
-        successfull:false,
-        message:"User already exists"
+    }else {
+        res.status(400)
+        return{
+            successful:false,
+            message:"User already exists"
+        }
     }
    }catch(err){
         console.log("errore"+err)
