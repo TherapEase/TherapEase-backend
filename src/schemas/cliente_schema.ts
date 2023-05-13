@@ -24,8 +24,10 @@ const Cliente_schema=new Schema({
     diario:{type: String , default:""}
 })
 Cliente_schema.pre('save', async function(next){
-    if(this.isModified('password'))
+    if(this.isModified('password')){
+        if(!this.password.match("/^(?=.?[A-Z])(?=.?[a-z])(?=.?[0-9])(?=.?[#?!@$%^&*-]).{8,}$/gm")) throw new Error("Password doesn't match minimal requirements")
         this.password = await bcrypt.hash(this.password,parseInt(process.env.SALT_ROUNDS))
+    }
     next()
 })
 
