@@ -1,4 +1,4 @@
-import { Request,Response } from 'express'
+import { Request,Response,NextFunction } from 'express'
 import {Cliente} from '../schemas/cliente_schema'
 import {schema, Utente,IUtente} from '../schemas/utente_schema'
 import connect from 'mongoose'
@@ -10,15 +10,17 @@ import { parse } from 'path'
 //import { Utente } from '../classes/Utente'
 
 
-export async function login(req:Request,res:Response) {
+export async function login(req:Request,res:Response,next:NextFunction) {
     const username=req.body.username
     const password=req.body.password
 
     // controllo su campi mancanti
-    if (!username || !password) return{
-        status: 400,
-        successful: false,
-        message: "Not enough arguments"
+    if (!username || !password){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Not enough arguments"
+        }
     } 
 
     try {
@@ -27,20 +29,24 @@ export async function login(req:Request,res:Response) {
         const utente_trovato = await Utente.findOne({username: username}).exec()
 
         // se non esiste, ritorno un errore
-        if (!utente_trovato)return{
-            status: 400,
-            successful: false,
-            message: "User not found"
+        if (!utente_trovato){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "User not found"
+            }
         };
 
         // controllo la password
         const modello_utente = new Utente<IUtente>(utente_trovato)
         const passwordCorretta= await modello_utente.checkPassword(password)
 
-        if (!passwordCorretta)return {
-                status:400,
-                successfull:false,
-                message:"incorrect password"
+        if (!passwordCorretta){
+                res.status(400)
+                req.body={
+                    successfull:false,
+                    message:"incorrect password"
+                }
         };
     
         //creo il token aggiungendo i vari campi utili
@@ -51,19 +57,20 @@ export async function login(req:Request,res:Response) {
         },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
     
         // res.status(200).json({ success: true, token: token })
-        return {
-            status:200,
+        res.status(200)
+        req.body={
             successfull:true,
             message:"authenticated",
             token: token 
         }
     
     } catch (err) {
-        return {
-            status:500,
+        res.status(500)
+        req.body={
             successfull:false,
             message:"Internal Error: auth failed"+err
         }
     }
+    next()
 }
 

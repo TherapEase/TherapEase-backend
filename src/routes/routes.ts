@@ -14,14 +14,12 @@ defaultRoute.use('/test',(req:Request,res:Response)=>{
     res.json(req.body)
 })
 
-defaultRoute.post('/login', async (req:Request,res:Response)=>{
-    const result= await login(req,res)
-    res.status(result.status).json(result)
+defaultRoute.post('/login', login ,(req:Request,res:Response)=>{
+    res.json(req.body)
 })
 
 defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
     res.status(200).json({
-        status:200,
         successful:true,
         message: "token verification ok",
         loggedUser: req.body.loggedUser
