@@ -42,7 +42,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
    
    //console.log([username,password, ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind])
    
-   if(!username||!password||!ruolo) {
+   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||!fp||!dn) {       //si potrebbe far fare al catch usando i campi required 
     res.status(400)
     req.body = {
         successful:false,
@@ -77,7 +77,13 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
             })
         }
         else if (ruolo==2){
-            //utente = new Terapeuta(username,password,ruolo,nome,cognome,email,false,cf,fp,dn,[],false,doc,lim,ind,null)
+            if(!doc||!lim){
+                res.status(400)
+                req.body={
+                    successful:false,
+                    message:"Not enough arguments"
+                }
+            }
             utente_schema= new Terapeuta({
                 username:username,
                 password:password,
