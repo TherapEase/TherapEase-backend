@@ -2,7 +2,7 @@
 // import {Utente_registrato} from '../classes/Utente_registrato'
 // import {Cliente} from '../classes/Cliente'
 // import {Terapeuta} from '../classes/Terapeuta'
-import { Request,Response } from 'express'
+import { Request,Response,NextFunction } from 'express'
 import {Cliente} from '../schemas/cliente_schema'
 import {Utente} from '../schemas/utente_schema'
 import mongoose from 'mongoose'
@@ -10,7 +10,7 @@ import dotenv from 'dotenv'
 import { Terapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
 
-export async function registrazione(req:Request,res:Response) {
+export async function registrazione(req:Request,res:Response,next:NextFunction) {
     /* STRUTTURA RICHIESTA: utente base
     *  username: string
     *  password :string
@@ -44,14 +44,14 @@ export async function registrazione(req:Request,res:Response) {
    
    if(!username||!password||!ruolo) {
     res.status(400)
-    return {
+    req.body = {
         successful:false,
         message:"Not enough arguments"
     }
    }
    else if (ruolo<1||ruolo>2) {
     res.status(400)
-    return {
+    req.body = {
         successful:false,
         message:"Invalid Role"
     }
@@ -103,20 +103,25 @@ export async function registrazione(req:Request,res:Response) {
         },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
         //in alernativa usare res.redirect(/login) e sfruttare il login handler
         res.status(200)
-        return {
+        req.body={
             successful:true,
             message:"user saved correctly",
             token : token
         }
     }else {
         res.status(400)
-        return{
+        req.body={
             successful:false,
             message:"User already exists"
         }
     }
    }catch(err){
-        console.log("errore"+err)
+        res.status(500)
+        req.body={
+            successful: false,
+            message:"Internal Registration Error: "+err
+        }
    }
+   next()
    
 }
