@@ -3,7 +3,7 @@
 // import {Cliente} from '../classes/Cliente'
 // import {Terapeuta} from '../classes/Terapeuta'
 import { Request,Response,NextFunction } from 'express'
-import {Cliente} from '../schemas/cliente_schema'
+import {Cliente, ICliente} from '../schemas/cliente_schema'
 import {Utente} from '../schemas/utente_schema'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
@@ -64,14 +64,14 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
     if(!utente_presente){
         let utente_schema
         if(ruolo==1){
-            utente_schema= new Cliente({
+            utente_schema= new Cliente<ICliente>({
                 username:username,
                 password:password,
                 ruolo:ruolo,
                 nome:nome,
                 cognome:cognome,
                 email:email,
-                codice_fiscale:cf,
+                cf:cf,
                 foto_profilo:fp,
                 data_nascita:dn
             })
@@ -91,7 +91,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
                 nome:nome,
                 cognome:cognome,
                 email:email,
-                codice_fiscale:cf,
+                cf:cf,
                 foto_profilo:fp,
                 data_nascita:dn,
                 documenti:doc,

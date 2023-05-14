@@ -2,7 +2,7 @@ import {Schema, model} from 'mongoose'
 import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 
-interface Cliente{
+export interface ICliente{
 	username:  String,
     password: String,
     ruolo : Number, //essendo enum consideriamo l'intero
@@ -11,7 +11,7 @@ interface Cliente{
     email:String,
     mail_confermata?:Boolean,
     cf: String,
-    foto_profilo?:ImageData,
+    foto_profilo?:String,
     data_nascita: Date,
     n_gettoni?:Number,
     associato?:String,
@@ -43,4 +43,4 @@ schema.pre('save', async function(next){
     next()
 })
 
-export const Cliente = model<Cliente>('Cliente', schema,"Utenti")
+export const Cliente = model<ICliente>('Cliente', schema,"Utenti")
