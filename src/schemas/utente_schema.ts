@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt'
 export interface IUtente {
     username: String,
     password: String,
-    ruolo: Number, //essendo enum consideriamo l'intero
+    ruolo: Number,
     checkPassword(password:String): boolean
 };
 
@@ -20,4 +20,4 @@ schema.methods.checkPassword = async function(password:string) {
     return match
 };
 
-export const Utente = model<IUtente>('Utente', schema,"utente");
+export const Utente = model<IUtente>('Utente', schema,"Utenti");

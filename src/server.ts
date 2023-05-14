@@ -12,6 +12,10 @@ dotenv.config();
 
 app.use(cors())
 
+//json and urlencoded requests
+app.use(express.json());
+app.use(express.urlencoded({extended:true}))
+
 //bodyparser
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded())

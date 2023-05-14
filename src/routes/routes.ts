@@ -1,5 +1,6 @@
 import { json } from 'body-parser';
-import {Router,Request,Response} from 'express'
+import {Router,Request,Response,NextFunction} from 'express'
+import { registrazione } from '../controllers/controller_utente';
 import { login } from '../controllers/controller_utente';
 import { tokenCheck } from '../controllers/token_checker';
 //import cors from 'cors';
@@ -13,7 +14,9 @@ defaultRoute.get('/',(req,res)=>{
 defaultRoute.use('/test',(req:Request,res:Response)=>{
     res.json(req.body)
 })
-
+defaultRoute.post('/registrazione',registrazione,async (req:Request,res:Response)=>{
+    res.json(req.body)
+})
 defaultRoute.post('/login', login ,(req:Request,res:Response)=>{
     res.json(req.body)
 })
