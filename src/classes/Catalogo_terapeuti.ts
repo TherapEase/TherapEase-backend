@@ -1,9 +1,9 @@
 import { Terapeuta } from "./Terapeuta";
 
 class Catalogo_terapeuti{
-    terapeuti: Terapeuta[];
+    terapeuti: Terapeuta[] = [];
 
-    constructor(terapeuti: Terapeuta[]) {
+    constructor(terapeuti?: Terapeuta[]) {
         this.terapeuti = terapeuti;
     }
 

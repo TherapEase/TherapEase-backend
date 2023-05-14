@@ -1,19 +1,17 @@
-import {Schema, model} from "mongoose"
+import { Schema, model } from "mongoose"
 
-// MODELLO PER TESTING senza ELEMENTI REQUIRED
-export const Recensione= new Schema({
-    voto: {type:Number},
-    testo: {type:String, default:""},
-    cliente: {type:String},
-    data: {type:Date}
+interface Recensione {
+    voto: Number,
+    testo?: String,
+    cliente: String,
+    data: Date
+}
+
+const schema = new Schema({
+    voto: { type: Number, required: true },
+    testo: { type: String, default: "" },
+    cliente: { type: String, required: true },
+    data: { type: Date, required: true }
 })
 
-// MODELLO COMPLETO CON ELEMENTI REQUIRED
-// export const Recensione= new Schema({
-//     voto: {type:Number, required:true},
-//     testo: {type:String, default:""},
-//     cliente: {type:String, required:true},
-//     data: {type:Date, required:true}
-// })
-
-module.exports= model("recensione", Recensione)
+export const Recensione = model<Recensione>('Recensione', schema)

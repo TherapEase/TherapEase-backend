@@ -1,15 +1,13 @@
 import {Schema, model} from "mongoose"
 
-// MODELLO PER TESTING senza ELEMENTI REQUIRED
-export const Pagina= new Schema({
-    data: {type:Date},
-    testo: {type:String}
+interface Pagina{
+    data:Date,
+    testo:String
+}
+
+const schema= new Schema({
+    data: {type:Date, required:true},
+    testo: {type:String, required:true}
 })
 
-// MODELLO COMPLETO CON ELEMENTI REQUIRED
-// export const Pagina= new Schema({
-//     data: {type:Date, required:true},
-//     testo: {type:String, required:true}
-// })
-
-module.exports= model("pagina", Pagina)
+export const Pagina = model<Pagina>('Pagina', schema)
