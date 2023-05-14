@@ -28,6 +28,6 @@ defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
     })
 })
 
-defaultRoute.get('/profilo_utente',tokenCheck, get_info_utente, (req:Request,res:Response)=>{
+defaultRoute.get('/profilo_utente/:id',tokenCheck, get_info_utente, (req:Request,res:Response)=>{
     res.json(req.body)
 })

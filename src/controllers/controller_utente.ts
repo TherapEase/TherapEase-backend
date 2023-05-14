@@ -193,5 +193,24 @@ export async function login(req:Request,res:Response,next:NextFunction) {
 }
 
 export async function get_info_utente(req:Request,res:Response,next:NextFunction){
+    console.log("in profilo utente")
+    console.log(req.params.id)
+    console.log(req.body.loggedUser._id)
+    console.log(req.body)
+    console.log(req.params)
     
+    if(req.params.id==req.body.loggedUser._id){
+        res.status(200)
+        req.body={
+            successful:true,
+            message: "id richiesto e token coincidono!"
+        }
+        next()
+    }
+    else res.status(400).json({
+        successful:false,
+        messaggio:"failed to obtain profile",
+        requested_id:req.params.id,
+        logged_id: req.body.loggedUser._id
+    })
 }
