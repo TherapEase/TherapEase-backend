@@ -13,4 +13,10 @@ const schema = new Schema({
     ruolo: { type: Number, required: true }, //essendo enum consideriamo l'intero
 })
 
-export const Utente = model<Utente>('Utente', schema)
+export const Utente = model<Utente>("Utente",schema,"Utenti")
+// MODELLO COMPLETO CON ELEMENTI REQUIRED
+// const Utente= new Schema({
+//     username: {type: String, required:true},
+//     password: {type: String, required:true},
+//     ruolo : {type:Number, required:true}, //essendo enum consideriamo l'intero
+// })
