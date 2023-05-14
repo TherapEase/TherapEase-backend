@@ -42,8 +42,10 @@ const schema= new Schema({
     recensioni:[{type:String, default:""}]
 })
 schema.pre('save', async function (next) {
+    const regex:RegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/gm
+
     if(this.isModified('password')){
-        if(!this.password.match("/^(?=.?[A-Z])(?=.?[a-z])(?=.?[0-9])(?=.?[#?!@$%^&*-]).{8,}$/gm")) throw new Error("Password doesn't match minimal requirements")
+        if(!this.password.match(regex)) throw new Error("Password doesn't match minimal requirements")
         this.password= await bcrypt.hash(this.password,parseInt(process.env.SALT_ROUNDS))
     }
 })
