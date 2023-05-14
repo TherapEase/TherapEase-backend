@@ -37,7 +37,7 @@ const schema= new Schema({
     })
 schema.pre('save', async function(next){
     if(this.isModified('password')){
-        if(!this.password.match("/^(?=.?[A-Z])(?=.?[a-z])(?=.?[0-9])(?=.?[#?!@$%^&*-]).{8,}$/gm")) throw new Error("Password doesn't match minimal requirements")
+        if(this.password.match("/^(?=.?[A-Z])(?=.?[a-z])(?=.?[0-9])(?=.?[#?!@$%^&*-]).{8,}$/gm")) throw new Error("Password doesn't match minimal requirements")
         this.password = await bcrypt.hash(this.password,parseInt(process.env.SALT_ROUNDS))
     }
     next()
