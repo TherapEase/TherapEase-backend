@@ -192,3 +192,6 @@ export async function login(req:Request,res:Response,next:NextFunction) {
     next()
 }
 
+export async function get_info_utente(req:Request,res:Response,next:NextFunction){
+    
+}

@@ -10,7 +10,7 @@ export function tokenCheck(req:Request,res:Response,next:NextFunction) {
             return res.status(400).json({
                 status:400,
                 successful:false,
-                message:'no token provided'
+                message:'No token provided'
             })
         }
 
