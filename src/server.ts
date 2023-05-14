@@ -3,9 +3,14 @@ import express from 'express';
 import dotenv from 'dotenv'
 import {defaultRoute} from './routes/routes'
 import bodyParser from 'body-parser';
+import cors from 'cors'
+
   
 const app = express();
 dotenv.config();
+//cors
+
+app.use(cors())
 
 //json and urlencoded requests
 app.use(express.json());

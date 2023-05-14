@@ -48,4 +48,4 @@ schema.pre('save', async function (next) {
     }
 })
 
-export const Terapeuta = model<Terapeuta>('Terapeuta', schema)
+export const Terapeuta = model<Terapeuta>('Terapeuta', schema,"Utenti")
