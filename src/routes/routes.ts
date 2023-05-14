@@ -28,6 +28,6 @@ defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
     })
 })
 
-defaultRoute.get('/profilo_utente/:id',tokenCheck, get_info_utente, (req:Request,res:Response)=>{
+defaultRoute.get('/profilo_utente/:id',tokenCheck, get_info_utente, (req:Request,res:Response)=>{   //uso: fare richiesta get a /api/v1/profilo_utente/ e appendere l'_id dal db. fornire anche un token valido ottenuto dal login
     res.json(req.body)
 })
