@@ -13,7 +13,7 @@ interface Terapeuta {
     email: String,
     mail_confermata?: Boolean,
     cf: String,
-    foto_profilo?: ImageData,
+    foto_profilo?: String,
     data_nascita: Date,
     associati?:String[],
     abilitato?: Boolean,
@@ -32,7 +32,7 @@ const schema= new Schema({
     email:{type: String, required:true},
     mail_confermata:{type:Boolean, default:false},
     cf: {type:String, required:true},
-    foto_profilo: {type: Image, default:""},
+    foto_profilo: {type: String, default:""},
     data_nascita: {type:Date, required:true},
 
     associati:[{type:String, default:""}],

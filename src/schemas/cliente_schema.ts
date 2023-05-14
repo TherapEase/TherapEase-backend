@@ -2,7 +2,7 @@ import {Schema, model} from 'mongoose'
 import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 
-interface Cliente{
+export interface ICliente{
 	username:  String,
     password: String,
     ruolo : Number, //essendo enum consideriamo l'intero
@@ -11,7 +11,7 @@ interface Cliente{
     email:String,
     mail_confermata?:Boolean,
     cf: String,
-    foto_profilo?:ImageData,
+    foto_profilo?:String,
     data_nascita: Date,
     n_gettoni?:Number,
     associato?:String,
@@ -37,10 +37,10 @@ const schema= new Schema({
     })
 schema.pre('save', async function(next){
     if(this.isModified('password')){
-        if(!this.password.match("/^(?=.?[A-Z])(?=.?[a-z])(?=.?[0-9])(?=.?[#?!@$%^&*-]).{8,}$/gm")) throw new Error("Password doesn't match minimal requirements")
+        if(this.password.match("/^(?=.?[A-Z])(?=.?[a-z])(?=.?[0-9])(?=.?[#?!@$%^&*-]).{8,}$/gm")) throw new Error("Password doesn't match minimal requirements")
         this.password = await bcrypt.hash(this.password,parseInt(process.env.SALT_ROUNDS))
     }
     next()
 })
 
-export const Cliente = model<Cliente>('Cliente', schema,"Utenti")
+export const Cliente = model<ICliente>('Cliente', schema,"Utenti")
