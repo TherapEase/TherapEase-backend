@@ -196,7 +196,7 @@ export async function login(req:Request,res:Response,next:NextFunction) {
 export async function associazione(req:Request,res:Response,next:NextFunction) {
     const id_cliente=req.body.loggedUser._id
     const id_terapeuta=req.params.id
-
+    console.log(id_cliente+' '+id_terapeuta)
     if (!id_cliente || id_terapeuta){
         res.status(400)
         req.body={
@@ -209,7 +209,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         console.log("dbconnesso")
         //verifica esistenza terapeuta
-        const terapeuta=await Utente.findOne({id_:id_terapeuta}).exec()
+        const terapeuta=await Utente.findOne({_id:id_terapeuta}).exec()
         if(!terapeuta){ 
             res.status(400)
             req.body={
@@ -217,31 +217,36 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
                 message: "Therapist not found"
             }
         }
-
-        //update associato al cliente
-        await Utente.findOneAndUpdate({id_:id_cliente}, {associato:id_terapeuta}, function(err:Error, doc:Document){
-            if(err) return res.status(500).send("Internal Error")
-        }).exec()
         console.log("terapeuta trovato")
+        console.log(terapeuta)
+        //update associato al cliente
+        const cliente = await Cliente.findByIdAndUpdate(id_cliente, {associato:id_terapeuta}).exec()    //bisogna usare il modello di quello che si trova
+        console.log("terapeuta associato")
+        console.log(cliente)
+
+        //OK: fa l'update
 
         //update associato al terapeuta
-        await Utente.findOneAndUpdate({id_:id_cliente}, {$push:{associato:id_cliente}}, async function(err:Error, doc:Document){
-            if(err) {
-                // rimuove associazione fatta -> va bene cosi??
-                await Utente.findOneAndUpdate({id_:id_cliente}, {associato:""}, function(err:Error, doc:Document){
-                    if(err) return res.status(500).send("Stato inconsistente")
-                }).exec()
-                return res.status(500).send("Internal Error")
-            };
-        }).exec()
-        console.log("cliente trovato")
+        await Terapeuta.findByIdAndUpdate(id_terapeuta, {$push:{associati:id_cliente}}).exec()
+        //OK: fa l'update
+
+            //, async function(err:Error, doc:Document){
+            // if(err) {
+            //     // rimuove associazione fatta -> va bene cosi??
+            //     await Cliente.findOneAndUpdate({id_:id_cliente}, {associato:""}, function(err:Error, doc:Document){
+            //         if(err) return res.status(500).send("Stato inconsistente")
+            //     })
+            //     return res.status(500).send("Internal Error")
+            // };
+        //})
+        console.log("cliente associato")
 
         res.status(200)
         req.body={
             successfull:true,
             message:"association done!" 
         }
-
+    next()
     } catch (err) {
         res.status(500)
         req.body={
