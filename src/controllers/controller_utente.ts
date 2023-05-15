@@ -198,16 +198,13 @@ async function remove_associazione(id_cliente: string, id_terapeuta: string) {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         console.log("dbconnesso")
 
-        const new_cliente=await Cliente.findByIdAndUpdate(id_cliente, {associato:""}, {new:true}).exec() 
-        const modello_cliente = new Cliente<ICliente>(new_cliente)
-        console.log(modello_cliente)
-        if(modello_cliente.associato!=""){
+        const cliente=await Cliente.findByIdAndUpdate(id_cliente, {associato:""}, {new:true}).exec() 
+        if(cliente.associato!=""){
             console.log("remove from Client failed")
         }
-        const new_terapeuta=await Terapeuta.findByIdAndUpdate(id_terapeuta, {$pull:{associati:id_cliente}},{new:true}).exec()
-        //const modello_terapeuta = new Terapeuta<ITerapeuta>(new_terapeuta)
-        //console.log(modello_terapeuta)
-        if((id_cliente in new_terapeuta.associati)){
+        const terapeuta=await Terapeuta.findByIdAndUpdate(id_terapeuta, {$pull:{associati:id_cliente}},{new:true}).exec()
+
+        if((terapeuta.associati.includes(cliente._id.toString()))){
             console.log("remove from Therapist failed")
         }
         console.log("cliente rimosso")
@@ -271,7 +268,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
                 
         //prova rimozione, poi viene reinserito
         //await remove_associazione(id_cliente, id_terapeuta)
-
+        //return
         /**
          * Se il campo del cliente è vuoto o contiene un terapeuta diverso ci associo quello nuovo 
          *      
@@ -298,9 +295,16 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         if(!(terapeuta.associati.includes(cliente._id.toString())))
             terapeuta = await Terapeuta.findByIdAndUpdate(id_terapeuta, {$push:{associati:id_cliente}}, {new:true}).exec()
         
-        
-        
-        //nel caso in cui questa scrittura non abbia funzionato si lascia un riferimento rotto nel terapeuta e si fa il rollback del cliente, sarà necessaria una seconda chiamata
+        /**
+         * 
+         * ROLLBACK: se non si è riusciti a scrivere nel terapeuta il cliente, 
+         * si elimina da entrambi il riferimento all'altro
+         * una nuova chiamata potrà essere ritentata
+         * 
+         * la parte di ROLLBACK può essere sostituita da rimuovi_associazione, che 
+         * fa le stesse esatte cose
+         * 
+         */
         if(!(terapeuta.associati.includes(cliente._id.toString()))){
             //rollback associazione utente, che si suppone funzioni -> rimuovo eventuali link pendenti
             await Cliente.findByIdAndUpdate(id_cliente, {associato:""}).exec()
