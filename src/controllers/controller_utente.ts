@@ -192,3 +192,59 @@ export async function login(req:Request,res:Response,next:NextFunction) {
     next()
 }
 
+
+export async function associazione(req:Request,res:Response,next:NextFunction) {
+    const id_cliente=req.body.loggedUser._id
+    const id_terapeuta=req.params.id
+
+    if (!id_cliente || id_terapeuta){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Not enough arguments"
+        }
+    } 
+
+    try{
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        
+        //verifica esistenza terapeuta
+        const terapeuta=await Utente.findOne({id_:id_terapeuta})
+        if(!terapeuta){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Therapist not found"
+            }
+        }
+
+        //update associato al cliente
+        Utente.findOneAndUpdate({id_:id_cliente}, {associato:id_terapeuta}, function(err:Error, doc:Document){
+            if(err) return res.status(500).send("Internal Error")
+        })
+
+        //update associato al terapeuta
+        Utente.findOneAndUpdate({id_:id_cliente}, {$push:{associato:id_cliente}}, function(err:Error, doc:Document){
+            if(err) {
+                // rimuove associazione fatta -> va bene cosi??
+                Utente.findOneAndUpdate({id_:id_cliente}, {associato:""}, function(err:Error, doc:Document){
+                    if(err) return res.status(500).send("Stato inconsistente")
+                })
+                return res.status(500).send("Internal Error")
+            };
+        })
+
+        res.status(200)
+        req.body={
+            successfull:true,
+            message:"association done!" 
+        }
+
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successfull:false,
+            message:"Internal Error: association failed"+err
+        }
+    }
+}
