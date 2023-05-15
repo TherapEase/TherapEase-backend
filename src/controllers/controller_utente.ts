@@ -222,75 +222,110 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
     
     const id_cliente=req.body.loggedUser._id
     const id_terapeuta=req.params.id
-    console.log(id_cliente+' '+id_terapeuta)
     if (!id_cliente || !id_terapeuta){
         res.status(400)
         req.body={
             successful: false,
             message: "Not enough arguments"
         }
+        next()
     } 
 
     try{
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        console.log("dbconnesso")
-        //verifica esistenza terapeuta
-        const terapeuta=await Utente.findOne({_id:id_terapeuta}).exec()
-        if(!terapeuta){ 
+
+        let terapeuta=await Terapeuta.findById(id_terapeuta).exec()     //recupero dal db i due utenti, per verificarne esistenza e campi
+        let cliente= await Cliente.findById(id_cliente).exec()
+
+        if(!(terapeuta&&cliente)){ 
             res.status(400)
             req.body={
                 successful: false,
-                message: "Therapist not found"
+                message: "Error during users retrieval"
             }
+            next()
+            return      //i return sono necessari: altrimenti rischia di eseguire il resto del codice comunque bypassando il controllo
         }
-        console.log("terapeuta trovato")
-        //console.log(terapeuta)
 
 
+        /**
+         * questo controllo permette di avere un cliente già associato ad un terapeuta ed associarlo ad un altro
+         * se per disgrazia uno dei due campi non è stato salvato completamente (quindi riferimenti non matchati)
+         * il test sull'associazione viene passato
+         * quindi verrà scritto l'id del terapeuta nel cliente, e raddoppiato nel terapeuta
+         * 
+         * inoltre sperimentando ho trovato che "in" non funziona bene in questo caso (sotto chiamava comunque il rollback)
+         * usare associati.includes sembra essere meglio
+         */
 
-        //TO-DO -> controllare che l'utente non sia gia associato a quel terapeuta
-        await remove_associazione(id_cliente, id_terapeuta)
+        if(terapeuta.associati.includes(cliente._id.toString())&&cliente.associato==terapeuta._id.toString()){       
+            res.status(400)
+            req.body={
+                successful:false,
+                message: "Cliente already associated"
+            }
+            next()
+            return
+        }
 
-        //update associato al cliente
-        const cliente = await Cliente.findByIdAndUpdate(id_cliente, {associato:id_terapeuta},{new:true}).exec()    //bisogna usare il modello di quello che si trova
-        const modello_cliente = new Cliente<ICliente>(cliente)
+                
+        //prova rimozione, poi viene reinserito
+        //await remove_associazione(id_cliente, id_terapeuta)
+
+        /**
+         * Se il campo del cliente è vuoto o contiene un terapeuta diverso ci associo quello nuovo 
+         *      
+         *      se si effettua una seconda chiamata con gli stessi dati il sistema si autocorregge (passo il check sopra e sovrascrivo correttamente)
+         */
+
+        if(cliente.associato!=terapeuta._id.toString())
+            cliente = await Cliente.findByIdAndUpdate(id_cliente, {associato:id_terapeuta},{new:true}).exec()
+        
+        //lancio un errore se non dovesse andare a buon fine la scrittura nel db
         if(cliente.associato!=id_terapeuta){
             res.status(400)
             req.body={
                 successful: false,
                 message: "Client association error"
             }
+            next()
+            return
         }
-        console.log("terapeuta associato")
-        console.log(cliente)
 
-        //update associato al terapeuta
-        const new_terapeuta =await Terapeuta.findByIdAndUpdate(id_terapeuta, {$push:{associati:id_cliente}}, {new:true}).exec()
-        const modello_terapeuta = new Terapeuta<ITerapeuta>(new_terapeuta)
-        if(!(id_cliente in modello_terapeuta.associati)){
-            //rollback associazione utente, che si suppone funzioni
-            await Cliente.findByIdAndUpdate(id_cliente, {associato:""}).exec() 
+        /**
+         * Stessa logica del cliente: se il cliente è associato ma non appare nell'array, passo il check e lo scrivo nell'array
+         */
+        if(!(terapeuta.associati.includes(cliente._id.toString())))
+            terapeuta = await Terapeuta.findByIdAndUpdate(id_terapeuta, {$push:{associati:id_cliente}}, {new:true}).exec()
+        
+        
+        
+        //nel caso in cui questa scrittura non abbia funzionato si lascia un riferimento rotto nel terapeuta e si fa il rollback del cliente, sarà necessaria una seconda chiamata
+        if(!(terapeuta.associati.includes(cliente._id.toString()))){
+            //rollback associazione utente, che si suppone funzioni -> rimuovo eventuali link pendenti
+            await Cliente.findByIdAndUpdate(id_cliente, {associato:""}).exec()
+            await Terapeuta.findByIdAndUpdate(id_terapeuta,{$pull:{associati:id_cliente}}) 
             res.status(400)
             req.body={
                 successful: false,
                 message: "Therapist association error, possible incostistent state"
             }
+            next()
+            return
         }
-        
-        console.log(new_terapeuta)
-        console.log("cliente associato")
-
         res.status(200)
         req.body={
             successfull:true,
             message:"association done!" 
         }
-    next()
+        next()
+        return
     } catch (err) {
         res.status(500)
         req.body={
             successfull:false,
-            message:"Internal Error: association failed"+err
+            message:"Internal Error: association failed "+err
         }
+        next()
     }
 }
