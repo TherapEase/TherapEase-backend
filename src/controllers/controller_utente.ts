@@ -3,7 +3,7 @@ import {Cliente, ICliente} from '../schemas/cliente_schema'
 import {Utente,IUtente} from '../schemas/utente_schema'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
-import { Terapeuta } from '../schemas/terapeuta_schema'
+import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
 
 export async function registrazione(req:Request,res:Response,next:NextFunction) {
@@ -197,7 +197,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
     const id_cliente=req.body.loggedUser._id
     const id_terapeuta=req.params.id
     console.log(id_cliente+' '+id_terapeuta)
-    if (!id_cliente || id_terapeuta){
+    if (!id_cliente || !id_terapeuta){
         res.status(400)
         req.body={
             successful: false,
@@ -221,24 +221,31 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         console.log(terapeuta)
         //update associato al cliente
         const cliente = await Cliente.findByIdAndUpdate(id_cliente, {associato:id_terapeuta}).exec()    //bisogna usare il modello di quello che si trova
+        const modello_cliente = new Cliente<ICliente>(cliente)
+        if(cliente.associato!=id_terapeuta){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Client association error"
+            }
+        }
         console.log("terapeuta associato")
         console.log(cliente)
 
-        //OK: fa l'update
-
         //update associato al terapeuta
-        await Terapeuta.findByIdAndUpdate(id_terapeuta, {$push:{associati:id_cliente}}).exec()
-        //OK: fa l'update
-
-            //, async function(err:Error, doc:Document){
-            // if(err) {
-            //     // rimuove associazione fatta -> va bene cosi??
-            //     await Cliente.findOneAndUpdate({id_:id_cliente}, {associato:""}, function(err:Error, doc:Document){
-            //         if(err) return res.status(500).send("Stato inconsistente")
-            //     })
-            //     return res.status(500).send("Internal Error")
-            // };
-        //})
+        const new_terapeuta =await Terapeuta.findByIdAndUpdate(id_terapeuta, {$push:{associati:id_cliente}}).exec()
+        const modello_terapeuta = new Terapeuta<ITerapeuta>(new_terapeuta)
+        if(!(id_cliente in modello_terapeuta.associati)){
+            //rollback associazione utente, che si suppone funzioni
+            await Cliente.findByIdAndUpdate(id_cliente, {associato:""}).exec() 
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Therapist association error, possible incostistent state"
+            }
+        }
+        
+        console.log(new_terapeuta)
         console.log("cliente associato")
 
         res.status(200)
