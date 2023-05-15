@@ -192,8 +192,33 @@ export async function login(req:Request,res:Response,next:NextFunction) {
     next()
 }
 
+async function remove_associazione(id_cliente: string, id_terapeuta: string) {
+    console.log("REMOVE ASSOCIAZIONE")
+    try{
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        console.log("dbconnesso")
+
+        const new_cliente=await Cliente.findByIdAndUpdate(id_cliente, {associato:""}, {new:true}).exec() 
+        const modello_cliente = new Cliente<ICliente>(new_cliente)
+        console.log(modello_cliente)
+        if(modello_cliente.associato!=""){
+            console.log("remove from Client failed")
+        }
+        const new_terapeuta=await Cliente.findByIdAndUpdate(id_terapeuta, {$pull:{associati:[id_cliente]}},{new:true}).exec()
+        const modello_terapeuta = new Terapeuta<ITerapeuta>(new_terapeuta)
+        console.log(modello_terapeuta)
+        if((id_cliente in modello_terapeuta.associati)){
+            console.log("remove from Therapist failed")
+            }
+    }catch (err){
+        console.log("remove association failed")
+    }
+    
+}
+
 
 export async function associazione(req:Request,res:Response,next:NextFunction) {
+    
     const id_cliente=req.body.loggedUser._id
     const id_terapeuta=req.params.id
     console.log(id_cliente+' '+id_terapeuta)
@@ -219,8 +244,15 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         }
         console.log("terapeuta trovato")
         console.log(terapeuta)
+
+
+
+        //TO-DO -> controllare che l'utente non sia gia associato a quel terapeuta
+        await remove_associazione(id_cliente, id_terapeuta)
+
+
         //update associato al cliente
-        const cliente = await Cliente.findByIdAndUpdate(id_cliente, {associato:id_terapeuta}).exec()    //bisogna usare il modello di quello che si trova
+        const cliente = await Cliente.findByIdAndUpdate(id_cliente, {associato:id_terapeuta},{new:true}).exec()    //bisogna usare il modello di quello che si trova
         const modello_cliente = new Cliente<ICliente>(cliente)
         if(cliente.associato!=id_terapeuta){
             res.status(400)
@@ -233,7 +265,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         console.log(cliente)
 
         //update associato al terapeuta
-        const new_terapeuta =await Terapeuta.findByIdAndUpdate(id_terapeuta, {$push:{associati:id_cliente}}).exec()
+        const new_terapeuta =await Terapeuta.findByIdAndUpdate(id_terapeuta, {$push:{associati:id_cliente}}, {new:true}).exec()
         const modello_terapeuta = new Terapeuta<ITerapeuta>(new_terapeuta)
         if(!(id_cliente in modello_terapeuta.associati)){
             //rollback associazione utente, che si suppone funzioni
