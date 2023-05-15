@@ -203,7 +203,7 @@ export async function get_info_utente(req:Request,res:Response,next:NextFunction
         res.status(200)
         req.body={
             successful:true,
-            message: "id richiesto e token coincidono!",
+            message: "id and token match!",
             profile: await Utente.findOne({_id:req.params.id},'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
         }
         next()
