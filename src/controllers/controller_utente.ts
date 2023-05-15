@@ -204,12 +204,13 @@ async function remove_associazione(id_cliente: string, id_terapeuta: string) {
         if(modello_cliente.associato!=""){
             console.log("remove from Client failed")
         }
-        const new_terapeuta=await Cliente.findByIdAndUpdate(id_terapeuta, {$pull:{associati:[id_cliente]}},{new:true}).exec()
-        const modello_terapeuta = new Terapeuta<ITerapeuta>(new_terapeuta)
-        console.log(modello_terapeuta)
-        if((id_cliente in modello_terapeuta.associati)){
+        const new_terapeuta=await Terapeuta.findByIdAndUpdate(id_terapeuta, {$pull:{associati:id_cliente}},{new:true}).exec()
+        //const modello_terapeuta = new Terapeuta<ITerapeuta>(new_terapeuta)
+        //console.log(modello_terapeuta)
+        if((id_cliente in new_terapeuta.associati)){
             console.log("remove from Therapist failed")
-            }
+        }
+        console.log("cliente rimosso")
     }catch (err){
         console.log("remove association failed")
     }
@@ -243,13 +244,12 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
             }
         }
         console.log("terapeuta trovato")
-        console.log(terapeuta)
+        //console.log(terapeuta)
 
 
 
         //TO-DO -> controllare che l'utente non sia gia associato a quel terapeuta
         await remove_associazione(id_cliente, id_terapeuta)
-
 
         //update associato al cliente
         const cliente = await Cliente.findByIdAndUpdate(id_cliente, {associato:id_terapeuta},{new:true}).exec()    //bisogna usare il modello di quello che si trova
