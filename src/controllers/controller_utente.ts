@@ -207,10 +207,10 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
 
     try{
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        
+        console.log("dbconnesso")
         //verifica esistenza terapeuta
-        const terapeuta=await Utente.findOne({id_:id_terapeuta})
-        if(!terapeuta){
+        const terapeuta=await Utente.findOne({id_:id_terapeuta}).exec()
+        if(!terapeuta){ 
             res.status(400)
             req.body={
                 successful: false,
@@ -219,20 +219,22 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         }
 
         //update associato al cliente
-        Utente.findOneAndUpdate({id_:id_cliente}, {associato:id_terapeuta}, function(err:Error, doc:Document){
+        await Utente.findOneAndUpdate({id_:id_cliente}, {associato:id_terapeuta}, function(err:Error, doc:Document){
             if(err) return res.status(500).send("Internal Error")
-        })
+        }).exec()
+        console.log("terapeuta trovato")
 
         //update associato al terapeuta
-        Utente.findOneAndUpdate({id_:id_cliente}, {$push:{associato:id_cliente}}, function(err:Error, doc:Document){
+        await Utente.findOneAndUpdate({id_:id_cliente}, {$push:{associato:id_cliente}}, async function(err:Error, doc:Document){
             if(err) {
                 // rimuove associazione fatta -> va bene cosi??
-                Utente.findOneAndUpdate({id_:id_cliente}, {associato:""}, function(err:Error, doc:Document){
+                await Utente.findOneAndUpdate({id_:id_cliente}, {associato:""}, function(err:Error, doc:Document){
                     if(err) return res.status(500).send("Stato inconsistente")
-                })
+                }).exec()
                 return res.status(500).send("Internal Error")
             };
-        })
+        }).exec()
+        console.log("cliente trovato")
 
         res.status(200)
         req.body={

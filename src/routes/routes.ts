@@ -28,6 +28,6 @@ defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
     })
 })
 
-defaultRoute.use('/associazione/:id',tokenCheck, associazione,(req:Request,res:Response)=>{
+defaultRoute.get('/associazione/:id',tokenCheck, associazione,(req:Request,res:Response)=>{
     res.json(req.body)
 })
