@@ -192,3 +192,24 @@ export async function login(req:Request,res:Response,next:NextFunction) {
     next()
 }
 
+export async function get_all_terapeuti(req:Request,res:Response,next:NextFunction) {
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        // console.log("dbconnesso")
+        const catalogo_terapeuti=await Terapeuta.find({ruolo:2}, 'nome cognome email foto_profilo data_nascita indirizzo recensioni')
+        // console.log(catalogo_terapeuti)
+        res.status(200)
+        req.body={
+            successfull:true,
+            message:"complete therapist catalog",
+            catalogo: catalogo_terapeuti
+        }
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successfull:false,
+            message:"Internal Error: therapist catalog failed"+err
+        }
+    }
+    next()
+}

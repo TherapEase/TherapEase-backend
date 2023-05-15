@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 
 
-interface Terapeuta {
+export interface ITerapeuta {
     username: String,
     password: String,
     ruolo : Number, //essendo enum consideriamo l'intero
@@ -50,4 +50,4 @@ schema.pre('save', async function (next) {
     }
 })
 
-export const Terapeuta = model<Terapeuta>('Terapeuta', schema,"Utenti")
+export const Terapeuta = model<ITerapeuta>('Terapeuta', schema,"Utenti")
