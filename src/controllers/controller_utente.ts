@@ -193,25 +193,34 @@ export async function login(req:Request,res:Response,next:NextFunction) {
 }
 
 export async function get_info_utente(req:Request,res:Response,next:NextFunction){
-    // console.log("in profilo utente")
-    // console.log(req.params.id)
-    // console.log(req.body.loggedUser._id)
-    // console.log(req.body)
-    // console.log(req.params)
+    //ogni utente ottiene il suo profilo (sezione my account)
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
-    if(req.params.id==req.body.loggedUser._id){     //check dei permessi: per ora un profilo può accedere ai suoi dati-> id richiesto ed _id nel token coincidono
-        res.status(200)
-        req.body={
-            successful:true,
-            message: "id and token match!",
-            profile: await Utente.findOne({_id:req.params.id},'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
+
+    const richiedente= await Utente.findOne({_id: req.params.id}, 'username ruolo').exec()
+    const richiedente_modello = new Utente<IUtente>(richiedente)
+
+    if(req.params.id==req.body.loggedUser._id){
+        if(richiedente_modello.ruolo==1){
+            res.status(200)
+            req.body={
+                successful:true,
+                message: "id and token match!",
+                profile: await Utente.findOne({_id:req.params.id},'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
+            }
+            next()
         }
-        next()
+        if(richiedente_modello.ruolo==2){
+            res.status(200)
+            req.body={
+                successful:true,
+                message: "id and token match!",
+                profile: await Utente.findOne({_id:req.params.id},'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limiteClienti indirizzo').exec()
+            }
+            next()
+        }
     }
     else res.status(400).json({
         successful:false,
-        messaggio:"failed to obtain profile",
-        // requested_id:req.params.id,
-        // logged_id: req.body.loggedUser._id
+        messaggio:"failed to obtain profile"
     })
 }
