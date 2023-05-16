@@ -350,6 +350,22 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
          * l'alternativa è non autenticarsi, utile per recuperare i singoli profili del catalogo
          * sarebbe meglio autenticato così si possono restituire cose come il diario, ma bisogna determinare i permessi
          */
+        let richiedente:ICliente|ITerapeuta
+        if(req.body.loggedUser.ruolo==1)
+            richiedente= await Cliente.findById(req.body.loggedUser._id).exec()
+        else if(req.body.loggedUser.ruolo==2)
+            richiedente = await Terapeuta.findById(req.body.loggedUser._id).exec()
+        else{
+            res.status(400)
+            req.body={
+                successful:false,
+                message:"Invalid role specified"
+            }
+            next()
+            return
+        }
+
+        console.log(richiedente)
 
         let utente:IUtente|ICliente|ITerapeuta = await Utente.findById(req.params.id).exec()
         if(!utente){
@@ -362,10 +378,28 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
             return
         }
         if(utente.ruolo==1)
-            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita')
+            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario')
         else if(utente.ruolo==2)
             utente = await Terapeuta.findById(req.params.id,'username ruolo nome cognome email cf foto_profilo data_nascita limite_clienti indirizzo recensioni')
         
+        /**
+         * 
+         * CHECK PERMESSI:
+         * Il terapeuta può vedere il profilo dei suoi clienti
+         * Il cliente può vedere il profilo di ogni terapeuta
+         * 
+         */
+
+        if(richiedente.ruolo==utente.ruolo||((richiedente instanceof Terapeuta)&&!(richiedente as ITerapeuta).associati.includes(req.params.id))){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "invalid request"
+            }
+            next()
+            return
+        }
+
         res.status(200)
         req.body={
             successful:true,
