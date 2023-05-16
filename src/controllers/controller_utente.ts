@@ -231,3 +231,107 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
         }
     }
 }
+
+export async function modify_profilo(req:Request,res:Response,next:NextFunction) {
+    /**
+     * CAMPI MODIFICABILI:
+     * nome
+     * cognome
+     * email -->non più verificata
+     * cf
+     * foto_profilo
+     * data_nascita
+     * 
+     * PER IL TERAPEUTA
+     * limiteClienti
+     * indirizzo
+     */
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        if(req.body.loggedUser.ruolo==1){
+            const cliente = await Cliente.findById(req.body.loggedUser._id,{}).exec()
+    
+            if(!cliente){
+                res.status(400)
+                req.body={
+                    successful:false,
+                    message:"Cliente not found"
+                }
+                next()
+                return
+            }
+    
+            let updated_data ={
+                nome: req.body.nome?req.body.nome : cliente.nome,
+                cognome: req.body.cognome?req.body.cognome : cliente.nome,
+                email:req.body.email?req.body.email : cliente.email,
+                email_confermata:req.body.email?false:true,
+                cf:req.body.cf?req.body.cf : cliente.cf,
+                foto_profilo:req.body.foto_profilo?req.body.foto_profilo : cliente.foto_profilo,
+                data_nascita: req.body.data_nascita?req.body.data_nascita : cliente.data_nascita
+            }
+    
+            const updated_cliente = await Cliente.findByIdAndUpdate(cliente._id,{
+                nome:updated_data.nome,
+                cognome:updated_data.cognome,
+                email:updated_data.email,
+                email_confermata:updated_data.email_confermata,
+                cf:updated_data.cf,
+                foto_profilo:updated_data.foto_profilo,
+                data_nascita:updated_data.data_nascita,
+            },{new:true}).exec()
+        }else if(req.body.loggedUser.ruolo==2){
+
+            const terapeuta = await Terapeuta.findById(req.body.loggedUser._id).exec()
+    
+            if(!terapeuta){
+                res.status(400)
+                req.body={
+                    successful:false,
+                    message:"Terapeuta not found"
+                }
+                next()
+                return
+            }
+    
+            let updated_data ={
+                nome: req.body.nome?req.body.nome : terapeuta.nome,
+                cognome: req.body.cognome?req.body.cognome : terapeuta.nome,
+                email:req.body.email?req.body.email : terapeuta.email,
+                email_confermata:req.body.email?false:true,
+                cf:req.body.cf?req.body.cf : terapeuta.cf,
+                foto_profilo:req.body.foto_profilo?req.body.foto_profilo : terapeuta.foto_profilo,
+                data_nascita: req.body.data_nascita?req.body.data_nascita : terapeuta.data_nascita,
+                limiteClienti: req.body.limiteClienti?req.body.limiteClienti : terapeuta.limiteClienti,
+                indirizzo:req.body.data_nascita?req.body.indirizzo : terapeuta.indirizzo
+            }
+    
+            const updated_cliente = await Terapeuta.findByIdAndUpdate(terapeuta._id,{
+                nome:updated_data.nome,
+                cognome:updated_data.cognome,
+                email:updated_data.email,
+                email_confermata:updated_data.email_confermata,
+                cf:updated_data.cf,
+                foto_profilo:updated_data.foto_profilo,
+                data_nascita:updated_data.data_nascita,
+                limiteClienti: updated_data.limiteClienti,
+                indirizzo:updated_data.indirizzo
+            },{new:true}).exec()
+        }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"fields updated correctly"
+        }
+        next()
+        return
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message: "Internal error " + error
+        }
+    }
+    
+}
