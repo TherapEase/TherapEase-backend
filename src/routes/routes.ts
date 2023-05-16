@@ -1,6 +1,6 @@
 import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
-import { registrazione,login, associazione } from '../controllers/controller_utente';
+import { registrazione,login, associazione,rimuovi_associazione } from '../controllers/controller_utente';
 import { tokenCheck } from '../controllers/token_checker';
 //import cors from 'cors';
 
@@ -29,5 +29,8 @@ defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
 })
 
 defaultRoute.get('/associazione/:id',tokenCheck, associazione,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+defaultRoute.get('/associazione/rimuovi/:id',tokenCheck,rimuovi_associazione,(req:Request,res:Response)=>{
     res.json(req.body)
 })

@@ -1,7 +1,7 @@
 import { Request,Response,NextFunction } from 'express'
 import {Cliente, ICliente} from '../schemas/cliente_schema'
 import {Utente,IUtente} from '../schemas/utente_schema'
-import mongoose from 'mongoose'
+import mongoose, { mongo } from 'mongoose'
 import dotenv from 'dotenv'
 import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
@@ -101,7 +101,8 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
 
         const token = jwt.sign({
             _id: utente_schema._id.toString(),
-            username: utente_schema.username
+            username: utente_schema.username,
+            ruolo:utente_schema.ruolo
         },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
         //in alernativa usare res.redirect(/login) e sfruttare il login handler
         res.status(200)
@@ -171,7 +172,8 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         
         const token = jwt.sign({
             _id: utente_trovato._id.toString(),
-            username: utente_trovato.username
+            username: utente_trovato.username,
+            ruolo: utente_trovato.ruolo
         },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
     
         // res.status(200).json({ success: true, token: token })
@@ -270,9 +272,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
 
         //pulisce l'asssociazione precedente dal terapeuta precedente
         await remove_associazione_precedente(id_cliente)
-        //prova rimozione, poi viene reinserito
-        //await remove_associazione(id_cliente, id_terapeuta)
-        //return
+        
         /**
          * Se il campo del cliente è vuoto o contiene un terapeuta diverso ci associo quello nuovo 
          *      
@@ -336,4 +336,49 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         }
         next()
     }
+}
+
+export async function rimuovi_associazione (req:Request, res:Response,next:NextFunction){
+    /**
+     * 
+     * L'utente autenticato manda una richiesta di disassociazione con parametro l'id della controparte
+     * Essendo autenticato, si determina il tipo di utente grazie al ruolo e si determina di conseguenza il tipo della controparte
+     */
+    let id_cliente:String, id_terapeuta:String
+    if(req.body.loggedUser.ruolo==1){
+        id_cliente=req.body.loggedUser._id
+        id_terapeuta=req.params.id
+    }
+    else if(req.body.loggedUser.ruolo==2){
+        id_terapeuta=req.body.loggedUser._id
+        id_cliente=req.params.id
+    }
+    else{
+        res.status(400)
+        req.body={
+            successful:false,
+            message:"Invalid role"
+        }
+        next()
+        return
+    }
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        const cliente = await Cliente.findByIdAndUpdate(id_cliente,{associato:""},{new:true}).exec()
+        const terapeuta = await Terapeuta.findByIdAndUpdate(id_terapeuta,{$pull:{associati:id_cliente}},{new:true}).exec()
+        
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Association removed"
+        }
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Failed association removal: "+error
+        }
+    }
+    next()
 }
