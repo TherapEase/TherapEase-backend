@@ -1,6 +1,6 @@
 import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
-import { registrazione , login, get_info_utente} from '../controllers/controller_utente';
+import { registrazione , login, get_my_profilo} from '../controllers/controller_utente';
 import { tokenCheck } from '../controllers/token_checker';
 //import cors from 'cors';
 
@@ -28,6 +28,6 @@ defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
     })
 })
 
-defaultRoute.get('/profilo_utente/:id',tokenCheck, get_info_utente, (req:Request,res:Response)=>{   //uso: fare richiesta get a /api/v1/profilo_utente/ e appendere l'_id dal db. fornire anche un token valido ottenuto dal login
+defaultRoute.get('/il_mio_profilo',tokenCheck, get_my_profilo, (req:Request,res:Response)=>{
     res.json(req.body)
 })

@@ -1,9 +1,9 @@
 import { Request,Response,NextFunction } from 'express'
 import {Cliente, ICliente} from '../schemas/cliente_schema'
 import {Utente,IUtente} from '../schemas/utente_schema'
-import mongoose from 'mongoose'
+import mongoose, { mongo } from 'mongoose'
 import dotenv from 'dotenv'
-import { Terapeuta } from '../schemas/terapeuta_schema'
+import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
 
 export async function registrazione(req:Request,res:Response,next:NextFunction) {
@@ -101,7 +101,8 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
 
         const token = jwt.sign({
             _id: utente_schema._id.toString(),
-            username: utente_schema.username
+            username: utente_schema.username,
+            ruolo:utente_schema.ruolo
         },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
         //in alernativa usare res.redirect(/login) e sfruttare il login handler
         res.status(200)
@@ -168,10 +169,10 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         };
     
         //creo il token aggiungendo i vari campi utili
-        
         const token = jwt.sign({
             _id: utente_trovato._id.toString(),
-            username: utente_trovato.username
+            username: utente_trovato.username,
+            ruolo:utente_trovato.ruolo
         },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
     
         // res.status(200).json({ success: true, token: token })
@@ -192,35 +193,41 @@ export async function login(req:Request,res:Response,next:NextFunction) {
     next()
 }
 
-export async function get_info_utente(req:Request,res:Response,next:NextFunction){
-    //ogni utente ottiene il suo profilo (sezione my account)
-    await mongoose.connect(process.env.DB_CONNECTION_STRING)
+export async function get_my_profilo(req:Request,res:Response,next:NextFunction){
+    /**
+     * 
+     * Questa funzione è dedita al recupero del proprio profilo per la visualizzazione delle informazioni personali
+     * La richiesta contiene il token decodificato-> _id,username,ruolo
+     */
 
-    const richiedente= await Utente.findOne({_id: req.params.id}, 'username ruolo').exec()
-    const richiedente_modello = new Utente<IUtente>(richiedente)
-
-    if(req.params.id==req.body.loggedUser._id){
-        if(richiedente_modello.ruolo==1){
-            res.status(200)
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let utente: IUtente|ITerapeuta
+        if(req.body.loggedUser.ruolo==1)
+            utente = await Cliente.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
+        else if (req.body.loggedUser.ruolo==2)
+            utente = await Terapeuta.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limiteClienti indirizzo').exec()
+        else{
+            res.status(400)
             req.body={
-                successful:true,
-                message: "id and token match!",
-                profile: await Utente.findOne({_id:req.params.id},'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
+                successful:false,
+                message:"Invalid role"
             }
             next()
+            return
         }
-        if(richiedente_modello.ruolo==2){
-            res.status(200)
-            req.body={
-                successful:true,
-                message: "id and token match!",
-                profile: await Utente.findOne({_id:req.params.id},'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limiteClienti indirizzo').exec()
-            }
-            next()
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Profile obtained successfully",
+            profile:utente
+        }
+        next()    
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal error: "+error
         }
     }
-    else res.status(400).json({
-        successful:false,
-        messaggio:"failed to obtain profile"
-    })
 }
