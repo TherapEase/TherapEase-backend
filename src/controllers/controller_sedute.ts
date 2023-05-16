@@ -136,3 +136,72 @@ export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunc
     }
 
 }
+
+
+export async function prenota_seduta(req:Request,res:Response,next:NextFunction) {
+    //controllo accesso, solo cliente
+    if(req.body.loggedUser.ruolo!=1){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Permission denied"
+        }
+        next()
+        return 
+    }
+
+    // controllo presenza campi
+    //DATA format:2024-11-02T04:20:00.000Z
+    const data=req.body.data
+    if(!data){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Not enough arguments"
+        }
+        next()
+        return
+    }
+
+
+    //nessun terapeuta associato
+    await mongoose.connect(process.env.DB_CONNECTION_STRING)
+    let cliente = await Cliente.findById(req.body.loggedUser._id).exec()
+    if(cliente.associato==""){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "No therapist associated!"
+        }
+        next()
+        return
+    }
+    try{
+        let seduta = await Seduta.findOneAndUpdate({terapeuta:cliente.associato, data:data, cliente:""},{cliente:req.body.loggedUser._id},{new:true})
+        if(!seduta){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Seduta requested not available"
+            }
+            next()
+            return
+        }else{
+            res.status(200)
+            req.body={
+                successful: true,
+                message: "Seduta booked!"
+            }
+            next()
+            return
+        }
+    }catch(err){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Booking failed"
+        }
+        next()
+        return
+    }
+}
