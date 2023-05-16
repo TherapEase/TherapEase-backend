@@ -101,7 +101,8 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
 
         const token = jwt.sign({
             _id: utente_schema._id.toString(),
-            username: utente_schema.username
+            username: utente_schema.username,
+            ruolo:utente_schema.ruolo
         },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
         //in alernativa usare res.redirect(/login) e sfruttare il login handler
         res.status(200)
@@ -131,6 +132,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
 export async function login(req:Request,res:Response,next:NextFunction) {
     const username=req.body.username
     const password=req.body.password
+
 
     // controllo su campi mancanti
     if (!username || !password){
@@ -171,7 +173,8 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         
         const token = jwt.sign({
             _id: utente_trovato._id.toString(),
-            username: utente_trovato.username
+            username: utente_trovato.username, 
+            ruolo: utente_trovato.ruolo
         },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
     
         // res.status(200).json({ success: true, token: token })
