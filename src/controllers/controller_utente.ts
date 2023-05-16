@@ -196,7 +196,7 @@ export async function get_all_terapeuti(req:Request,res:Response,next:NextFuncti
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         // console.log("dbconnesso")
-        const catalogo_terapeuti=await Terapeuta.find({ruolo:2}, 'nome cognome email foto_profilo data_nascita indirizzo recensioni')
+        const catalogo_terapeuti=await Terapeuta.find({ruolo:2}, 'nome cognome foto_profilo')
         // console.log(catalogo_terapeuti)
         res.status(200)
         req.body={
