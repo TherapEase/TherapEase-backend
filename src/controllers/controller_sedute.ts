@@ -205,3 +205,76 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
         return
     }
 }
+
+export async function remove_prenotazioni_if_disassociato(id_cliente:string, id_terapeuta:String) {
+    await mongoose.connect(process.env.DB_CONNECTION_STRING)
+    let seduta
+    do{
+        seduta=await Seduta.findOneAndUpdate({cliente:id_cliente, terapeuta:id_terapeuta},{cliente:""}).exec()
+        if(seduta.abilitato==true){
+            //TO_DO riaggiungi gettone al cliente
+        }
+    }while(!seduta)  
+}
+
+export async function annulla_prenotazione_seduta(req:Request,res:Response,next:NextFunction) {
+    //controllo accesso, solo cliente
+    if(req.body.loggedUser.ruolo!=1){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Permission denied"
+        }
+        next()
+        return 
+    }
+
+    // controllo presenza campi
+    //DATA format:2024-11-02T04:20:00.000Z
+    const data=req.body.data
+    if(!data){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Not enough arguments"
+        }
+        next()
+        return
+    }
+
+    try{
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        // posso farlo perchè se tolgo l'associazione elimino automaticamente tutte le prenotazioni
+        let seduta= await Seduta.findOneAndUpdate({data:data, cliente:req.body.loggedUser._id}, {cliete:""}).exec()
+        if(!seduta){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Seduta not present"
+            }
+            next()
+            return
+        }else{
+            if(seduta.abilitato==true){
+                // TO -DO riaccredito gettone al cliente
+            }
+
+            res.status(200)
+            req.body={
+                successful: true,
+                message: "Booking deleted!"
+            }
+            next()
+            return
+        }
+    }catch(err){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Booking removal failed"
+        }
+        next()
+        return
+    }
+
+}

@@ -5,6 +5,7 @@ import mongoose, { mongo } from 'mongoose'
 import dotenv from 'dotenv'
 import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
+import { remove_prenotazioni_if_disassociato } from './controller_sedute'
 
 export async function registrazione(req:Request,res:Response,next:NextFunction) {
     /* STRUTTURA RICHIESTA: utente base
@@ -211,6 +212,8 @@ async function remove_associazione_precedente(id_cliente: string) {
             if((terapeuta.associati.includes(cliente._id.toString()))){
                 console.log("remove from Therapist failed")
                 return
+            }else{
+                await remove_prenotazioni_if_disassociato(id_cliente, id_terapeuta)
             }
             console.log("remotion successful")
         }
@@ -345,7 +348,7 @@ export async function rimuovi_associazione (req:Request, res:Response,next:NextF
      * L'utente autenticato manda una richiesta di disassociazione con parametro l'id della controparte
      * Essendo autenticato, si determina il tipo di utente grazie al ruolo e si determina di conseguenza il tipo della controparte
      */
-    let id_cliente:String, id_terapeuta:String
+    let id_cliente:string, id_terapeuta:String
     if(req.body.loggedUser.ruolo==1){
         id_cliente=req.body.loggedUser._id
         id_terapeuta=req.params.id
@@ -369,6 +372,8 @@ export async function rimuovi_associazione (req:Request, res:Response,next:NextF
         const cliente = await Cliente.findByIdAndUpdate(id_cliente,{associato:""},{new:true}).exec()
         const terapeuta = await Terapeuta.findByIdAndUpdate(id_terapeuta,{$pull:{associati:id_cliente}},{new:true}).exec()
         
+        await remove_prenotazioni_if_disassociato(id_cliente, id_terapeuta)
+
         res.status(200)
         req.body={
             successful:true,
