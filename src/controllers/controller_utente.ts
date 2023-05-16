@@ -38,7 +38,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
    
    //console.log([username,password, ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind])
    
-   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||!fp||!dn) {       //si potrebbe far fare al catch usando i campi required 
+   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||fp||!dn) {       //si potrebbe far fare al catch usando i campi required 
     res.status(400)
     req.body = {
         successful:false,
