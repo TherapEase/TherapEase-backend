@@ -2,6 +2,7 @@ import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
 import { registrazione } from '../controllers/controller_utente';
 import { login } from '../controllers/controller_utente';
+import { crea_slot_seduta } from '../controllers/controller_sedute';
 import { tokenCheck } from '../controllers/token_checker';
 //import cors from 'cors';
 
@@ -27,4 +28,8 @@ defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
         message: "token verification ok",
         loggedUser: req.body.loggedUser
     })
+})
+
+defaultRoute.post('/definisci_slot',tokenCheck, crea_slot_seduta,(req:Request,res:Response)=>{
+    res.json(req.body)
 })
