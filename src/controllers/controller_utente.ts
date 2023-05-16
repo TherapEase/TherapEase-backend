@@ -192,22 +192,25 @@ export async function login(req:Request,res:Response,next:NextFunction) {
     next()
 }
 
-async function remove_associazione(id_cliente: string, id_terapeuta: string) {
-    console.log("REMOVE ASSOCIAZIONE")
+async function remove_associazione_precedente(id_cliente: string) {
+    console.log("REMOVE ASSOCIAZIONE PRECEDENTE")
     try{
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         console.log("dbconnesso")
 
-        const cliente=await Cliente.findByIdAndUpdate(id_cliente, {associato:""}, {new:true}).exec() 
-        if(cliente.associato!=""){
-            console.log("remove from Client failed")
+        const cliente=await Cliente.findById(id_cliente).exec() 
+        if(cliente.associato==""){
+            console.log("client already free")
+            return
+        }else{
+            const id_terapeuta=cliente.associato
+            const terapeuta=await Terapeuta.findByIdAndUpdate(id_terapeuta, {$pull:{associati:id_cliente}},{new:true}).exec()
+            if((terapeuta.associati.includes(cliente._id.toString()))){
+                console.log("remove from Therapist failed")
+                return
+            }
+            console.log("remotion successful")
         }
-        const terapeuta=await Terapeuta.findByIdAndUpdate(id_terapeuta, {$pull:{associati:id_cliente}},{new:true}).exec()
-
-        if((terapeuta.associati.includes(cliente._id.toString()))){
-            console.log("remove from Therapist failed")
-        }
-        console.log("cliente rimosso")
     }catch (err){
         console.log("remove association failed")
     }
@@ -265,7 +268,8 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
             return
         }
 
-                
+        //pulisce l'asssociazione precedente dal terapeuta precedente
+        await remove_associazione_precedente(id_cliente)
         //prova rimozione, poi viene reinserito
         //await remove_associazione(id_cliente, id_terapeuta)
         //return
