@@ -1,7 +1,6 @@
 import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
-import { registrazione } from '../controllers/controller_utente';
-import { login } from '../controllers/controller_utente';
+import { registrazione,login, associazione,rimuovi_associazione } from '../controllers/controller_utente';
 import { crea_slot_seduta, elimina_slot_seduta, prenota_seduta} from '../controllers/controller_sedute';
 import { tokenCheck } from '../controllers/token_checker';
 //import cors from 'cors';
@@ -30,6 +29,12 @@ defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
     })
 })
 
+defaultRoute.get('/associazione/:id',tokenCheck, associazione,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+defaultRoute.get('/associazione/rimuovi/:id',tokenCheck,rimuovi_associazione,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
 defaultRoute.post('/definisci_slot', tokenCheck, crea_slot_seduta,(req:Request,res:Response)=>{
     res.json(req.body)
 })
