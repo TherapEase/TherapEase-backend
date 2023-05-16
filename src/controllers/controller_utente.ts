@@ -91,7 +91,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
                 foto_profilo:fp,
                 data_nascita:dn,
                 documenti:doc,
-                limiteClienti: lim,
+                limite_clienti: lim,
                 indirizzo:ind
             })
         }
@@ -206,7 +206,7 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
         if(req.body.loggedUser.ruolo==1)
             utente = await Cliente.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
         else if (req.body.loggedUser.ruolo==2)
-            utente = await Terapeuta.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limiteClienti indirizzo').exec()
+            utente = await Terapeuta.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limite_clienti indirizzo').exec()
         else{
             res.status(400)
             req.body={
@@ -243,8 +243,9 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
      * data_nascita
      * 
      * PER IL TERAPEUTA
-     * limiteClienti
+     * limite_clienti
      * indirizzo
+     * documenti
      */
 
     try {
@@ -303,8 +304,9 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
                 cf:req.body.cf?req.body.cf : terapeuta.cf,
                 foto_profilo:req.body.foto_profilo?req.body.foto_profilo : terapeuta.foto_profilo,
                 data_nascita: req.body.data_nascita?req.body.data_nascita : terapeuta.data_nascita,
-                limiteClienti: req.body.limiteClienti?req.body.limiteClienti : terapeuta.limiteClienti,
-                indirizzo:req.body.data_nascita?req.body.indirizzo : terapeuta.indirizzo
+                limite_clienti: req.body.limite_clienti?req.body.limite_clienti : terapeuta.limite_clienti,
+                indirizzo:req.body.data_nascita?req.body.indirizzo : terapeuta.indirizzo,
+                documenti: req.body.documenti? req.body.documenti : terapeuta.documenti
             }
     
             const updated_cliente = await Terapeuta.findByIdAndUpdate(terapeuta._id,{
@@ -315,8 +317,9 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
                 cf:updated_data.cf,
                 foto_profilo:updated_data.foto_profilo,
                 data_nascita:updated_data.data_nascita,
-                limiteClienti: updated_data.limiteClienti,
-                indirizzo:updated_data.indirizzo
+                limite_clienti: updated_data.limite_clienti,
+                indirizzo:updated_data.indirizzo,
+                documenti: updated_data.documenti
             },{new:true}).exec()
         }
         res.status(200)
@@ -335,3 +338,53 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
     }
     
 }
+
+export async function get_profilo(req:Request, res:Response, next: NextFunction) {
+    try {
+        mongoose.connect(process.env.DB_CONNECTION_STRING)
+        /**
+         * Restituisce i dati "pubblici" di un profilo
+         * si potrebbe fare un controllo dei permessi tramite token
+         * questo dipende se bisogna essere autenticati per ottenere il profilo
+         * 
+         * l'alternativa è non autenticarsi, utile per recuperare i singoli profili del catalogo
+         * sarebbe meglio autenticato così si possono restituire cose come il diario, ma bisogna determinare i permessi
+         */
+
+        let utente:IUtente|ICliente|ITerapeuta = await Utente.findById(req.params.id).exec()
+        if(!utente){
+            res.status(400),
+            req.body={
+                successful:false,
+                message:"User not found"
+            }
+            next()
+            return
+        }
+        if(utente.ruolo==1)
+            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita')
+        else if(utente.ruolo==2)
+            utente = await Terapeuta.findById(req.params.id,'username ruolo nome cognome email cf foto_profilo data_nascita limite_clienti indirizzo recensioni')
+        
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"User found",
+            profilo:utente
+        }
+        next()
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal error: "+error
+        }
+        next()
+    }
+}
+
+/**
+ * 
+ * TODO: aggiungere unique ai campi univoci degli schemi
+ *       trovare il punto dove chiamare SCHEMA.CreateIndex() per inizializzare gli indici (?)
+ */

@@ -1,6 +1,6 @@
 import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
-import { registrazione , login, get_my_profilo,modify_profilo} from '../controllers/controller_utente';
+import { registrazione , login, get_my_profilo,modify_profilo,get_profilo} from '../controllers/controller_utente';
 import { tokenCheck } from '../controllers/token_checker';
 //import cors from 'cors';
 
@@ -33,5 +33,9 @@ defaultRoute.get('/il_mio_profilo',tokenCheck, get_my_profilo, (req:Request,res:
 })
 
 defaultRoute.post('/il_mio_profilo/modifica',tokenCheck, modify_profilo, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/profilo/:id',tokenCheck,get_profilo,(req:Request,res:Response)=>{
     res.json(req.body)
 })

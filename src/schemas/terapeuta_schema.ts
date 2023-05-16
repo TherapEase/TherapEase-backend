@@ -17,9 +17,10 @@ export interface ITerapeuta {
     data_nascita: Date,
     associati?:String[],
     abilitato?: Boolean,
-    limiteClienti?: Number,
+    limite_clienti?: Number,
     indirizzo?: String,
     recensioni?:String[]
+    documenti?:String[]
 }
 //MODELLO COMPLETO CON ELEMENTI REQUIRED
 const schema= new Schema({
@@ -37,9 +38,10 @@ const schema= new Schema({
 
     associati:[{type:String, default:""}],
     abilitato:{type: Boolean, default: false},
-    limiteClienti: {type: Number, default: 30},
+    limite_clienti: {type: Number, default: 30},
     indirizzo: {type:String, required:false},
-    recensioni:[{type:String, default:""}]
+    recensioni:[{type:String, default:""}],
+    documenti:[{type:String,required:true}]
 })
 schema.pre('save', async function (next) {
     if(this.isModified('password')){
