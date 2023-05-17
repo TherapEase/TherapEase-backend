@@ -6,7 +6,7 @@ export interface IUtente {
     username: String,
     password: String,
     ruolo: Number,
-    checkPassword(password:String): boolean
+    checkPassword(password:String): Promise<boolean>
 };
 
 export const schema : Schema= new Schema({
