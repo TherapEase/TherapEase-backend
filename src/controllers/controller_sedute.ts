@@ -274,3 +274,110 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response,next:
     }
 
 }
+
+export async function mostra_calendario_completo(req:Request, res:Response,next:NextFunction){
+    try{
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        if(req.body.loggedUser.ruolo==1){
+            res.status(200)
+            req.body={
+                successful: true,
+                sedute: await Seduta.find({cliente:req.body.loggedUser._id}).exec(),
+                message: "OK"
+            }
+            next()
+            return
+        }
+        if(req.body.loggedUser.ruolo==2){
+            res.status(200)
+            req.body={
+                successful: true,
+                sedute: await Seduta.find({terapeuta:req.body.loggedUser._id}).exec(),
+                message: "OK"
+            }
+            next()
+            return
+        }
+    }catch(err){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Show calendar failed"
+        }
+        next()
+        return
+    }
+
+}
+
+export async function mostra_calendario_disponibili(req:Request, res:Response,next:NextFunction){
+    try{
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        if(req.body.loggedUser.ruolo==1){
+            let cliente=await Cliente.findById(req.body.loggedUser._id).exec()
+
+            res.status(200)
+            req.body={
+                successful: true,
+                sedute: await Seduta.find({cliente:"", terapeuta:cliente.associato}).exec(),
+                message: "OK"
+            }
+            next()
+            return
+        }
+        if(req.body.loggedUser.ruolo==2){
+            res.status(200)
+            req.body={
+                successful: true,
+                sedute: await Seduta.find({terapeuta:req.body.loggedUser._id, cliente:""}).exec(),
+                message: "OK"
+            }
+            next()
+            return
+        }
+    }catch(err){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Show calendar failed"
+        }
+        next()
+        return
+    }
+
+}
+
+export async function mostra_calendario_prenotate(req:Request, res:Response,next:NextFunction){
+    try{
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        if(req.body.loggedUser.ruolo==1){
+            res.status(200)
+            req.body={
+                successful: true,
+                sedute: await Seduta.find({cliente:req.body.loggedUser._id}).exec(),
+                message: "OK"
+            }
+            next()
+            return
+        }
+        if(req.body.loggedUser.ruolo==2){
+            res.status(200)
+            req.body={
+                successful: true,
+                sedute: await Seduta.find({terapeuta:req.body.loggedUser._id, cliente:{$ne:""}}).exec(),
+                message: "OK"
+            }
+            next()
+            return
+        }
+    }catch(err){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Show calendar failed" + err
+        }
+        next()
+        return
+    }
+
+}

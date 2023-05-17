@@ -1,7 +1,7 @@
 import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
 import { registrazione,login, associazione,rimuovi_associazione } from '../controllers/controller_utente';
-import { crea_slot_seduta, elimina_slot_seduta, prenota_seduta} from '../controllers/controller_sedute';
+import { crea_slot_seduta, elimina_slot_seduta, prenota_seduta, mostra_calendario_completo, mostra_calendario_disponibili, mostra_calendario_prenotate} from '../controllers/controller_sedute';
 import { tokenCheck } from '../controllers/token_checker';
 //import cors from 'cors';
 
@@ -47,6 +47,17 @@ defaultRoute.post('/prenotazione', tokenCheck, prenota_seduta,(req:Request,res:R
     res.json(req.body)
 })
 
+defaultRoute.get('/calendario',tokenCheck, mostra_calendario_completo,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/calendario/disponibili',tokenCheck, mostra_calendario_disponibili,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/calendario/prenotate',tokenCheck, mostra_calendario_prenotate,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
 
 //SEDUTE FITRATE PER CLIENTE (CALENDARIO CLIENTE)
 //SEDUTE FITRATE PER TERAPEUTA (CALENDARIO TERAPEUTA) -> slot gia definiti
