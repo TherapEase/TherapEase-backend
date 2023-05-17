@@ -208,13 +208,9 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
 
 export async function remove_prenotazioni_if_disassociato(id_cliente:string, id_terapeuta:String) {
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
-    let seduta
-    do{
-        seduta=await Seduta.findOneAndUpdate({cliente:id_cliente, terapeuta:id_terapeuta},{cliente:""}).exec()
-        if(seduta.abilitato==true){
-            //TO_DO riaggiungi gettone al cliente
-        }
-    }while(!seduta)  
+    let sedute_modificate=await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta, abilitato:true},{cliente:""}).exec()
+    // TO-DO aggiungi al cliente id_cliente un numero di gettoni pari a sedute_modificate.modifiedCount
+    await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta},{cliente:""}).exec()
 }
 
 export async function annulla_prenotazione_seduta(req:Request,res:Response,next:NextFunction) {
@@ -245,7 +241,7 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response,next:
     try{
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         // posso farlo perchè se tolgo l'associazione elimino automaticamente tutte le prenotazioni
-        let seduta= await Seduta.findOneAndUpdate({data:data, cliente:req.body.loggedUser._id}, {cliete:""}).exec()
+        let seduta= await Seduta.findOneAndUpdate({data:data, cliente:req.body.loggedUser._id}, {cliente:""}).exec()
         if(!seduta){
             res.status(400)
             req.body={
