@@ -25,13 +25,17 @@ async function setup_transporter() {
 
     const node_transporter = nodemailer.createTransport({
         service:'gmail',
+        // auth:{
+        //     type: "OAuth2",
+        //     user: process.env.email_address,
+        //     accessToken,
+        //     clientId:process.env.client_id,
+        //     clientSecret:process.env.client_secret,
+        //     refreshToken:process.env.refresh_token
+        // }
         auth:{
-            type: "OAuth2",
             user: process.env.email_address,
-            accessToken,
-            clientId:process.env.client_id,
-            clientSecret:process.env.client_secret,
-            refreshToken:process.env.refresh_token
+            pass: process.env.gmail_password
         }
     } as SMTPTransport.Options)
 
