@@ -3,7 +3,8 @@ import {Router,Request,Response,NextFunction} from 'express'
 import { registrazione } from '../controllers/controller_utente';
 import { login } from '../controllers/controller_utente';
 import { tokenCheck } from '../controllers/token_checker';
-import { sendEmailViaGmail } from '../controllers/gmail_connector';
+import { send_mail } from '../controllers/gmail_connector';
+import { send } from 'process';
 //import cors from 'cors';
 
 export const defaultRoute = Router()
@@ -31,6 +32,6 @@ defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
 })
 
 defaultRoute.post('/provamail',async (req:Request,res:Response)=>{
-   await sendEmailViaGmail(req.body.oggetto, req.body.testo, req.body.destinatario,req.body.mittente)
+   await send_mail(req.body.oggetto, req.body.testo, req.body.destinatario)
    res.send("ok")
 })
