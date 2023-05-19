@@ -1,10 +1,10 @@
 import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
-import { recupero_password, registrazione } from '../controllers/controller_utente';
+import { registrazione } from '../controllers/controller_utente';
 import { login } from '../controllers/controller_utente';
 import { tokenCheck } from '../controllers/token_checker';
 import { send_mail } from '../controllers/gmail_connector';
-import { send } from 'process';
+import { cambio_password, recupero_password } from '../controllers/controller_password';
 //import cors from 'cors';
 
 export const defaultRoute = Router()
@@ -37,5 +37,9 @@ defaultRoute.post('/provamail',async (req:Request,res:Response)=>{
 })
 
 defaultRoute.post('/recuperopassword',recupero_password, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.post('/cambio_password',tokenCheck, cambio_password, (req:Request,res:Response)=>{
     res.json(req.body)
 })
