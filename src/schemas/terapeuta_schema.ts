@@ -2,9 +2,10 @@ import {Hash} from "crypto"
 import {Schema, model} from "mongoose"
 import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
+import { check_and_hash } from "../controllers/password_hasher"
 
 
-interface Terapeuta {
+export interface ITerapeuta {
     username: String,
     password: String,
     ruolo : Number, //essendo enum consideriamo l'intero
@@ -41,13 +42,10 @@ const schema= new Schema({
     indirizzo: {type:String, required:false},
     recensioni:[{type:String, default:""}]
 })
-schema.pre('save', async function (next) {
-    const regex:RegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/gm
-
+schema.pre('save', async function(){
     if(this.isModified('password')){
-        if(!this.password.match(regex)) throw new Error("Password doesn't match minimal requirements")
-        this.password= await bcrypt.hash(this.password,parseInt(process.env.SALT_ROUNDS))
+        this.password= await check_and_hash(this.password)
     }
 })
 
-export const Terapeuta = model<Terapeuta>('Terapeuta', schema,"Utenti")
+export const Terapeuta = model<ITerapeuta>('Terapeuta', schema,"Utenti")

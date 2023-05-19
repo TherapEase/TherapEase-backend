@@ -3,8 +3,11 @@ import {Cliente, ICliente} from '../schemas/cliente_schema'
 import {Utente,IUtente} from '../schemas/utente_schema'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
-import { Terapeuta } from '../schemas/terapeuta_schema'
+import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
+import generator from 'generate-password'
+import { check_and_hash } from './password_hasher'
+import { send_mail } from './gmail_connector'
 
 export async function registrazione(req:Request,res:Response,next:NextFunction) {
     /* STRUTTURA RICHIESTA: utente base
@@ -211,3 +214,64 @@ function createToken(_id:string, username:string, ruolo:Number):string{
     },process.env.TOKEN_SECRET,{expiresIn:"2 days"})
 }
 
+export async function recupero_password(req:Request,res:Response,next:NextFunction){
+    const username = req.body.username
+    const mail = req.body.email_address
+    const cf= req.body.codice_fiscale
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        const utente = await Utente.findOne({username:username}).exec()
+        if(!utente){
+            res.status(400)
+            req.body={
+                successful:false,
+                message:"Utente non trovato"
+            }
+            next()
+            return
+        }
+
+        const new_password = generator.generate({
+            length:12,
+            numbers:true,
+            symbols:true
+        })
+        console.log(new_password)
+        const hashed_password = await check_and_hash(new_password)
+        console.log(hashed_password)
+        let utente_completo
+        if(utente.ruolo==1)
+            utente_completo = await Cliente.findOneAndUpdate({username:username, email:mail,cf:cf},{password:hashed_password}).exec()      
+        else if(utente.ruolo==2)
+            utente_completo = await Terapeuta.findOneAndUpdate({username:username, email:mail,cf:cf},{password:hashed_password}).exec()
+        
+        if(!utente_completo) {
+            console.log(utente_completo)
+            console.log(username+mail+cf)
+            res.status(400)
+            req.body={
+                successful:false,
+                message: "Recupero utente fallito"
+            }
+            next()
+            return
+        }
+
+        send_mail("CAMBIO PASSWORD","La tua nuova password è "+new_password,/*utente_completo.email*/ "lucadavi773@gmail.com")
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Password changed correctly"
+        }
+        next()
+        return
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal Error: " + error
+        }
+    }
+    
+}

@@ -1,6 +1,6 @@
 import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
-import { registrazione } from '../controllers/controller_utente';
+import { recupero_password, registrazione } from '../controllers/controller_utente';
 import { login } from '../controllers/controller_utente';
 import { tokenCheck } from '../controllers/token_checker';
 import { send_mail } from '../controllers/gmail_connector';
@@ -34,4 +34,8 @@ defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
 defaultRoute.post('/provamail',async (req:Request,res:Response)=>{
    await send_mail(req.body.oggetto, req.body.testo, req.body.destinatario)
    res.send("ok")
+})
+
+defaultRoute.post('/recuperopassword',recupero_password, (req:Request,res:Response)=>{
+    res.json(req.body)
 })
