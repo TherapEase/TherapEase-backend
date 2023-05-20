@@ -1,6 +1,6 @@
 import {Schema, model} from "mongoose"
 
-interface Seduta{
+export interface ISeduta{
     cliente?: String,
     terapeuta: String,
     abilitato: Boolean,
@@ -15,4 +15,4 @@ const schema= new Schema({
 })
 
 
-export const Seduta= model<Seduta>("Seduta", schema)
+export const Seduta= model<ISeduta>("Seduta", schema)
