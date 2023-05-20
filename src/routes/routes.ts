@@ -1,7 +1,6 @@
 import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
-import { registrazione } from '../controllers/controller_utente';
-import { login } from '../controllers/controller_utente';
+import { registrazione, get_all_terapeuti, login } from '../controllers/controller_utente';
 import { tokenCheck } from '../controllers/token_checker';
 //import cors from 'cors';
 
@@ -18,6 +17,10 @@ defaultRoute.post('/registrazione',registrazione,async (req:Request,res:Response
     res.json(req.body)
 })
 defaultRoute.post('/login', login ,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/catalogo_terapeuti', get_all_terapeuti ,(req:Request,res:Response)=>{
     res.json(req.body)
 })
 

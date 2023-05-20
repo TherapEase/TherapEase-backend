@@ -211,3 +211,24 @@ function createToken(_id:string, username:string, ruolo:Number):string{
     },process.env.TOKEN_SECRET,{expiresIn:"2 days"})
 }
 
+export async function get_all_terapeuti(req:Request,res:Response,next:NextFunction) {
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        // console.log("dbconnesso")
+        const catalogo_terapeuti=await Terapeuta.find({ruolo:2}, 'nome cognome foto_profilo')
+        // console.log(catalogo_terapeuti)
+        res.status(200)
+        req.body={
+            successfull:true,
+            message:"complete therapist catalog",
+            catalogo: catalogo_terapeuti
+        }
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successfull:false,
+            message:"Internal Error: therapist catalog failed"+err
+        }
+    }
+    next()
+}
