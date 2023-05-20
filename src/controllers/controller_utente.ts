@@ -249,6 +249,26 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
             return      //i return sono necessari: altrimenti rischia di eseguire il resto del codice comunque bypassando il controllo
         }
 
+        if(cliente.ruolo!=1 || terapeuta.ruolo!=2){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Roles not correct!"
+            }
+            next()
+            return  
+        }
+
+        if(terapeuta.associati.length>=(terapeuta.limiteClienti as number)){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Therapist is full"
+            }
+            next()
+            return  
+        }
+
 
         /**
          * questo controllo permette di avere un cliente già associato ad un terapeuta ed associarlo ad un altro
