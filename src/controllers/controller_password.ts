@@ -53,7 +53,7 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
             return
         }
 
-        //send_mail("CAMBIO PASSWORD","La tua nuova password è "+new_password,/*utente_completo.email*/ "lucadavi773@gmail.com")
+        send_mail("CAMBIO PASSWORD","La tua nuova password è "+new_password,utente_completo.email.toString())
         res.status(200)
         req.body={
             successful:true,
