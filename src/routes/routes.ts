@@ -1,8 +1,10 @@
 import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
-import { registrazione } from '../controllers/controller_utente';
-import { login } from '../controllers/controller_utente';
+import { registrazione , login, get_my_profilo,modify_profilo,get_profilo, get_all_terapeuti} from '../controllers/controller_utente';
+import { associazione,rimuovi_associazione } from '../controllers/controller_utente';
+import { crea_slot_seduta, elimina_slot_seduta, prenota_seduta, mostra_calendario_completo, mostra_calendario_disponibili, mostra_calendario_prenotate} from '../controllers/controller_sedute';
 import { tokenCheck } from '../controllers/token_checker';
+import { logout } from '../controllers/controller_logout';
 import { send_mail } from '../controllers/gmail_connector';
 import { cambio_password, recupero_password } from '../controllers/controller_password';
 //import cors from 'cors';
@@ -23,17 +25,61 @@ defaultRoute.post('/login', login ,(req:Request,res:Response)=>{
     res.json(req.body)
 })
 
+defaultRoute.get('/catalogo_terapeuti', get_all_terapeuti ,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
 defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
     res.status(200).json({
         successful:true,
         message: "token verification ok",
-        loggedUser: req.body.loggedUser
+        loggedUser: req.body.loggedUser,
     })
 })
 
-defaultRoute.post('/provamail',async (req:Request,res:Response)=>{
-   await send_mail(req.body.oggetto, req.body.testo, req.body.destinatario)
-   res.send("ok")
+defaultRoute.get('/il_mio_profilo',tokenCheck, get_my_profilo, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.post('/il_mio_profilo/modifica',tokenCheck, modify_profilo, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/profilo/:id',tokenCheck,get_profilo,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/logout',tokenCheck,logout,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+defaultRoute.get('/associazione/:id',tokenCheck, associazione,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+defaultRoute.get('/associazione/rimuovi/:id',tokenCheck,rimuovi_associazione,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+defaultRoute.post('/definisci_slot', tokenCheck, crea_slot_seduta,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.post('/definisci_slot/elimina', tokenCheck, elimina_slot_seduta,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.post('/prenotazione', tokenCheck, prenota_seduta,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/calendario',tokenCheck, mostra_calendario_completo,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/calendario/disponibili',tokenCheck, mostra_calendario_disponibili,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/calendario/prenotate',tokenCheck, mostra_calendario_prenotate,(req:Request,res:Response)=>{
+    res.json(req.body)
 })
 
 defaultRoute.post('/recuperopassword',recupero_password, (req:Request,res:Response)=>{
@@ -43,3 +89,7 @@ defaultRoute.post('/recuperopassword',recupero_password, (req:Request,res:Respon
 defaultRoute.post('/cambio_password',tokenCheck, cambio_password, (req:Request,res:Response)=>{
     res.json(req.body)
 })
+
+//SEDUTE FITRATE PER CLIENTE (CALENDARIO CLIENTE)
+//SEDUTE FITRATE PER TERAPEUTA (CALENDARIO TERAPEUTA) -> slot gia definiti
+    //distinzione tra sedute prenotate, libere, tutte

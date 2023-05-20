@@ -2,9 +2,11 @@ import { Request,Response,NextFunction } from 'express'
 import {Cliente, ICliente} from '../schemas/cliente_schema'
 import {Utente,IUtente} from '../schemas/utente_schema'
 import mongoose from 'mongoose'
+
 import dotenv from 'dotenv'
-import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
+import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
+import { remove_prenotazioni_if_disassociato } from './controller_sedute'
 import { check_and_hash } from './password_hasher'
 import { send_mail } from './gmail_connector'
 
@@ -97,7 +99,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
                 foto_profilo:fp,
                 data_nascita:dn,
                 documenti:doc,
-                limiteClienti: lim,
+                limite_clienti: lim,
                 indirizzo:ind
             })
         }
@@ -211,4 +213,468 @@ function createToken(_id:string, username:string, ruolo:Number):string{
         username:username,
         ruolo:ruolo
     },process.env.TOKEN_SECRET,{expiresIn:"2 days"})
+}
+
+export async function get_all_terapeuti(req:Request,res:Response,next:NextFunction) {
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        // console.log("dbconnesso")
+        const catalogo_terapeuti=await Terapeuta.find({ruolo:2}, 'nome cognome foto_profilo')
+        // console.log(catalogo_terapeuti)
+        res.status(200)
+        req.body={
+            successfull:true,
+            message:"complete therapist catalog",
+            catalogo: catalogo_terapeuti
+        }
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successfull:false,
+            message:"Internal Error: therapist catalog failed"+err
+        }
+    }
+    next()
+}
+
+export async function get_my_profilo(req:Request,res:Response,next:NextFunction){
+    /**
+     * 
+     * Questa funzione è dedita al recupero del proprio profilo per la visualizzazione delle informazioni personali
+     * La richiesta contiene il token decodificato-> _id,username,ruolo
+     */
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let utente: IUtente|ITerapeuta
+        if(req.body.loggedUser.ruolo==1)
+            utente = await Cliente.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
+        else if (req.body.loggedUser.ruolo==2)
+            utente = await Terapeuta.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limite_clienti indirizzo').exec()
+        else{
+            res.status(400)
+            req.body={
+                successful:false,
+                message:"Invalid role"
+            }
+            next()
+            return
+        }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Profile obtained successfully",
+            profile:utente
+        }
+        next()    
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal error: "+error
+        }
+    }
+}
+
+export async function modify_profilo(req:Request,res:Response,next:NextFunction) {
+    /**
+     * CAMPI MODIFICABILI:
+     * nome
+     * cognome
+     * email -->non più verificata
+     * cf
+     * foto_profilo
+     * data_nascita
+     * 
+     * PER IL TERAPEUTA
+     * limite_clienti
+     * indirizzo
+     * documenti
+     */
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        if(req.body.loggedUser.ruolo==1){
+            const cliente = await Cliente.findById(req.body.loggedUser._id,{}).exec()
+    
+            if(!cliente){
+                res.status(400)
+                req.body={
+                    successful:false,
+                    message:"Cliente not found"
+                }
+                next()
+                return
+            }
+    
+            let updated_data ={
+                nome: req.body.nome?req.body.nome : cliente.nome,
+                cognome: req.body.cognome?req.body.cognome : cliente.nome,
+                email:req.body.email?req.body.email : cliente.email,
+                email_confermata:req.body.email?false:true,
+                cf:req.body.cf?req.body.cf : cliente.cf,
+                foto_profilo:req.body.foto_profilo?req.body.foto_profilo : cliente.foto_profilo,
+                data_nascita: req.body.data_nascita?req.body.data_nascita : cliente.data_nascita
+            }
+    
+            const updated_cliente = await Cliente.findByIdAndUpdate(cliente._id,{
+                nome:updated_data.nome,
+                cognome:updated_data.cognome,
+                email:updated_data.email,
+                email_confermata:updated_data.email_confermata,
+                cf:updated_data.cf,
+                foto_profilo:updated_data.foto_profilo,
+                data_nascita:updated_data.data_nascita,
+            },{new:true}).exec()
+        }else if(req.body.loggedUser.ruolo==2){
+
+            const terapeuta = await Terapeuta.findById(req.body.loggedUser._id).exec()
+    
+            if(!terapeuta){
+                res.status(400)
+                req.body={
+                    successful:false,
+                    message:"Terapeuta not found"
+                }
+                next()
+                return
+            }
+    
+            let updated_data ={
+                nome: req.body.nome?req.body.nome : terapeuta.nome,
+                cognome: req.body.cognome?req.body.cognome : terapeuta.nome,
+                email:req.body.email?req.body.email : terapeuta.email,
+                email_confermata:req.body.email?false:true,
+                cf:req.body.cf?req.body.cf : terapeuta.cf,
+                foto_profilo:req.body.foto_profilo?req.body.foto_profilo : terapeuta.foto_profilo,
+                data_nascita: req.body.data_nascita?req.body.data_nascita : terapeuta.data_nascita,
+                limite_clienti: req.body.limite_clienti?req.body.limite_clienti : terapeuta.limite_clienti,
+                indirizzo:req.body.data_nascita?req.body.indirizzo : terapeuta.indirizzo,
+                documenti: req.body.documenti? req.body.documenti : terapeuta.documenti
+            }
+    
+            const updated_cliente = await Terapeuta.findByIdAndUpdate(terapeuta._id,{
+                nome:updated_data.nome,
+                cognome:updated_data.cognome,
+                email:updated_data.email,
+                email_confermata:updated_data.email_confermata,
+                cf:updated_data.cf,
+                foto_profilo:updated_data.foto_profilo,
+                data_nascita:updated_data.data_nascita,
+                limite_clienti: updated_data.limite_clienti,
+                indirizzo:updated_data.indirizzo,
+                documenti: updated_data.documenti
+            },{new:true}).exec()
+        }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"fields updated correctly"
+        }
+        next()
+        return
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message: "Internal error " + error
+        }
+    }
+    
+}
+
+export async function get_profilo(req:Request, res:Response, next: NextFunction) {
+    try {
+        mongoose.connect(process.env.DB_CONNECTION_STRING)
+        /**
+         * Restituisce i dati "pubblici" di un profilo
+         * si potrebbe fare un controllo dei permessi tramite token
+         * questo dipende se bisogna essere autenticati per ottenere il profilo
+         * 
+         * l'alternativa è non autenticarsi, utile per recuperare i singoli profili del catalogo
+         * sarebbe meglio autenticato così si possono restituire cose come il diario, ma bisogna determinare i permessi
+         */
+        let richiedente:ICliente|ITerapeuta
+        if(req.body.loggedUser.ruolo==1)
+            richiedente= await Cliente.findById(req.body.loggedUser._id).exec()
+        else if(req.body.loggedUser.ruolo==2)
+            richiedente = await Terapeuta.findById(req.body.loggedUser._id).exec()
+        else{
+            res.status(400)
+            req.body={
+                successful:false,
+                message:"Invalid role specified"
+            }
+            next()
+            return
+        }
+
+        console.log(richiedente)
+
+        let utente:IUtente|ICliente|ITerapeuta = await Utente.findById(req.params.id).exec()
+        if(!utente){
+            res.status(400),
+            req.body={
+                successful:false,
+                message:"User not found"
+            }
+            next()
+            return
+        }
+        if(utente.ruolo==1)
+            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario')
+        else if(utente.ruolo==2)
+            utente = await Terapeuta.findById(req.params.id,'username ruolo nome cognome email cf foto_profilo data_nascita limite_clienti indirizzo recensioni')
+        
+        /**
+         * 
+         * CHECK PERMESSI:
+         * Il terapeuta può vedere il profilo dei suoi clienti
+         * Il cliente può vedere il profilo di ogni terapeuta
+         * 
+         */
+
+        if(richiedente.ruolo==utente.ruolo||((richiedente instanceof Terapeuta)&&!(richiedente as ITerapeuta).associati.includes(req.params.id))){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "invalid request"
+            }
+            next()
+            return
+        }
+
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"User found",
+            profilo:utente
+        }
+        next()
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal error: "+error
+        }
+        next()
+    }
+}
+
+/**
+ * 
+ * TODO: aggiungere unique ai campi univoci degli schemi
+ *       trovare il punto dove chiamare SCHEMA.CreateIndex() per inizializzare gli indici (?)
+ */
+async function remove_associazione_precedente(id_cliente: string) {
+    console.log("REMOVE ASSOCIAZIONE PRECEDENTE")
+    try{
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        console.log("dbconnesso")
+
+        const cliente=await Cliente.findById(id_cliente).exec() 
+        if(cliente.associato==""){
+            console.log("client already free")
+            return
+        }else{
+            const id_terapeuta=cliente.associato
+            const terapeuta=await Terapeuta.findByIdAndUpdate(id_terapeuta, {$pull:{associati:id_cliente}},{new:true}).exec()
+            if((terapeuta.associati.includes(cliente._id.toString()))){
+                console.log("remove from Therapist failed")
+                return
+            }else{
+                await remove_prenotazioni_if_disassociato(id_cliente, id_terapeuta)
+            }
+            console.log("remotion successful")
+        }
+    }catch (err){
+        console.log("remove association failed")
+    }
+    
+}
+
+
+export async function associazione(req:Request,res:Response,next:NextFunction) {
+    
+    const id_cliente=req.body.loggedUser._id
+    const id_terapeuta=req.params.id
+    if (!id_cliente || !id_terapeuta){
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Not enough arguments"
+        }
+        next()
+    } 
+
+    try{
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+
+        let terapeuta=await Terapeuta.findById(id_terapeuta).exec()     //recupero dal db i due utenti, per verificarne esistenza e campi
+        let cliente= await Cliente.findById(id_cliente).exec()
+
+        if(!(terapeuta&&cliente)){ 
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Error during users retrieval"
+            }
+            next()
+            return      //i return sono necessari: altrimenti rischia di eseguire il resto del codice comunque bypassando il controllo
+        }
+
+        if(cliente.ruolo!=1 || terapeuta.ruolo!=2){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Roles not correct!"
+            }
+            next()
+            return  
+        }
+
+        if(terapeuta.associati.length>=(terapeuta.limiteClienti as number)){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Therapist is full"
+            }
+            next()
+            return  
+        }
+
+
+        /**
+         * questo controllo permette di avere un cliente già associato ad un terapeuta ed associarlo ad un altro
+         * se per disgrazia uno dei due campi non è stato salvato completamente (quindi riferimenti non matchati)
+         * il test sull'associazione viene passato
+         * quindi verrà scritto l'id del terapeuta nel cliente, e raddoppiato nel terapeuta
+         * 
+         * inoltre sperimentando ho trovato che "in" non funziona bene in questo caso (sotto chiamava comunque il rollback)
+         * usare associati.includes sembra essere meglio
+         */
+
+        if(terapeuta.associati.includes(cliente._id.toString())&&cliente.associato==terapeuta._id.toString()){       
+            res.status(400)
+            req.body={
+                successful:false,
+                message: "Cliente already associated"
+            }
+            next()
+            return
+        }
+
+        //pulisce l'asssociazione precedente dal terapeuta precedente
+        await remove_associazione_precedente(id_cliente)
+        
+        /**
+         * Se il campo del cliente è vuoto o contiene un terapeuta diverso ci associo quello nuovo 
+         *      
+         *      se si effettua una seconda chiamata con gli stessi dati il sistema si autocorregge (passo il check sopra e sovrascrivo correttamente)
+         */
+
+        if(cliente.associato!=terapeuta._id.toString())
+            cliente = await Cliente.findByIdAndUpdate(id_cliente, {associato:id_terapeuta},{new:true}).exec()
+        
+        //lancio un errore se non dovesse andare a buon fine la scrittura nel db
+        if(cliente.associato!=id_terapeuta){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Client association error"
+            }
+            next()
+            return
+        }
+
+        /**
+         * Stessa logica del cliente: se il cliente è associato ma non appare nell'array, passo il check e lo scrivo nell'array
+         */
+        if(!(terapeuta.associati.includes(cliente._id.toString())))
+            terapeuta = await Terapeuta.findByIdAndUpdate(id_terapeuta, {$push:{associati:id_cliente}}, {new:true}).exec()
+        
+        /**
+         * 
+         * ROLLBACK: se non si è riusciti a scrivere nel terapeuta il cliente, 
+         * si elimina da entrambi il riferimento all'altro
+         * una nuova chiamata potrà essere ritentata
+         * 
+         * la parte di ROLLBACK può essere sostituita da rimuovi_associazione, che 
+         * fa le stesse esatte cose
+         * 
+         */
+        if(!(terapeuta.associati.includes(cliente._id.toString()))){
+            //rollback associazione utente, che si suppone funzioni -> rimuovo eventuali link pendenti
+            await Cliente.findByIdAndUpdate(id_cliente, {associato:""}).exec()
+            await Terapeuta.findByIdAndUpdate(id_terapeuta,{$pull:{associati:id_cliente}}) 
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "Therapist association error, possible incostistent state"
+            }
+            next()
+            return
+        }
+        res.status(200)
+        req.body={
+            successfull:true,
+            message:"association done!" 
+        }
+        next()
+        return
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successfull:false,
+            message:"Internal Error: association failed "+err
+        }
+        next()
+    }
+}
+
+export async function rimuovi_associazione (req:Request, res:Response,next:NextFunction){
+    /**
+     * 
+     * L'utente autenticato manda una richiesta di disassociazione con parametro l'id della controparte
+     * Essendo autenticato, si determina il tipo di utente grazie al ruolo e si determina di conseguenza il tipo della controparte
+     */
+    let id_cliente:string, id_terapeuta:String
+    if(req.body.loggedUser.ruolo==1){
+        id_cliente=req.body.loggedUser._id
+        id_terapeuta=req.params.id
+    }
+    else if(req.body.loggedUser.ruolo==2){
+        id_terapeuta=req.body.loggedUser._id
+        id_cliente=req.params.id
+    }
+    else{
+        res.status(400)
+        req.body={
+            successful:false,
+            message:"Invalid role"
+        }
+        next()
+        return
+    }
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        const cliente = await Cliente.findByIdAndUpdate(id_cliente,{associato:""},{new:true}).exec()
+        const terapeuta = await Terapeuta.findByIdAndUpdate(id_terapeuta,{$pull:{associati:id_cliente}},{new:true}).exec()
+        
+        await remove_prenotazioni_if_disassociato(id_cliente, id_terapeuta)
+
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Association removed"
+        }
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Failed association removal: "+error
+        }
+    }
+    next()
 }
