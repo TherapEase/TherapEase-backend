@@ -6,6 +6,7 @@ import { crea_slot_seduta, elimina_slot_seduta, prenota_seduta, mostra_calendari
 import { tokenCheck } from '../controllers/token_checker';
 import { logout } from '../controllers/controller_logout';
 import { send_mail } from '../controllers/gmail_connector';
+import { cambio_password, recupero_password } from '../controllers/controller_password';
 //import cors from 'cors';
 
 export const defaultRoute = Router()
@@ -78,6 +79,14 @@ defaultRoute.get('/calendario/disponibili',tokenCheck, mostra_calendario_disponi
 })
 
 defaultRoute.get('/calendario/prenotate',tokenCheck, mostra_calendario_prenotate,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.post('/recuperopassword',recupero_password, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.post('/cambio_password',tokenCheck, cambio_password, (req:Request,res:Response)=>{
     res.json(req.body)
 })
 

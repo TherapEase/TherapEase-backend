@@ -7,6 +7,8 @@ import dotenv from 'dotenv'
 import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
 import { remove_prenotazioni_if_disassociato } from './controller_sedute'
+import { check_and_hash } from './password_hasher'
+import { send_mail } from './gmail_connector'
 
 export async function registrazione(req:Request,res:Response,next:NextFunction) {
     /* STRUTTURA RICHIESTA: utente base
