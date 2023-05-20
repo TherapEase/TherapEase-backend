@@ -1,9 +1,9 @@
 import { Request,Response,NextFunction } from 'express'
 import {Cliente, ICliente} from '../schemas/cliente_schema'
 import {Utente,IUtente} from '../schemas/utente_schema'
-import mongoose from 'mongoose'
+import mongoose, { mongo } from 'mongoose'
 import dotenv from 'dotenv'
-import { Terapeuta } from '../schemas/terapeuta_schema'
+import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
 
 export async function registrazione(req:Request,res:Response,next:NextFunction) {
@@ -95,7 +95,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
                 foto_profilo:fp,
                 data_nascita:dn,
                 documenti:doc,
-                limiteClienti: lim,
+                limite_clienti: lim,
                 indirizzo:ind
             })
         }
@@ -232,3 +232,233 @@ export async function get_all_terapeuti(req:Request,res:Response,next:NextFuncti
     }
     next()
 }
+
+export async function get_my_profilo(req:Request,res:Response,next:NextFunction){
+    /**
+     * 
+     * Questa funzione è dedita al recupero del proprio profilo per la visualizzazione delle informazioni personali
+     * La richiesta contiene il token decodificato-> _id,username,ruolo
+     */
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let utente: IUtente|ITerapeuta
+        if(req.body.loggedUser.ruolo==1)
+            utente = await Cliente.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
+        else if (req.body.loggedUser.ruolo==2)
+            utente = await Terapeuta.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limite_clienti indirizzo').exec()
+        else{
+            res.status(400)
+            req.body={
+                successful:false,
+                message:"Invalid role"
+            }
+            next()
+            return
+        }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Profile obtained successfully",
+            profile:utente
+        }
+        next()    
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal error: "+error
+        }
+    }
+}
+
+export async function modify_profilo(req:Request,res:Response,next:NextFunction) {
+    /**
+     * CAMPI MODIFICABILI:
+     * nome
+     * cognome
+     * email -->non più verificata
+     * cf
+     * foto_profilo
+     * data_nascita
+     * 
+     * PER IL TERAPEUTA
+     * limite_clienti
+     * indirizzo
+     * documenti
+     */
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        if(req.body.loggedUser.ruolo==1){
+            const cliente = await Cliente.findById(req.body.loggedUser._id,{}).exec()
+    
+            if(!cliente){
+                res.status(400)
+                req.body={
+                    successful:false,
+                    message:"Cliente not found"
+                }
+                next()
+                return
+            }
+    
+            let updated_data ={
+                nome: req.body.nome?req.body.nome : cliente.nome,
+                cognome: req.body.cognome?req.body.cognome : cliente.nome,
+                email:req.body.email?req.body.email : cliente.email,
+                email_confermata:req.body.email?false:true,
+                cf:req.body.cf?req.body.cf : cliente.cf,
+                foto_profilo:req.body.foto_profilo?req.body.foto_profilo : cliente.foto_profilo,
+                data_nascita: req.body.data_nascita?req.body.data_nascita : cliente.data_nascita
+            }
+    
+            const updated_cliente = await Cliente.findByIdAndUpdate(cliente._id,{
+                nome:updated_data.nome,
+                cognome:updated_data.cognome,
+                email:updated_data.email,
+                email_confermata:updated_data.email_confermata,
+                cf:updated_data.cf,
+                foto_profilo:updated_data.foto_profilo,
+                data_nascita:updated_data.data_nascita,
+            },{new:true}).exec()
+        }else if(req.body.loggedUser.ruolo==2){
+
+            const terapeuta = await Terapeuta.findById(req.body.loggedUser._id).exec()
+    
+            if(!terapeuta){
+                res.status(400)
+                req.body={
+                    successful:false,
+                    message:"Terapeuta not found"
+                }
+                next()
+                return
+            }
+    
+            let updated_data ={
+                nome: req.body.nome?req.body.nome : terapeuta.nome,
+                cognome: req.body.cognome?req.body.cognome : terapeuta.nome,
+                email:req.body.email?req.body.email : terapeuta.email,
+                email_confermata:req.body.email?false:true,
+                cf:req.body.cf?req.body.cf : terapeuta.cf,
+                foto_profilo:req.body.foto_profilo?req.body.foto_profilo : terapeuta.foto_profilo,
+                data_nascita: req.body.data_nascita?req.body.data_nascita : terapeuta.data_nascita,
+                limite_clienti: req.body.limite_clienti?req.body.limite_clienti : terapeuta.limite_clienti,
+                indirizzo:req.body.data_nascita?req.body.indirizzo : terapeuta.indirizzo,
+                documenti: req.body.documenti? req.body.documenti : terapeuta.documenti
+            }
+    
+            const updated_cliente = await Terapeuta.findByIdAndUpdate(terapeuta._id,{
+                nome:updated_data.nome,
+                cognome:updated_data.cognome,
+                email:updated_data.email,
+                email_confermata:updated_data.email_confermata,
+                cf:updated_data.cf,
+                foto_profilo:updated_data.foto_profilo,
+                data_nascita:updated_data.data_nascita,
+                limite_clienti: updated_data.limite_clienti,
+                indirizzo:updated_data.indirizzo,
+                documenti: updated_data.documenti
+            },{new:true}).exec()
+        }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"fields updated correctly"
+        }
+        next()
+        return
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message: "Internal error " + error
+        }
+    }
+    
+}
+
+export async function get_profilo(req:Request, res:Response, next: NextFunction) {
+    try {
+        mongoose.connect(process.env.DB_CONNECTION_STRING)
+        /**
+         * Restituisce i dati "pubblici" di un profilo
+         * si potrebbe fare un controllo dei permessi tramite token
+         * questo dipende se bisogna essere autenticati per ottenere il profilo
+         * 
+         * l'alternativa è non autenticarsi, utile per recuperare i singoli profili del catalogo
+         * sarebbe meglio autenticato così si possono restituire cose come il diario, ma bisogna determinare i permessi
+         */
+        let richiedente:ICliente|ITerapeuta
+        if(req.body.loggedUser.ruolo==1)
+            richiedente= await Cliente.findById(req.body.loggedUser._id).exec()
+        else if(req.body.loggedUser.ruolo==2)
+            richiedente = await Terapeuta.findById(req.body.loggedUser._id).exec()
+        else{
+            res.status(400)
+            req.body={
+                successful:false,
+                message:"Invalid role specified"
+            }
+            next()
+            return
+        }
+
+        console.log(richiedente)
+
+        let utente:IUtente|ICliente|ITerapeuta = await Utente.findById(req.params.id).exec()
+        if(!utente){
+            res.status(400),
+            req.body={
+                successful:false,
+                message:"User not found"
+            }
+            next()
+            return
+        }
+        if(utente.ruolo==1)
+            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario')
+        else if(utente.ruolo==2)
+            utente = await Terapeuta.findById(req.params.id,'username ruolo nome cognome email cf foto_profilo data_nascita limite_clienti indirizzo recensioni')
+        
+        /**
+         * 
+         * CHECK PERMESSI:
+         * Il terapeuta può vedere il profilo dei suoi clienti
+         * Il cliente può vedere il profilo di ogni terapeuta
+         * 
+         */
+
+        if(richiedente.ruolo==utente.ruolo||((richiedente instanceof Terapeuta)&&!(richiedente as ITerapeuta).associati.includes(req.params.id))){
+            res.status(400)
+            req.body={
+                successful: false,
+                message: "invalid request"
+            }
+            next()
+            return
+        }
+
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"User found",
+            profilo:utente
+        }
+        next()
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal error: "+error
+        }
+        next()
+    }
+}
+
+/**
+ * 
+ * TODO: aggiungere unique ai campi univoci degli schemi
+ *       trovare il punto dove chiamare SCHEMA.CreateIndex() per inizializzare gli indici (?)
+ */
