@@ -4,8 +4,8 @@ import { registrazione , login, get_my_profilo,modify_profilo,get_profilo, get_a
 import { associazione,rimuovi_associazione } from '../controllers/controller_utente';
 import { crea_slot_seduta, elimina_slot_seduta, prenota_seduta, mostra_calendario_completo, mostra_calendario_disponibili, mostra_calendario_prenotate} from '../controllers/controller_sedute';
 import { tokenCheck } from '../controllers/token_checker';
+import { logout } from '../controllers/controller_logout';
 import { send_mail } from '../controllers/gmail_connector';
-import { send } from 'process';
 //import cors from 'cors';
 
 export const defaultRoute = Router()
@@ -32,7 +32,7 @@ defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
     res.status(200).json({
         successful:true,
         message: "token verification ok",
-        loggedUser: req.body.loggedUser
+        loggedUser: req.body.loggedUser,
     })
 })
 
@@ -48,6 +48,9 @@ defaultRoute.get('/profilo/:id',tokenCheck,get_profilo,(req:Request,res:Response
     res.json(req.body)
 })
 
+defaultRoute.get('/logout',tokenCheck,logout,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
 defaultRoute.get('/associazione/:id',tokenCheck, associazione,(req:Request,res:Response)=>{
     res.json(req.body)
 })
