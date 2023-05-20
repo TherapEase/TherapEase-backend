@@ -4,7 +4,8 @@ import {Utente,IUtente} from '../schemas/utente_schema'
 import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'
 import { Seduta, ISeduta } from '../schemas/seduta_schema'
 import mongoose from 'mongoose'
-import { isNull } from 'util'
+import scheduler from 'node-schedule'
+import { send_mail } from './gmail_connector'
 
 export async function crea_slot_seduta(req:Request,res:Response,next:NextFunction) {
     //controllo accesso, solo terapeuta
@@ -187,6 +188,13 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
             next()
             return
         }else{
+            let promemoria_prenotazione = new Date(seduta.data)
+            promemoria_prenotazione.setDate(promemoria_prenotazione.getDate()-1)
+            console.log("data seduta: "+seduta.data + "prenotazione "+promemoria_prenotazione)
+            const job = scheduler.scheduleJob(promemoria_prenotazione,async function(data_seduta:Date) {
+                send_mail("Promemoria Prenotazione","Le ricordiamo la sua prenotazione in data: "+data_seduta,cliente.email.toString())
+            }.bind(null,seduta.data))
+
             res.status(200)
             req.body={
                 successful: true,
