@@ -533,7 +533,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
             return  
         }
 
-        if(terapeuta.associati.length>=(terapeuta.limiteClienti as number)){
+        if(terapeuta.associati.length>=(terapeuta.limite_clienti as number)){
             res.status(400)
             req.body={
                 successful: false,
