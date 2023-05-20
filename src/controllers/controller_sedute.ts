@@ -113,10 +113,12 @@ export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunc
             return 
         }else{
             if(seduta_presente.cliente!=""){
+                let cliente = await Cliente.findById(seduta_presente.cliente).exec()
                 // TO - DO : gestione gettoni aumento di un gettone per annullamento seduta
                 // TO - DO : mail di annullamento seduta
                 console.log("+1 GETTONI CLIENTE PRENOTATO")
                 console.log("MAIL ANNULLAMENTO SEDUTA")
+                send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
             }
             res.status(200)
             req.body={
@@ -261,6 +263,8 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response,next:
         }else{
             if(seduta.abilitato==true){
                 // TO -DO riaccredito gettone al cliente
+                let cliente = await Cliente.findById(seduta.cliente).exec() //posso recuperare il cliente perché findOneAndUpdate restituisce il documento prima della modifica
+                send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
             }
 
             res.status(200)
