@@ -1,6 +1,7 @@
 import { json } from 'body-parser';
 import {Router,Request,Response,NextFunction} from 'express'
-import { registrazione,login, associazione,rimuovi_associazione } from '../controllers/controller_utente';
+import { registrazione , login, get_my_profilo,modify_profilo,get_profilo, get_all_terapeuti} from '../controllers/controller_utente';
+import { associazione,rimuovi_associazione } from '../controllers/controller_utente';
 import { crea_slot_seduta, elimina_slot_seduta, prenota_seduta, mostra_calendario_completo, mostra_calendario_disponibili, mostra_calendario_prenotate} from '../controllers/controller_sedute';
 import { tokenCheck } from '../controllers/token_checker';
 import { send_mail } from '../controllers/gmail_connector';
@@ -23,12 +24,28 @@ defaultRoute.post('/login', login ,(req:Request,res:Response)=>{
     res.json(req.body)
 })
 
+defaultRoute.get('/catalogo_terapeuti', get_all_terapeuti ,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
 defaultRoute.use('/authexample',tokenCheck,(req:Request,res:Response)=>{
     res.status(200).json({
         successful:true,
         message: "token verification ok",
         loggedUser: req.body.loggedUser
     })
+})
+
+defaultRoute.get('/il_mio_profilo',tokenCheck, get_my_profilo, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.post('/il_mio_profilo/modifica',tokenCheck, modify_profilo, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/profilo/:id',tokenCheck,get_profilo,(req:Request,res:Response)=>{
+    res.json(req.body)
 })
 
 defaultRoute.get('/associazione/:id',tokenCheck, associazione,(req:Request,res:Response)=>{
