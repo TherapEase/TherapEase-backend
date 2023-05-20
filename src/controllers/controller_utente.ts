@@ -38,12 +38,14 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
    
    //console.log([username,password, ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind])
    
-   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||!fp||!dn) {       //si potrebbe far fare al catch usando i campi required 
+   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||fp||!dn) {       //si potrebbe far fare al catch usando i campi required 
     res.status(400)
     req.body = {
         successful:false,
         message:"Not enough arguments"
     }
+    next()
+    return
    }
    else if (ruolo<1||ruolo>2) {
     res.status(400)
@@ -51,6 +53,8 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         successful:false,
         message:"Invalid Role"
     }
+    next()
+    return
    }
    
 
@@ -99,11 +103,8 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         // console.log("utente salvato")
         // console.log(utente_schema)
 
-        const token = jwt.sign({
-            _id: utente_schema._id.toString(),
-            username: utente_schema.username,
-            ruolo:utente_schema.ruolo
-        },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
+        const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
+
         //in alernativa usare res.redirect(/login) e sfruttare il login handler
         res.status(200)
         req.body={
@@ -111,12 +112,16 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
             message:"user saved correctly",
             token : token
         }
+        next()
+        return
     }else {
         res.status(400)
         req.body={
             successful:false,
             message:"User already exists"
         }
+        next()
+        return
     }
    }catch(err){
         res.status(500)
@@ -124,14 +129,15 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
             successful: false,
             message:"Internal Registration Error: "+err
         }
+        next()
    }
-   next()
 }   
 
 
 export async function login(req:Request,res:Response,next:NextFunction) {
     const username=req.body.username
     const password=req.body.password
+
 
     // controllo su campi mancanti
     if (!username || !password){
@@ -140,6 +146,8 @@ export async function login(req:Request,res:Response,next:NextFunction) {
             successful: false,
             message: "Not enough arguments"
         }
+        next()
+        return
     } 
 
     try {
@@ -166,14 +174,13 @@ export async function login(req:Request,res:Response,next:NextFunction) {
                     successfull:false,
                     message:"incorrect password"
                 }
+            next()
+            return
         };
     
         //creo il token aggiungendo i vari campi utili
-        const token = jwt.sign({
-            _id: utente_trovato._id.toString(),
-            username: utente_trovato.username,
-            ruolo:utente_trovato.ruolo
-        },process.env.TOKEN_SECRET,{expiresIn: '50 years'})
+        
+        const token = createToken(utente_trovato._id.toString(),utente_trovato.username.toString(),utente_trovato.ruolo)
     
         // res.status(200).json({ success: true, token: token })
         res.status(200)
@@ -182,12 +189,45 @@ export async function login(req:Request,res:Response,next:NextFunction) {
             message:"authenticated",
             token: token 
         }
+        next()
+        return
     
     } catch (err) {
         res.status(500)
         req.body={
             successfull:false,
             message:"Internal Error: auth failed"+err
+        }
+        next()
+        return
+    }
+}
+
+function createToken(_id:string, username:string, ruolo:Number):string{
+    return jwt.sign({
+        _id:_id,
+        username:username,
+        ruolo:ruolo
+    },process.env.TOKEN_SECRET,{expiresIn:"2 days"})
+}
+
+export async function get_all_terapeuti(req:Request,res:Response,next:NextFunction) {
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        // console.log("dbconnesso")
+        const catalogo_terapeuti=await Terapeuta.find({ruolo:2}, 'nome cognome foto_profilo')
+        // console.log(catalogo_terapeuti)
+        res.status(200)
+        req.body={
+            successfull:true,
+            message:"complete therapist catalog",
+            catalogo: catalogo_terapeuti
+        }
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successfull:false,
+            message:"Internal Error: therapist catalog failed"+err
         }
     }
     next()
