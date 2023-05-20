@@ -43,19 +43,19 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
    //console.log([username,password, ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind])
    
    if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||fp||!dn) {       //si potrebbe far fare al catch usando i campi required 
-    res.status(400)
+    res.status(401)
     req.body = {
         successful:false,
-        message:"Not enough arguments"
+        message:"Not enough arguments!"
     }
     next()
     return
    }
    else if (ruolo<1||ruolo>2) {
-    res.status(400)
+    res.status(402)
     req.body = {
         successful:false,
-        message:"Invalid Role"
+        message:"Invalid role!"
     }
     next()
     return
@@ -82,10 +82,10 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         }
         else if (ruolo==2){
             if(!doc||!lim){
-                res.status(400)
+                res.status(401)
                 req.body={
                     successful:false,
-                    message:"Not enough arguments"
+                    message:"Not enough arguments!"
                 }
             }
             utente_schema= new Terapeuta({
@@ -110,28 +110,28 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
 
         //in alernativa usare res.redirect(/login) e sfruttare il login handler
-        res.status(200)
+        res.status(201)
         req.body={
             successful:true,
-            message:"user saved correctly",
+            message:"User registered correctly!",
             token : token
         }
         next()
         return
     }else {
-        res.status(400)
+        res.status(403)
         req.body={
             successful:false,
-            message:"User already exists"
+            message:"User already exists!"
         }
         next()
         return
     }
    }catch(err){
-        res.status(500)
+        res.status(501)
         req.body={
             successful: false,
-            message:"Internal Registration Error: "+err
+            message:"Server error in registration - failed!"
         }
         next()
    }
@@ -145,10 +145,10 @@ export async function login(req:Request,res:Response,next:NextFunction) {
 
     // controllo su campi mancanti
     if (!username || !password){
-        res.status(400)
+        res.status(401)
         req.body={
             successful: false,
-            message: "Not enough arguments"
+            message: "Not enough arguments!"
         }
         next()
         return
@@ -161,10 +161,10 @@ export async function login(req:Request,res:Response,next:NextFunction) {
 
         // se non esiste, ritorno un errore
         if (!utente_trovato){
-            res.status(400)
+            res.status(404)
             req.body={
                 successful: false,
-                message: "User not found"
+                message: "User not found!"
             }
         };
 
@@ -173,10 +173,10 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         const passwordCorretta= await modello_utente.checkPassword(password)
 
         if (!passwordCorretta){
-                res.status(400)
+                res.status(405)
                 req.body={
-                    successfull:false,
-                    message:"incorrect password"
+                    successful:false,
+                    message:"Incorrect password!"
                 }
             next()
             return
@@ -187,20 +187,20 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         const token = createToken(utente_trovato._id.toString(),utente_trovato.username.toString(),utente_trovato.ruolo)
     
         // res.status(200).json({ success: true, token: token })
-        res.status(200)
+        res.status(202)
         req.body={
-            successfull:true,
-            message:"authenticated",
+            successful:true,
+            message:"User authenticated!",
             token: token 
         }
         next()
         return
     
     } catch (err) {
-        res.status(500)
+        res.status(502)
         req.body={
-            successfull:false,
-            message:"Internal Error: auth failed"+err
+            successful:false,
+            message:"Server error in login - failed!"
         }
         next()
         return
@@ -252,18 +252,18 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
         else if (req.body.loggedUser.ruolo==2)
             utente = await Terapeuta.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limite_clienti indirizzo').exec()
         else{
-            res.status(400)
+            res.status(402)
             req.body={
                 successful:false,
-                message:"Invalid role"
+                message:"Invalid role!"
             }
             next()
             return
         }
-        res.status(200)
+        res.status(203)
         req.body={
             successful:true,
-            message:"Profile obtained successfully",
+            message:"My_profile obtained successfully!",
             profile:utente
         }
         next()    
@@ -271,7 +271,7 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
         res.status(500)
         req.body={
             successful:false,
-            message:"Internal error: "+error
+            message:"Server error in retrieving my_profile - failed!"
         }
     }
 }
@@ -298,10 +298,10 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
             const cliente = await Cliente.findById(req.body.loggedUser._id,{}).exec()
     
             if(!cliente){
-                res.status(400)
+                res.status(405)
                 req.body={
                     successful:false,
-                    message:"Cliente not found"
+                    message:"Client not found!"
                 }
                 next()
                 return
@@ -331,10 +331,10 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
             const terapeuta = await Terapeuta.findById(req.body.loggedUser._id).exec()
     
             if(!terapeuta){
-                res.status(400)
+                res.status(406)
                 req.body={
                     successful:false,
-                    message:"Terapeuta not found"
+                    message:"Therapist not found!"
                 }
                 next()
                 return
@@ -366,10 +366,10 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
                 documenti: updated_data.documenti
             },{new:true}).exec()
         }
-        res.status(200)
+        res.status(204)
         req.body={
             successful:true,
-            message:"fields updated correctly"
+            message:"My_profile updated successfully!"
         }
         next()
         return
@@ -377,7 +377,7 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
         res.status(500)
         req.body={
             successful:false,
-            message: "Internal error " + error
+            message: "Server error in updating my_profile - failed!"
         }
     }
     
