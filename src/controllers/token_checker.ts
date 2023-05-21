@@ -11,20 +11,19 @@ export async function tokenCheck(req:Request,res:Response,next:NextFunction) {
             return res.status(400).json({
                 status:400,
                 successful:false,
-                message:'No token provided'
+                message:'No token provided!'
             })
         }
         if(await isBlacklisted(token)){
-            return res.status(400).json({
+            return res.status(403).json({
                 successful:false,
-                message:"Invalid token provided"
+                message:"Invalid token provided!"
             })
         }
         const decoded = jwt.verify(token, process.env.TOKEN_SECRET)
-        if(!decoded) return res.status(500).json({
-            status:500,
+        if(!decoded) return res.status(403).json({
             successful:false,
-            message: "Failed token verification"
+            message: "Verification of token failed!"
         })
         else{
             req.body.loggedUser=decoded
@@ -32,9 +31,8 @@ export async function tokenCheck(req:Request,res:Response,next:NextFunction) {
         }
     } catch (error) {
         return res.status(500).json({
-            status:500,
             successful:false,
-            message: "Internal Error: " + error
+            message: "Server error in checking token - failed!"
         })
     }
 }

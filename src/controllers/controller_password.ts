@@ -17,10 +17,10 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const utente = await Utente.findOne({username:username}).exec()
         if(!utente){
-            res.status(400)
+            res.status(404)
             req.body={
                 successful:false,
-                message:"Utente non trovato"
+                message:"User not found!"
             }
             next()
             return
@@ -44,10 +44,10 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
         if(!utente_completo) {
             console.log(utente_completo)
             console.log(username+mail+cf)
-            res.status(400)
+            res.status(404)
             req.body={
                 successful:false,
-                message: "Recupero utente fallito"
+                message: "User not found!"
             }
             next()
             return
@@ -57,7 +57,7 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
         res.status(200)
         req.body={
             successful:true,
-            message:"Password changed correctly"
+            message:"Password restored correctly!"
         }
         next()
         return
@@ -65,10 +65,9 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
         res.status(500)
         req.body={
             successful:false,
-            message:"Internal Error: " + error
+            message:"Server error in password recovery - failed!"
         }
     }
-    
 }
 
 export async function cambio_password(req:Request,res:Response,next:NextFunction) {
@@ -79,10 +78,10 @@ export async function cambio_password(req:Request,res:Response,next:NextFunction
         //ricerco l'utente ed inserisco la password hashata
         const utente = await Utente.findByIdAndUpdate(req.body.loggedUser._id,{password:password}).exec()
         if(!utente){
-            res.status(400),
+            res.status(404),
             req.body={
                 successful:false,
-                message:"User not found"
+                message:"User not found!"
             }
             next()
             return
@@ -91,7 +90,7 @@ export async function cambio_password(req:Request,res:Response,next:NextFunction
         res.status(200)
         req.body={
             successful:true,
-            message:"Password changed correctly"
+            message:"Password successfully changed!"
         }
         next()
         return
@@ -99,7 +98,7 @@ export async function cambio_password(req:Request,res:Response,next:NextFunction
         res.status(500)
         req.body={
             successful:false,
-            message:"Internal Error: "+error
+            message:"Server error in password chage - failed!"
         }        
     }
 }

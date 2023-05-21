@@ -43,7 +43,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
    //console.log([username,password, ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind])
    
    if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||fp||!dn) {       //si potrebbe far fare al catch usando i campi required 
-    res.status(401)
+    res.status(400)
     req.body = {
         successful:false,
         message:"Not enough arguments!"
@@ -52,7 +52,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
     return
    }
    else if (ruolo<1||ruolo>2) {
-    res.status(402)
+    res.status(403)
     req.body = {
         successful:false,
         message:"Invalid role!"
@@ -82,7 +82,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         }
         else if (ruolo==2){
             if(!doc||!lim){
-                res.status(401)
+                res.status(400)
                 req.body={
                     successful:false,
                     message:"Not enough arguments!"
@@ -110,7 +110,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
 
         //in alernativa usare res.redirect(/login) e sfruttare il login handler
-        res.status(201)
+        res.status(200)
         req.body={
             successful:true,
             message:"User registered correctly!",
@@ -119,7 +119,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         next()
         return
     }else {
-        res.status(403)
+        res.status(409)
         req.body={
             successful:false,
             message:"User already exists!"
@@ -128,7 +128,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         return
     }
    }catch(err){
-        res.status(501)
+        res.status(500)
         req.body={
             successful: false,
             message:"Server error in registration - failed!"
@@ -145,7 +145,7 @@ export async function login(req:Request,res:Response,next:NextFunction) {
 
     // controllo su campi mancanti
     if (!username || !password){
-        res.status(401)
+        res.status(400)
         req.body={
             successful: false,
             message: "Not enough arguments!"
@@ -173,7 +173,7 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         const passwordCorretta= await modello_utente.checkPassword(password)
 
         if (!passwordCorretta){
-                res.status(405)
+                res.status(401)
                 req.body={
                     successful:false,
                     message:"Incorrect password!"
@@ -187,7 +187,7 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         const token = createToken(utente_trovato._id.toString(),utente_trovato.username.toString(),utente_trovato.ruolo)
     
         // res.status(200).json({ success: true, token: token })
-        res.status(202)
+        res.status(200)
         req.body={
             successful:true,
             message:"User authenticated!",
@@ -197,7 +197,7 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         return
     
     } catch (err) {
-        res.status(502)
+        res.status(500)
         req.body={
             successful:false,
             message:"Server error in login - failed!"
@@ -223,15 +223,15 @@ export async function get_all_terapeuti(req:Request,res:Response,next:NextFuncti
         // console.log(catalogo_terapeuti)
         res.status(200)
         req.body={
-            successfull:true,
-            message:"complete therapist catalog",
+            successful:true,
+            message:"Therapist catalog retrieved successfully!",
             catalogo: catalogo_terapeuti
         }
     } catch (err) {
         res.status(500)
         req.body={
-            successfull:false,
-            message:"Internal Error: therapist catalog failed"+err
+            successful:false,
+            message:"Server error in therapist catalog - failed!"
         }
     }
     next()
@@ -252,7 +252,7 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
         else if (req.body.loggedUser.ruolo==2)
             utente = await Terapeuta.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limite_clienti indirizzo').exec()
         else{
-            res.status(402)
+            res.status(403)
             req.body={
                 successful:false,
                 message:"Invalid role!"
@@ -260,7 +260,7 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
             next()
             return
         }
-        res.status(203)
+        res.status(200)
         req.body={
             successful:true,
             message:"My_profile obtained successfully!",
@@ -298,7 +298,7 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
             const cliente = await Cliente.findById(req.body.loggedUser._id,{}).exec()
     
             if(!cliente){
-                res.status(405)
+                res.status(404)
                 req.body={
                     successful:false,
                     message:"Client not found!"
@@ -331,7 +331,7 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
             const terapeuta = await Terapeuta.findById(req.body.loggedUser._id).exec()
     
             if(!terapeuta){
-                res.status(406)
+                res.status(404)
                 req.body={
                     successful:false,
                     message:"Therapist not found!"
@@ -366,7 +366,7 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
                 documenti: updated_data.documenti
             },{new:true}).exec()
         }
-        res.status(204)
+        res.status(200)
         req.body={
             successful:true,
             message:"My_profile updated successfully!"
@@ -400,10 +400,10 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
         else if(req.body.loggedUser.ruolo==2)
             richiedente = await Terapeuta.findById(req.body.loggedUser._id).exec()
         else{
-            res.status(400)
+            res.status(403)
             req.body={
                 successful:false,
-                message:"Invalid role specified"
+                message:"Invalid role!"
             }
             next()
             return
@@ -413,10 +413,10 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
 
         let utente:IUtente|ICliente|ITerapeuta = await Utente.findById(req.params.id).exec()
         if(!utente){
-            res.status(400),
+            res.status(404),
             req.body={
                 successful:false,
-                message:"User not found"
+                message:"User not found!"
             }
             next()
             return
@@ -435,10 +435,10 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
          */
 
         if(richiedente.ruolo==utente.ruolo||((richiedente instanceof Terapeuta)&&!(richiedente as ITerapeuta).associati.includes(req.params.id))){
-            res.status(400)
+            res.status(403)
             req.body={
                 successful: false,
-                message: "invalid request"
+                message: "Request denied!"
             }
             next()
             return
@@ -447,7 +447,7 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
         res.status(200)
         req.body={
             successful:true,
-            message:"User found",
+            message:"Profile obtained successfully!",
             profilo:utente
         }
         next()
@@ -455,7 +455,7 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
         res.status(500)
         req.body={
             successful:false,
-            message:"Internal error: "+error
+            message:"Server error in retrieving profile - failed!"
         }
         next()
     }
@@ -502,7 +502,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         res.status(400)
         req.body={
             successful: false,
-            message: "Not enough arguments"
+            message: "Not enough arguments!"
         }
         next()
     } 
@@ -514,30 +514,30 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         let cliente= await Cliente.findById(id_cliente).exec()
 
         if(!(terapeuta&&cliente)){ 
-            res.status(400)
+            res.status(404)
             req.body={
                 successful: false,
-                message: "Error during users retrieval"
+                message: "User not found!"
             }
             next()
             return      //i return sono necessari: altrimenti rischia di eseguire il resto del codice comunque bypassando il controllo
         }
 
         if(cliente.ruolo!=1 || terapeuta.ruolo!=2){
-            res.status(400)
+            res.status(403)
             req.body={
                 successful: false,
-                message: "Roles not correct!"
+                message: "Invalid role!"
             }
             next()
             return  
         }
 
         if(terapeuta.associati.length>=(terapeuta.limite_clienti as number)){
-            res.status(400)
+            res.status(409)
             req.body={
                 successful: false,
-                message: "Therapist is full"
+                message: "Therapist full, impossible association!"
             }
             next()
             return  
@@ -555,10 +555,10 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
          */
 
         if(terapeuta.associati.includes(cliente._id.toString())&&cliente.associato==terapeuta._id.toString()){       
-            res.status(400)
+            res.status(409)
             req.body={
                 successful:false,
-                message: "Cliente already associated"
+                message: "Client and therapist already associated!"
             }
             next()
             return
@@ -578,10 +578,10 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         
         //lancio un errore se non dovesse andare a buon fine la scrittura nel db
         if(cliente.associato!=id_terapeuta){
-            res.status(400)
+            res.status(500)
             req.body={
                 successful: false,
-                message: "Client association error"
+                message: "Server error in association - failed!"
             }
             next()
             return
@@ -607,18 +607,18 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
             //rollback associazione utente, che si suppone funzioni -> rimuovo eventuali link pendenti
             await Cliente.findByIdAndUpdate(id_cliente, {associato:""}).exec()
             await Terapeuta.findByIdAndUpdate(id_terapeuta,{$pull:{associati:id_cliente}}) 
-            res.status(400)
+            res.status(500)
             req.body={
                 successful: false,
-                message: "Therapist association error, possible incostistent state"
+                message: "Server error in association - failed!"
             }
             next()
             return
         }
         res.status(200)
         req.body={
-            successfull:true,
-            message:"association done!" 
+            successful:true,
+            message:"Association successfully done!" 
         }
         next()
         return
@@ -626,7 +626,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         res.status(500)
         req.body={
             successfull:false,
-            message:"Internal Error: association failed "+err
+            message:"Server error in association - failed!"
         }
         next()
     }
@@ -648,10 +648,10 @@ export async function rimuovi_associazione (req:Request, res:Response,next:NextF
         id_cliente=req.params.id
     }
     else{
-        res.status(400)
+        res.status(403)
         req.body={
             successful:false,
-            message:"Invalid role"
+            message:"Invalid role!"
         }
         next()
         return
@@ -667,13 +667,13 @@ export async function rimuovi_associazione (req:Request, res:Response,next:NextF
         res.status(200)
         req.body={
             successful:true,
-            message:"Association removed"
+            message:"Association successfully removed!"
         }
     } catch (error) {
         res.status(500)
         req.body={
             successful:false,
-            message:"Failed association removal: "+error
+            message:"Server error in association removal - failed!"
         }
     }
     next()

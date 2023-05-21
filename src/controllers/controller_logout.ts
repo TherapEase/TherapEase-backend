@@ -27,7 +27,7 @@ export async function logout(req:Request,res:Response,next:NextFunction) {
         res.status(200)
         req.body={
             successful:true,
-            message:"logged out"
+            message:"Logout successfully executed!"
         }
         next()
 
@@ -35,7 +35,7 @@ export async function logout(req:Request,res:Response,next:NextFunction) {
         res.status(500)
         req.body={
             successful:false,
-            message:"Internal logout error: "+error
+            message:"Server error in logout - failed!"
         }
         next()
     }
