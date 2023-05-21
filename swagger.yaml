@@ -1,120 +1,875 @@
 swagger: '2.0'
 info:
   version: '1.0'
-  title: "therapease"
-  description: Polls is a simple API allowing consumers to view polls and vote in them.
+  title: "TherapEase"
+  description: Web application per il corso di Ingegneria del Software
   license:
     name: MIT
     url: https://github.com/apiaryio/polls-api/blob/master/LICENSE
-host: polls.apiblueprint.org
-basePath: /
+host: therapease-w5zk.onrender.com
+basePath: /api/v1/
 schemes:
-- https
+- http
 consumes:
 - application/json
 produces:
 - application/json
 paths:
-  /questions:
-    x-summary: Questions Collection
-    get:
-      summary: List All Questions
-      responses:
-        200:
-          description: Successful Response
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Question'
-          examples:
-            application/json:
-              - question: Favourite programming language?
-                published_at: '2015-08-05T08:40:51.620Z'
-                choices:
-                  - choice: Swift
-                    votes: 2048
-                  - choice: Python
-                    votes: 1024
-                  - choice: Objective-C
-                    votes: 512
-                  - choice: Ruby
-                    votes: 256
+  /registrazione:
+    x-summary: Registrazione
     post:
       description: >-
-        You may create your own question using this action. It takes a JSON
-        object containing a question and a collection of answers in the
-        form of choices.
-      summary: Create a New Question
+        Usando questo metodo è possibile effettuare la registrazione alla piattaforma di un utente
+      summary: Registrazione
       parameters:
-        - name: body
+        - name: registrazione
           in: body
           required: true
           schema:
-            $ref: '#/definitions/QuestionRequest'
+            $ref: '#/definitions/Registrazione'
       responses:
-        201:
+        200:
+          description: 'User authenticated'
+          schema:
+            $ref: '#/definitions/Registrazione_successful'
+        400:
+          description: 'Not enough parameters'
+          schema:
+            $ref: '#/definitions/Bad_response'
+        401:
+          description: 'Incorrect password'
+          schema:
+            $ref: '#/definitions/Bad_response'
+        404:
+          description: 'User not found'
+          schema:
+            $ref: '#/definitions/Bad_response'
+        500:
+          description: 'Server error in login - failed'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+  /login: 
+    x-summary: Login
+    get:
+      summary: Login
+      description: >-
+        In questo modo un utente può autenticarsi sulla piattaforma
+      parameters: 
+        - name: login
+          in: body
+          required: true
+          schema: 
+            $ref: '#/definitions/Login'
+      responses:
+        200:
           description: ''
           schema:
-            $ref: '#/definitions/Question'
-          examples:
-            application/json:
-                question: Favourite programming language?
-                published_at: '2015-08-05T08:40:51.620Z'
-                choices:
-                  - choice: Swift
-                    votes: 0
-                  - choice: Python
-                    votes: 0
-                  - choice: Objective-C
-                    votes: 0
-                  - choice: Ruby
-                    votes: 0
-definitions:
-  Question:
-    title: Question
-    type: object
-    properties:
-      question:
-        type: string
-      published_at:
-        type: string
-      choices:
-        type: array
-        items:
-          $ref: '#/definitions/Choice'
-    required:
-      - question
-      - published_at
-      - choices
-  Choice:
-    title: Choice
-    type: object
-    properties:
-      votes:
-        type: integer
-        format: int32
-      choice:
-        type: string
-    required:
-      - votes
-      - choice
-  QuestionRequest:
-    title: Question Request
-    type: object
-    properties:
-      question:
-        type: string
-      choices:
-        type: array
-        items:
+            $ref: '#/definitions/Login_successful'
+        400:
+          description: ''
+          schema:
+            $ref: '#/definitions/Bad_response'
+        500:
+          description: 'Internal error'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /logout:
+    x-summary: Logout
+    get:
+      summary: Logout
+      description: >-
+        In questo modo un utente può effettuare il logout dal suo profilo
+      parameters: 
+        - name: logout
+          in: body
+          required: true
+          schema: 
+            $ref: '#/definitions/Logout'
+      responses:
+        200:
+          description: 'Logout successful'
+          schema:
+            $ref: '#/definitions/Logout_successful'
+        500:
+          description: 'Internal logout error'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /catalogo_terapeuti:
+    x-summary: Catalogo Terapeuti
+    get: 
+      summary: Catalogo Terapeuti
+      description: >-
+        In questo modo un utente può visualizzare tutti i terpaueuti sulla piattaforma
+      responses:
+        200:
+          description: 'Operation successful'
+          schema:
+            $ref: '#/definitions/Catalogo_terapeuti_successful'
+        500:
+          description: 'Internal error'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /associazione/:id:
+    x-summary: Associazione
+    get: 
+      summary: Associazione
+      description: >-
+        In questo modo un cliente può associarsi ad un terapeuta
+      parameters:
+        - name: associazione
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Associazione'
+      responses:
+        200:
+          description: 'Operation successful'
+          schema:
+            $ref: '#/definitions/Associazione_successful'
+        500:
+          description: 'Internal association error'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /associazione/rimuovi/:id:
+    x-summary: Rimuovi associazione
+    get:
+      summary: Rimuovi associazione
+      description: >-
+        In questo modo è possibile rimuovere l'associazione
+      parameters:
+        - name: rimuovi_associazione
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Rimuovi_Associazione'
+      responses: 
+        200:
+          description: 'Operation successful'
+          schema:
+            $ref: '#/definitions/Rimuovi_Associazione_successful'
+        500:
+          description: 'Internal association error'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+
+  /prenotazione:
+    x-summary: Prenotazione
+    get:
+      summary: Prenotazione
+      description: >-
+        In questo modo è possibile prenotare una seduta
+      parameters:
+        - name: prenotazione
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Prenota_seduta'
+      responses: 
+        200:
+          description: 'Operation successful'
+          schema:
+            $ref: '#/definitions/Prenota_seduta_successful'
+        403:
+          description: 'Request denied'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        400:
+          description: 'Not enough arguments'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        409:
+          description: 'No therapist associated OR Element doesn’t exist or can’t be booked or unbooked'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        500:
+          description: 'Server error in booking'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /calendario:
+    x-summary: Calendario
+    get:
+      summary: Calendario
+      description: >-
+        In questo modo è possibile visualizzare il calendario completo delle sedute
+      parameters:
+        - name: calendario
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Calendario'
+      responses: 
+        200:
+          description: 'Client calendar successfully shown! OR Therapist calendar successfully shown!'
+          schema:
+            $ref: '#/definitions/Calendario_successful'
+        500:
+          description: 'Server error in calendar showing'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /calendario/disponibili:
+    x-summary: Calendario Sedute Disponibili
+    get:
+      summary: Calendario Sedute Disponibili
+      description: >-
+        In questo modo è possibile visualizzare il calendario completo delle sedute disponibili
+      parameters:
+        - name: calendario_disponibili
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Calendario_disponibili'
+      responses: 
+        200:
+          description: 'Client calendar successfully shown! OR Therapist calendar successfully shown!'
+          schema:
+            $ref: '#/definitions/Calendario_disponibili_successful'
+        500:
+          description: 'Server error in calendar showing'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+            
+  /calendario/prenotate:
+    x-summary: Calendario Sedute Prenotate
+    get:
+      summary: Calendario Sedute Prenotate
+      description: >-
+        In questo modo è possibile visualizzare il calendario completo delle sedute prenotate
+      parameters:
+        - name: calendario_prenotate
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Calendario_prenotate'
+      responses: 
+        200:
+          description: 'Client calendar successfully shown! OR Therapist calendar successfully shown!'
+          schema:
+            $ref: '#/definitions/Calendario_disponibili_successful'
+        500:
+          description: 'Server error in calendar showing'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+  
+  /recuperopassword:
+    x-summary: Recupero Password
+    get:
+      summary: Recupero Password
+      description: >-
+        In questo modo l'utente riesce a recuperare la password associata al suo account
+      parameters:
+        - name: recupero_password
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Recupero_password'
+      responses: 
+        200:
+          description: 'Password restored correctly!'
+          schema:
+            $ref: '#/definitions/Recupero_password_successful'
+        404:
+          description: 'User not found'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        500:
+          description: 'Server error in password recovery - failed'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  
+  
+  /cambio_password:
+    x-summary: Cambio Password
+    get:
+      summary: Cambio Password
+      description: >-
+        In questo modo l'utente riesce a cambiare la propria password
+      parameters:
+        - name: cambio_password
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Cambio_password'
+      responses: 
+        200:
+          description: 'Password successfully changed!'
+          schema:
+            $ref: '#/definitions/Cambio_password_successful'
+        404:
+          description: 'User not found'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        500:
+          description: 'Server error in password chage - failed!'
+          schema: 
+            $ref: '#/definitions/Bad_response'  
+  /il_mio_profilo:
+    x-summary: Il mio profilo
+    get:
+      description: >-
+        Tramite questo metodo è possibile recuperare il proprio profilo per la visualizzazione delle informazioni personali
+      summary: Il mio profilo
+      produces:
+      - application/json
+      parameters:
+        - in: header
+          name: x-acccess-token
           type: string
+          required: true
+          description: token
+      responses:
+        200:
+          description: "My_profile obtained successfully!"
+          schema:
+            $ref: '#/definitions/ProfiloSuccessful'
+        403:
+          description: "Invalid role!"
+          schema:
+            $ref: '#/definitions/Bad_response'
+        
+        500:
+          description: "Server error in retrieving my_profile - failed!"
+          schema:
+            $ref: '#/definitions/Bad_response'
+
+
+  /modifica_profilo:
+      x-summary: Modifica profilo
+      post:
+        description: >-
+         Con questo metodo è possibile modificare le informazioni personali contenute nel proprio profilo
+        summary: Modifica profilo
+        parameters:
+          - name: Modifica
+            in: body
+            required: true
+            schema:
+              $ref: '#/definitions/Modifica'
+          - in: header
+            name: x-acccess-token
+            type: string
+            required: true
+            description: token
+            
+            
+        responses:
+          200:
+            description: 'My_profile updated successfully!'
+            schema:
+              $ref: '#/definitions/Positive_response'
+          404:
+            description: 'Therapist not found! OR Client not found!'
+            schema:
+              $ref: '#/definitions/Bad_response'
+          500:
+            description: "Server error in updating my_profile - failed!"
+            schema:
+              $ref: '#/definitions/Bad_response'
+
+  /visualizza_profilo:
+    x-summary: Visualizza profilo utenti
+    get:
+      description: >-
+        Questo metodo permette di visualizzare le informazioni riguardanti i profili degli utenti
+      summary: Il mio profilo
+      produces:
+      - application/json
+      parameters:
+      - in: header
+        name: x-acccess-token
+        type: string
+        required: true
+        description: token
+      responses:
+        200:
+          description: "Profile obtained successfully!"
+          schema:
+            $ref: '#/definitions/ProfiloSuccessful'
+        
+        403:
+          description: "Request denied! OR Invalid role!"
+          schema:
+            $ref: '#/definitions/Bad_response'
+        
+        404:
+          description: "User not found"
+          schema:
+            $ref: '#/definitions/Bad_response'
+        500:
+          description: "Server error in retrieving profile - failed!"
+          schema:
+            $ref: '#/definitions/Bad_response'
+            
+  /definisci_slot:
+    x-summary: Definisci slot seduta
+    post:
+        description: >-
+         Questo metodo permette ai terapeuti di definire gli slot per svolgere le sedute
+        summary: Definisci slot
+        parameters:
+          - in: body
+            name: status
+            required: true
+            schema:
+              type: object
+              properties:
+               data:
+                type: string
+            
+            
+          - in: header
+            name: x-acccess-token
+            type: string
+            required: true
+            description: token
+        responses:
+          200:
+            description: "Slot successfully created!"
+            schema:
+              $ref: '#/definitions/Positive_response'
+          400:
+            description: "Not enough arguments!"
+            schema:
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: "Request denied!"
+            schema:
+              $ref: '#/definitions/Bad_response'
+          409:
+            description: "Slot already present!"
+            schema:
+              $ref: '#/definitions/Bad_response'
+          500:
+            description: "Server error in slot creation - failed!"
+            schema:
+              $ref: '#/definitions/Bad_response'
+  /elimina_slot:
+    x-summary: Elimina slot seduta
+    post:
+        description: >-
+         Questo metodo permette ai terapeuti di eliminare uno slot definito in precedenza
+        summary: Elimina slot
+        parameters:
+          - in: body
+            name: status
+            required: true
+            schema:
+              type: object
+              properties:
+               data:
+                type: string
+            
+            
+          - in: header
+            name: x-acccess-token
+            type: string
+            required: true
+            description: token
+        responses:
+          200:
+            description: "Slot successfully deleted!"
+            schema:
+              $ref: '#/definitions/Positive_response'
+          400:
+            description: "Not enough arguments!"
+            schema:
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: "Request denied!"
+            schema:
+              $ref: '#/definitions/Bad_response'
+          409:
+            description: "Element doesn’t exist or can’t be removed!"
+            schema:
+              $ref: '#/definitions/Bad_response'
+          500:
+            description: "Server error in slot removal - failed!"
+            schema:
+              $ref: '#/definitions/Bad_response' 
+
+definitions:
+  Registrazione:
+    title: Registrazione
+    type: object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+      ruolo:
+        type: number
+      nome:
+        type: string
+      cognome:
+        type: string
+      email:
+        type: string
+      codice_fiscale:
+        type: string
+      foto_profilo:
+        type: string
+      data_nascita: 
+        type: string
+      documenti:
+        type: array
+        items: 
+          type: string
+      limite_clienti:
+        type: number
+      indirizzo:
+        type: string
+      
     required:
-      - question
-      - choices
+      - username
+      - password
+      - ruolo
+      - nome
+      - cognome
+      - email
+      - codice_fiscale
+      - foto_profilo
+      - data_nascita
+  Registrazione_successful: 
+    title: ''
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message:
+        type: string
+      token:
+        type: string
+  Bad_response:
+    title: ''
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message:
+        type: string
+  Login:
+    title: Login
+    type: object
+    properties:
+      username: 
+        type: string
+      password:
+        type: string
+        
+  Login_successful: 
+    title: ''
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message:
+        type: string
+      token:
+        type: string
+        
+  Logout: 
+    title: Logout
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message:
+        type: string
+      token:
+        type: string
+        
+  Logout_successful:
+    title: 'Logout'
+    type: object
+    properties:
+      successful: 
+        type: boolean
+      message:
+        type: string
+      token:
+        type: string
+        
+  Catalogo_terapeuti:
+    title: 'Catalogo Terapeuti'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+        
+  Catalogo_terapeuti_successful:
+    title: ''
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message:
+        type: string
+      terapeuti:
+        type: array
+  
+  Associazione:
+    title: 'Associazione'
+    type: object
+    properties:
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      id: 
+        type: string
+      token:
+        type: string
+      
+        
+  Associazione_successful:
+    title: ''
+    type: object
+    properties:
+      successful: 
+        type: boolean
+      message: 
+        type: string
+        
+  Rimuovi_Associazione:
+    title: 'Rimuovi Associazione'
+    type: object
+    properties:
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      id: 
+        type: string
+      token:
+        type: string
+        
+  Rimuovi_Associazione_successful:
+    title: ''
+    type: object
+    properties:
+      successful: 
+        type: boolean
+      message:
+        type: string
+  
+  Prenota_seduta:
+    title: 'Prenota Seduta'
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message: 
+        type: string
+      token:
+        type: string
+      data:
+        type: string
+        
+  Prenota_seduta_successful:
+    title: ''
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message: 
+        type: string
+        
+  Calendario: 
+    title: ''
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      token:
+        type: string
+
+        
+  Calendario_successful: 
+    title: ''
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      sedute: 
+        type: array
+
+  Calendario_disponibili: 
+    title: 'Calendario sedute disponibili'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      token:
+        type: string
+          
+  Calendario_disponibili_successful: 
+    title: ''
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      sedute: 
+        type: array
+
+  Calendario_prenotate: 
+    title: 'Calendario sedute prenotate'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      token:
+        type: string
+          
+  Calendario_prenotate_successful: 
+    title: ''
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      sedute: 
+        type: array
+  
+  Recupero_password:
+    title: 'Recupero password'
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message:
+        type: string
+      username:
+        type: string
+      cf:
+        type: string
+      email:
+        type: string
+        
+  Recupero_password_successful:
+    title: ''
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message:
+        type: string
+
+  Cambio_password: 
+    title: 'Cambio Password'
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message: 
+        type: string
+      token:
+        type: string
+  
+  Cambio_password_successful:
+    title: ''
+    type: object
+    properties: 
+      successful:
+        type: boolean
+      message:
+        type: string
+        
+  ProfiloSuccessful:
+    title: ""
+    type: object
+    properties:
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      profile: 
+        type: object
+        properties:
+          username:
+            type: string
+          password:
+            type: string
+          ruolo:
+            type: number
+          nome:
+            type: string
+          cognome:
+            type: string
+          email:
+            type: string
+          codice_fiscale:
+            type: string
+          foto_profilo:
+            type: string
+          data_nascita: 
+            type: string
+          documenti:
+            type: array
+            items: 
+              type: string
+          limite_clienti:
+            type: number
+          indirizzo:
+            type: string
+  Modifica:
+    title: modifica
+    type: object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+      ruolo:
+        type: number
+      nome:
+        type: string
+      cognome:
+        type: string
+      email:
+        type: string
+      codice_fiscale:
+        type: string
+      foto_profilo:
+        type: string
+      data_nascita: 
+        type: string
+      documenti:
+        type: array
+        items: 
+          type: string
+      limite_clienti:
+        type: number
+      indirizzo:
+        type: string
+      
+  Positive_response:
+    title: ''
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message:
+        type: string
     example:
-      question: Favourite programming language?
-      choices:
-        - Swift
-        - Python
-        - Objective-C
-        - Ruby
+      successful: true
+      message: ""
