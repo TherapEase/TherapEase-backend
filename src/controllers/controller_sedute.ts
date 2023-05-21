@@ -10,10 +10,10 @@ import { send_mail } from './gmail_connector'
 export async function crea_slot_seduta(req:Request,res:Response,next:NextFunction) {
     //controllo accesso, solo terapeuta
     if(req.body.loggedUser.ruolo!=2){
-        res.status(400)
+        res.status(403)
         req.body={
             successful: false,
-            message: "Permission denied"
+            message: "Request denied!"
         }
         next()
         return 
@@ -26,7 +26,7 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
         res.status(400)
         req.body={
             successful: false,
-            message: "Not enough arguments"
+            message: "Not enough arguments!"
         }
         next()
         return
@@ -49,24 +49,24 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
             res.status(200)
             req.body={
                 successful: true,
-                message: "Slot created"
+                message: "Slot successfully created!"
             }
             next()
             return 
         }else{
-            res.status(400)
+            res.status(409)
             req.body={
                 successful: false,
-                message: "Slot already present"
+                message: "Slot already present!"
             }
             next()
             return 
         }
     }catch(err){
-        res.status(400)
+        res.status(500)
         req.body={
             successful: false,
-            message: "Creazione slot failed"
+            message: "Server error in slot creation - failed!"
         }
         next()
         return 
@@ -78,10 +78,10 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
 export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunction) {
     //controllo accesso, solo terapeuta
     if(req.body.loggedUser.ruolo!=2){
-        res.status(400)
+        res.status(403)
         req.body={
             successful: false,
-            message: "Permission denied"
+            message: "Request denied!"
         }
         next()
         return 
@@ -94,7 +94,7 @@ export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunc
         res.status(400)
         req.body={
             successful: false,
-            message: "Not enough arguments"
+            message: "Not enough arguments!"
         }
         next()
         return
@@ -104,10 +104,10 @@ export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunc
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let seduta_presente = await Seduta.findOneAndDelete({data:data, terapeuta:req.body.loggedUser._id, abilitato:true}).exec()
         if(!seduta_presente){  
-            res.status(400)
+            res.status(409)
             req.body={
                 successful: false,
-                message: "Slot doesn't exist or can't be removed"
+                message: "Element doesn’t exist or can’t be removed!"
             }
             next()
             return 
@@ -123,16 +123,16 @@ export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunc
             res.status(200)
             req.body={
                 successful: true,
-                message: "Slot deleted!"
+                message: "Slot successfully deleted!"
             }
             next()
             return 
         }
     }catch(err){
-        res.status(400)
+        res.status(500)
         req.body={
             successful: false,
-            message: "Delete slot failed"
+            message: "Server error in slot removal - failed!"
         }
         next()
         return 
@@ -144,10 +144,10 @@ export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunc
 export async function prenota_seduta(req:Request,res:Response,next:NextFunction) {
     //controllo accesso, solo cliente
     if(req.body.loggedUser.ruolo!=1){
-        res.status(400)
+        res.status(403)
         req.body={
             successful: false,
-            message: "Permission denied"
+            message: "Request denied!"
         }
         next()
         return 
@@ -160,7 +160,7 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
         res.status(400)
         req.body={
             successful: false,
-            message: "Not enough arguments"
+            message: "Not enough arguments!"
         }
         next()
         return
@@ -171,7 +171,7 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
     let cliente = await Cliente.findById(req.body.loggedUser._id).exec()
     if(cliente.associato==""){
-        res.status(400)
+        res.status(409)
         req.body={
             successful: false,
             message: "No therapist associated!"
@@ -182,10 +182,10 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
     try{
         let seduta = await Seduta.findOneAndUpdate({terapeuta:cliente.associato, data:data, cliente:""},{cliente:req.body.loggedUser._id},{new:true})
         if(!seduta){
-            res.status(400)
+            res.status(409)
             req.body={
                 successful: false,
-                message: "Seduta requested not available"
+                message: "Element doesn’t exist or can’t be booked or unbooked!"
             }
             next()
             return
@@ -200,16 +200,16 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
             res.status(200)
             req.body={
                 successful: true,
-                message: "Seduta booked!"
+                message: "Booking successful!"
             }
             next()
             return
         }
     }catch(err){
-        res.status(400)
+        res.status(500)
         req.body={
             successful: false,
-            message: "Booking failed"
+            message: "Server error in booking - failed!"
         }
         next()
         return
@@ -226,10 +226,10 @@ export async function remove_prenotazioni_if_disassociato(id_cliente:string, id_
 export async function annulla_prenotazione_seduta(req:Request,res:Response,next:NextFunction) {
     //controllo accesso, solo cliente
     if(req.body.loggedUser.ruolo!=1){
-        res.status(400)
+        res.status(403)
         req.body={
             successful: false,
-            message: "Permission denied"
+            message: "Request denied!"
         }
         next()
         return 
@@ -242,7 +242,7 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response,next:
         res.status(400)
         req.body={
             successful: false,
-            message: "Not enough arguments"
+            message: "Not enough arguments!"
         }
         next()
         return
@@ -253,10 +253,10 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response,next:
         // posso farlo perchè se tolgo l'associazione elimino automaticamente tutte le prenotazioni
         let seduta= await Seduta.findOneAndUpdate({data:data, cliente:req.body.loggedUser._id}, {cliente:""}).exec()
         if(!seduta){
-            res.status(400)
+            res.status(409)
             req.body={
                 successful: false,
-                message: "Seduta not present"
+                message: "Element doesn’t exist or can’t be booked or unbooked!"
             }
             next()
             return
@@ -276,10 +276,10 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response,next:
             return
         }
     }catch(err){
-        res.status(400)
+        res.status(500)
         req.body={
             successful: false,
-            message: "Booking removal failed"
+            message: "Server error in deleting booked seat - failed!"
         }
         next()
         return
@@ -295,7 +295,7 @@ export async function mostra_calendario_completo(req:Request, res:Response,next:
             req.body={
                 successful: true,
                 sedute: await Seduta.find({cliente:req.body.loggedUser._id}).exec(),
-                message: "OK"
+                message: "Client calendar successfully shown!"
             }
             next()
             return
@@ -305,16 +305,16 @@ export async function mostra_calendario_completo(req:Request, res:Response,next:
             req.body={
                 successful: true,
                 sedute: await Seduta.find({terapeuta:req.body.loggedUser._id}).exec(),
-                message: "OK"
+                message: "Therapist calendar successfully shown!"
             }
             next()
             return
         }
     }catch(err){
-        res.status(400)
+        res.status(500)
         req.body={
             successful: false,
-            message: "Show calendar failed"
+            message: "Server error in calendar showing- failed!"
         }
         next()
         return
@@ -332,7 +332,7 @@ export async function mostra_calendario_disponibili(req:Request, res:Response,ne
             req.body={
                 successful: true,
                 sedute: await Seduta.find({cliente:"", terapeuta:cliente.associato}).exec(),
-                message: "OK"
+                message: "Client calendar successfully shown!"
             }
             next()
             return
@@ -342,16 +342,16 @@ export async function mostra_calendario_disponibili(req:Request, res:Response,ne
             req.body={
                 successful: true,
                 sedute: await Seduta.find({terapeuta:req.body.loggedUser._id, cliente:""}).exec(),
-                message: "OK"
+                message: "Therapist calendar successfully shown!"
             }
             next()
             return
         }
     }catch(err){
-        res.status(400)
+        res.status(500)
         req.body={
             successful: false,
-            message: "Show calendar failed"
+            message: "Server error in calendar showing- failed!"
         }
         next()
         return
@@ -367,7 +367,7 @@ export async function mostra_calendario_prenotate(req:Request, res:Response,next
             req.body={
                 successful: true,
                 sedute: await Seduta.find({cliente:req.body.loggedUser._id}).exec(),
-                message: "OK"
+                message: "Client calendar successfully shown!"
             }
             next()
             return
@@ -377,16 +377,16 @@ export async function mostra_calendario_prenotate(req:Request, res:Response,next
             req.body={
                 successful: true,
                 sedute: await Seduta.find({terapeuta:req.body.loggedUser._id, cliente:{$ne:""}}).exec(),
-                message: "OK"
+                message: "Therapist calendar successfully shown!"
             }
             next()
             return
         }
     }catch(err){
-        res.status(400)
+        res.status(500)
         req.body={
             successful: false,
-            message: "Show calendar failed" + err
+            message: "Server error in calendar showing- failed!"
         }
         next()
         return
