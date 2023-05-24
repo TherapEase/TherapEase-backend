@@ -7,6 +7,7 @@ import { tokenCheck } from '../controllers/token_checker';
 import { logout } from '../controllers/controller_logout';
 import { send_mail } from '../controllers/gmail_connector';
 import { cambio_password, recupero_password } from '../controllers/controller_password';
+import { inserisci_prodotto, rimuovi_prodotto, get_prodotti } from '../controllers/controller_prodotti';
 //import cors from 'cors';
 
 export const defaultRoute = Router()
@@ -90,6 +91,15 @@ defaultRoute.post('/cambio_password',tokenCheck, cambio_password, (req:Request,r
     res.json(req.body)
 })
 
-//SEDUTE FITRATE PER CLIENTE (CALENDARIO CLIENTE)
-//SEDUTE FITRATE PER TERAPEUTA (CALENDARIO TERAPEUTA) -> slot gia definiti
-    //distinzione tra sedute prenotate, libere, tutte
+defaultRoute.post('/prodotto/inserisci' ,tokenCheck, inserisci_prodotto, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/prodotto/rimuovi/:id' ,tokenCheck, rimuovi_prodotto, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/catalogo_prodotti' ,get_prodotti, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
