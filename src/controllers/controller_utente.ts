@@ -241,7 +241,8 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
     /**
      * 
      * Questa funzione è dedita al recupero del proprio profilo per la visualizzazione delle informazioni personali
-     * La richiesta contiene il token decodificato-> _id,username,ruolo
+     * La richiesta contiene il token decodificato-> _id,username,ruolo. 
+     * La verifica dell'esistenza dell'utente è già stata eseguita
      */
 
     try {
@@ -295,18 +296,7 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         if(req.body.loggedUser.ruolo==1){
-            const cliente = await Cliente.findById(req.body.loggedUser._id,{}).exec()
-    
-            if(!cliente){
-                res.status(404)
-                req.body={
-                    successful:false,
-                    message:"Client not found!"
-                }
-                next()
-                return
-            }
-    
+            const cliente = await Cliente.findById(req.body.loggedUser._id).exec()
             let updated_data ={
                 nome: req.body.nome?req.body.nome : cliente.nome,
                 cognome: req.body.cognome?req.body.cognome : cliente.nome,
@@ -329,16 +319,6 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
         }else if(req.body.loggedUser.ruolo==2){
 
             const terapeuta = await Terapeuta.findById(req.body.loggedUser._id).exec()
-    
-            if(!terapeuta){
-                res.status(404)
-                req.body={
-                    successful:false,
-                    message:"Therapist not found!"
-                }
-                next()
-                return
-            }
     
             let updated_data ={
                 nome: req.body.nome?req.body.nome : terapeuta.nome,
@@ -408,8 +388,6 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
             next()
             return
         }
-
-        console.log(richiedente)
 
         let utente:IUtente|ICliente|ITerapeuta = await Utente.findById(req.params.id).exec()
         if(!utente){
