@@ -1,8 +1,7 @@
 import { Request,Response,NextFunction } from 'express'
 import mongoose from 'mongoose'
 import { IProdotto, Prodotto } from '../schemas/prodotto_schema'
-
-
+import { Cliente } from '../schemas/cliente_schema'
 
 export async function inserisci_prodotto(req:Request,res:Response,next:NextFunction){
     
@@ -138,4 +137,71 @@ export async function get_prodotti(req:Request,res:Response,next:NextFunction){
         }
     }
     next()
+};
+
+export async function acquisto(req:Request,res:Response,next:NextFunction){
+    
+    // controllo ruolo
+    if(req.body.loggedUser.ruolo!=1){
+        res.status(403)
+        req.body={
+            successful: false,
+            message: "Request denied!"
+        }
+        next()
+        return 
+    }
+    
+    try {
+        // controllo presenza prodotto
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let presente= await Prodotto.findById(req.params.id).exec()
+        if(!presente){
+            res.status(409)
+            req.body={
+                successful: false,
+                message: "Element doesn’t exist or can’t be removed!"
+            }
+            next()
+            return 
+        }
+
+        // creazione clienteStripe se non è già presente
+        const stripe = require('stripe')(process.env.SK_STRIPE);
+        let cliente= await Cliente.findOne({_id:req.body.loggedUser._id}).exec()
+        if(cliente.stripeCustomerId==""){
+            const customer= await stripe.customers.create({
+                email: "annachiarafortuna01@gmail.com",//cliente.email as string, //serve sempre una mail valida
+                name: cliente.nome
+            })
+            console.log(customer)
+            cliente= await Cliente.findOneAndUpdate({_id:req.body.loggedUser._id}, {stripeCustomerId:customer.id}, {new:true}).exec()
+            console.log(cliente)
+        }
+   
+        // pagamento
+        await stripe.paymentIntents.create({
+            amount: presente.prezzo*100, //in centesimi
+            currency: 'eur',
+            customer: cliente.stripeCustomerId,
+            payment_method: 'pm_card_visa'
+        });
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Successful payment"
+        }
+        next()
+        return
+    
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Server error in buying product - failed!"+ err
+        }
+        next()
+        return
+    }
+
 };

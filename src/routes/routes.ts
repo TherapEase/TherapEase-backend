@@ -7,7 +7,7 @@ import { tokenCheck } from '../controllers/token_checker';
 import { logout } from '../controllers/controller_logout';
 import { send_mail } from '../controllers/gmail_connector';
 import { cambio_password, recupero_password } from '../controllers/controller_password';
-import { inserisci_prodotto, rimuovi_prodotto, get_prodotti } from '../controllers/controller_prodotti';
+import { inserisci_prodotto, rimuovi_prodotto, get_prodotti, acquisto } from '../controllers/controller_prodotti';
 //import cors from 'cors';
 
 export const defaultRoute = Router()
@@ -103,3 +103,6 @@ defaultRoute.get('/catalogo_prodotti' ,get_prodotti, (req:Request,res:Response)=
     res.json(req.body)
 })
 
+defaultRoute.get('/prodotto/acquisto/:id' ,tokenCheck, acquisto, (req:Request,res:Response)=>{
+    res.json(req.body)
+})

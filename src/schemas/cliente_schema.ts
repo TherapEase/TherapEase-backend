@@ -17,8 +17,8 @@ export interface ICliente{
     data_nascita: Date,
     n_gettoni?:Number,
     associato?:String,
-    diario?:String
-
+    diario?:String,
+    stripeCustomerId?:String
 }
 
 const schema= new Schema({
@@ -35,7 +35,8 @@ const schema= new Schema({
         n_gettoni:{type: Number, default:0},
         // per i tipi user definied si considera l'id che il db salva automaticamente
         associato:{type: String , default:""},
-        diario:{type: String , default:""}
+        diario:{type: String , default:""},
+        stripeCustomerId:{type: String , default:""}
     })
 schema.pre('save', async function(){
     if(this.isModified('password')){
