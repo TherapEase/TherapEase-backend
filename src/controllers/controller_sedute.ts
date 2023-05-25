@@ -31,7 +31,15 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
         next()
         return
     }
-
+    else if(data<=Date.now()){
+        res.status(400)
+        req.body={
+            successful:false,
+            message:"Cannot create a seduta in the past!"
+        }
+        next()
+        return 
+    }
     try{
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         //controllo che non sia già presente
@@ -46,6 +54,7 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
                 data: data
             })
             await seduta_schema.save();
+
             res.status(200)
             req.body={
                 successful: true,
@@ -193,9 +202,12 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
             let promemoria_prenotazione = new Date(seduta.data)
             promemoria_prenotazione.setDate(promemoria_prenotazione.getDate()-1)
             console.log("data seduta: "+seduta.data + "prenotazione "+promemoria_prenotazione)
-            const job = scheduler.scheduleJob(promemoria_prenotazione,async function(data_seduta:Date) {
-                send_mail("Promemoria Prenotazione","Le ricordiamo la sua prenotazione in data: "+data_seduta,cliente.email.toString())
-            }.bind(null,seduta.data))
+            const job = scheduler.scheduleJob(promemoria_prenotazione,async function(seduta:ISeduta) {
+                //mail di promemoria
+                send_mail("Promemoria Prenotazione","Le ricordiamo la sua prenotazione in data: "+seduta.data,cliente.email.toString())
+                //set annullabile a false
+                await Seduta.findOneAndUpdate({data:seduta.data,terapeuta:seduta.terapeuta},{abilitato:false}).exec()
+            }.bind(null,seduta))
 
             res.status(200)
             req.body={
