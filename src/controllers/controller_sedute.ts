@@ -6,6 +6,7 @@ import { Seduta, ISeduta } from '../schemas/seduta_schema'
 import mongoose from 'mongoose'
 import scheduler from 'node-schedule'
 import { send_mail } from './gmail_connector'
+import { aggiungi_gettoni } from './controller_prodotti'
 
 export async function crea_slot_seduta(req:Request,res:Response,next:NextFunction) {
     //controllo accesso, solo terapeuta
@@ -114,10 +115,7 @@ export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunc
         }else{
             if(seduta_presente.cliente!=""){
                 let cliente = await Cliente.findById(seduta_presente.cliente).exec()
-                // TO - DO : gestione gettoni aumento di un gettone per annullamento seduta
-                // TO - DO : mail di annullamento seduta
-                console.log("+1 GETTONI CLIENTE PRENOTATO")
-                console.log("MAIL ANNULLAMENTO SEDUTA")
+                aggiungi_gettoni(seduta_presente.cliente as string,1)
                 send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
             }
             res.status(200)
@@ -190,12 +188,16 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
             next()
             return
         }else{
+            // email conferma prenotazione
             let promemoria_prenotazione = new Date(seduta.data)
             promemoria_prenotazione.setDate(promemoria_prenotazione.getDate()-1)
             console.log("data seduta: "+seduta.data + "prenotazione "+promemoria_prenotazione)
             const job = scheduler.scheduleJob(promemoria_prenotazione,async function(data_seduta:Date) {
                 send_mail("Promemoria Prenotazione","Le ricordiamo la sua prenotazione in data: "+data_seduta,cliente.email.toString())
             }.bind(null,seduta.data))
+
+            // togli gettone
+            aggiungi_gettoni(req.body.loggedUser._id, -1)
 
             res.status(200)
             req.body={
@@ -219,7 +221,8 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
 export async function remove_prenotazioni_if_disassociato(id_cliente:string, id_terapeuta:String) {
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
     let sedute_modificate=await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta, abilitato:true},{cliente:""}).exec()
-    // TO-DO aggiungi al cliente id_cliente un numero di gettoni pari a sedute_modificate.modifiedCount
+    // riaccredita gettoni pari al numero di sedute annullate, ancora annullabili
+    aggiungi_gettoni(id_cliente, sedute_modificate.modifiedCount)
     await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta},{cliente:""}).exec()
 }
 
@@ -262,10 +265,12 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response,next:
             return
         }else{
             if(seduta.abilitato==true){
-                // TO -DO riaccredito gettone al cliente
-                let cliente = await Cliente.findById(seduta.cliente).exec() //posso recuperare il cliente perché findOneAndUpdate restituisce il documento prima della modifica
-                send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
+                // riaccredita gettoni al cliente
+                aggiungi_gettoni(req.body.loggedUser._id, 1)
             }
+            // email di conferma annullamento
+            let cliente = await Cliente.findById(seduta.cliente).exec() 
+            send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
 
             res.status(200)
             req.body={

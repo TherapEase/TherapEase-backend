@@ -139,6 +139,13 @@ export async function get_prodotti(req:Request,res:Response,next:NextFunction){
     next()
 };
 
+export async function aggiungi_gettoni(id_cliente:string, n_gettoni:Number) {
+    await mongoose.connect(process.env.DB_CONNECTION_STRING)
+    let cliente= await Cliente.findById(id_cliente).exec()
+    let new_gettoni=(cliente.n_gettoni as number)+ (n_gettoni as number)
+    await Cliente.findOneAndUpdate({_id:id_cliente},{n_gettoni:new_gettoni}).exec()
+}
+
 export async function acquisto(req:Request,res:Response,next:NextFunction){
     
     // controllo ruolo
@@ -184,12 +191,15 @@ export async function acquisto(req:Request,res:Response,next:NextFunction){
             amount: presente.prezzo*100, //in centesimi
             currency: 'eur',
             customer: cliente.stripeCustomerId,
-            payment_method: 'pm_card_visa'
+            payment_method: 'pm_card_visa' //penso che corrisponda a una carta fake che vale per i pagamenti
         });
+
+        aggiungi_gettoni(req.body.loggedUser._id, presente.n_gettoni)
+
         res.status(200)
         req.body={
             successful:true,
-            message:"Successful payment"
+            message:"Successful payment!"
         }
         next()
         return
