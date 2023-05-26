@@ -1,12 +1,15 @@
 import {Request,Response,NextFunction} from 'express'
-import mongoose, { mongo } from 'mongoose'
+import mongoose from 'mongoose'
+import bcrypt from 'bcrypt'
+import generator from 'generate-password'
+
 import {Utente,IUtente} from '../schemas/utente_schema'
 import {Cliente, ICliente} from '../schemas/cliente_schema'
 import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
-import generator from 'generate-password'
+
 import { check_and_hash } from './password_hasher'
 import { send_mail } from './gmail_connector'
-import bcrypt from 'bcrypt'
+
 
 
 export async function recupero_password(req:Request,res:Response,next:NextFunction){

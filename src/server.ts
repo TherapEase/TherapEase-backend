@@ -23,9 +23,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded())
   
 // Handling GET / Request
-app.get('/', (req, res) => {
-    res.send('Welcome to typescript backend!');
-})
+
 app.use('/api/'+process.env.API_VER,defaultRoute);
 
 const clean_tokens = new scheduler.RecurrenceRule()

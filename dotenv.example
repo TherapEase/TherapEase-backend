@@ -1,2 +1,20 @@
 SERVER_PORT="your_server_port"
 API_VER="vN"
+DB_CONNECTION_STRING= "your_mongodb_connection_string"
+SALT_ROUNDS=#of_desired_hashing_rounds
+TOKEN_SECRET="your_jwt_secret"
+
+client_id="data_from_google"
+project_id="data_from_google"
+auth_uri="data_from_google"
+token_uri="data_from_google"
+auth_provider_x509_cert_url="data_from_google"
+client_secret="data_from_google"
+redirect_uris=["data_from_google"]
+type="authorized_user"
+refresh_token="data_from_google"
+email_address="your_service_email_address"
+gmail_password="your_google_16char_pass"
+
+PK_STRIPE="data_from_stripe"
+SK_STRIPE="data_from_stripe"
