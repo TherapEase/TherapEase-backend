@@ -666,3 +666,43 @@ export async function rimuovi_associazione (req:Request, res:Response,next:NextF
     }
     next()
 }
+
+export async function get_all_associati(req:Request,res:Response,next:NextFunction) {
+    if(req.body.loggedUser.ruolo!=2){
+        res.status(403)
+        req.body={
+            successful:false,
+            message:"Invalid role!"
+        }
+        next()
+        return
+    }
+    
+    
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+
+        let id_terapeuta=req.body.loggedUser._id
+        //let id_cliente=req.params.id
+        // console.log("dbconnesso")
+        const catalogo_associati =await Cliente.find({ruolo:1, associato:id_terapeuta}, 'nome cognome foto_profilo')
+        
+        // console.log(catalogo_terapeuti)
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Therapist's client catalog retrieved successfully!",
+            catalogo: catalogo_associati
+        }
+        next()
+        return
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Server error in client catalog - failed!"
+        }
+    }
+    next()
+}
+
