@@ -185,7 +185,15 @@ export async function acquisto(req:Request,res:Response,next:NextFunction){
             cliente= await Cliente.findOneAndUpdate({_id:req.body.loggedUser._id}, {stripeCustomerId:customer.id}, {new:true}).exec()
             console.log(cliente)
         }
-   
+        
+        //controllo gettoni non negativi
+        if(cliente.n_gettoni.valueOf()<0){
+            res.status(500)
+            req.body={
+                successful:false,
+                message:"Internal Error: gettoni is less than 0"
+            }
+        }
         // pagamento
         await stripe.paymentIntents.create({
             amount: presente.prezzo*100, //in centesimi
