@@ -241,7 +241,8 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
     /**
      * 
      * Questa funzione è dedita al recupero del proprio profilo per la visualizzazione delle informazioni personali
-     * La richiesta contiene il token decodificato-> _id,username,ruolo
+     * La richiesta contiene il token decodificato-> _id,username,ruolo. 
+     * La verifica dell'esistenza dell'utente è già stata eseguita
      */
 
     try {
@@ -295,18 +296,7 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         if(req.body.loggedUser.ruolo==1){
-            const cliente = await Cliente.findById(req.body.loggedUser._id,{}).exec()
-    
-            if(!cliente){
-                res.status(404)
-                req.body={
-                    successful:false,
-                    message:"Client not found!"
-                }
-                next()
-                return
-            }
-    
+            const cliente = await Cliente.findById(req.body.loggedUser._id).exec()
             let updated_data ={
                 nome: req.body.nome?req.body.nome : cliente.nome,
                 cognome: req.body.cognome?req.body.cognome : cliente.nome,
@@ -329,16 +319,6 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
         }else if(req.body.loggedUser.ruolo==2){
 
             const terapeuta = await Terapeuta.findById(req.body.loggedUser._id).exec()
-    
-            if(!terapeuta){
-                res.status(404)
-                req.body={
-                    successful:false,
-                    message:"Therapist not found!"
-                }
-                next()
-                return
-            }
     
             let updated_data ={
                 nome: req.body.nome?req.body.nome : terapeuta.nome,
@@ -408,8 +388,6 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
             next()
             return
         }
-
-        console.log(richiedente)
 
         let utente:IUtente|ICliente|ITerapeuta = await Utente.findById(req.params.id).exec()
         if(!utente){
@@ -659,9 +637,19 @@ export async function rimuovi_associazione (req:Request, res:Response,next:NextF
 
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        const cliente = await Cliente.findByIdAndUpdate(id_cliente,{associato:""},{new:true}).exec()
-        const terapeuta = await Terapeuta.findByIdAndUpdate(id_terapeuta,{$pull:{associati:id_cliente}},{new:true}).exec()
+
+        let cliente= await Cliente.findOne({_id:id_cliente, associato:id_terapeuta}).exec()
+        let terapeuta = await Terapeuta.findOne({_id:id_terapeuta, associati:id_cliente}).exec()
         
+        if(!(cliente&&terapeuta)){
+            res.status(404)
+            req.body={
+                successful:false,
+                message:"User not found!"
+            }
+        }
+        cliente = await Cliente.findOneAndUpdate({_id:id_cliente, associato:id_terapeuta},{associato:""},{new:true}).exec()
+        terapeuta = await Terapeuta.findOneAndUpdate({_id:id_terapeuta, associati:id_cliente},{$pull:{associati:id_cliente}},{new:true}).exec()
         await remove_prenotazioni_if_disassociato(id_cliente, id_terapeuta)
 
         res.status(200)

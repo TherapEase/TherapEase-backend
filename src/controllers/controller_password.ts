@@ -6,6 +6,7 @@ import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
 import generator from 'generate-password'
 import { check_and_hash } from './password_hasher'
 import { send_mail } from './gmail_connector'
+import bcrypt from 'bcrypt'
 
 
 export async function recupero_password(req:Request,res:Response,next:NextFunction){
@@ -72,20 +73,32 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
 
 export async function cambio_password(req:Request,res:Response,next:NextFunction) {
     try {
-        let password = await check_and_hash(req.body.password)
-        
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        //ricerco l'utente ed inserisco la password hashata
-        const utente = await Utente.findByIdAndUpdate(req.body.loggedUser._id,{password:password}).exec()
-        if(!utente){
-            res.status(404),
+
+        let password = req.body.password
+        if(!password){
+            res.status(400)
             req.body={
                 successful:false,
-                message:"User not found!"
+                message:"Password not specified!"
             }
             next()
             return
         }
+        
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let utente = await Utente.findById(req.body.loggedUser._id).exec()
+        if(await bcrypt.compare(password,utente.password.toString())){
+            res.status(409)
+            req.body={
+                successful:false,
+                message:"The password provided is the same as the old one"
+            }
+            next()
+            return
+        }
+        let hashed_password = await check_and_hash(password)
+        //ricerco l'utente ed inserisco la password hashata
+        utente = await Utente.findByIdAndUpdate(req.body.loggedUser._id,{password:hashed_password}).exec()
 
         res.status(200)
         req.body={
@@ -98,7 +111,7 @@ export async function cambio_password(req:Request,res:Response,next:NextFunction
         res.status(500)
         req.body={
             successful:false,
-            message:"Server error in password chage - failed!"
+            message:"Server error in password change - failed!"
         }        
     }
 }
