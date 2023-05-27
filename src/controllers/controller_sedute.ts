@@ -33,7 +33,7 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
         next()
         return
     }
-    else if(data<=Date.now()){
+    else if(new Date(data).getTime() <=Date.now()){
         res.status(400)
         req.body={
             successful:false,
