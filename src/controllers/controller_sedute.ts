@@ -23,7 +23,8 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
     // controllo presenza campi
     //DATA format:2024-11-02T04:20:00.000Z
     const data=req.body.data
-    if(!data){
+    const presenza= req.body.presenza
+    if(!data || !presenza){
         res.status(400)
         req.body={
             successful: false,
@@ -46,14 +47,28 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
         //controllo che non sia già presente
         let seduta_presente = await Seduta.findOne({data:data, terapeuta:req.body.loggedUser._id}).exec()
         console.log(seduta_presente)
-        if(!seduta_presente){  // come si fa check null?
-            //inserisco
-            const seduta_schema= new Seduta<ISeduta>({
-                cliente: "",
-                terapeuta: req.body.loggedUser._id,
-                abilitato: true,
-                data: data
-            })
+        if(!seduta_presente){  
+            let seduta_schema
+            if(presenza==true){
+                let terapeuta= await Terapeuta.findById(req.body.loggedUser._id).exec()
+                //inserisco
+                seduta_schema= new Seduta<ISeduta>({
+                    cliente: "",
+                    terapeuta: req.body.loggedUser._id,
+                    abilitato: true,
+                    data: data, 
+                    indirizzo: terapeuta.indirizzo
+                })
+            }else{
+                //inserisco
+                seduta_schema= new Seduta<ISeduta>({
+                    cliente: "",
+                    terapeuta: req.body.loggedUser._id,
+                    abilitato: true,
+                    data: data,
+                    indirizzo:""
+                })
+            }
             await seduta_schema.save();
 
             res.status(200)
