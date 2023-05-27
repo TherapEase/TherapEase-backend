@@ -8,6 +8,7 @@ import { logout } from '../controllers/controller_logout';
 import { send_mail } from '../controllers/gmail_connector';
 import { cambio_password, recupero_password } from '../controllers/controller_password';
 import { inserisci_prodotto, rimuovi_prodotto, get_prodotti, acquisto } from '../controllers/controller_prodotti';
+import { get_all_segnalazioni, rimuovi_segnalazione, segnala } from '../controllers/controller_segnalazione';
 //import cors from 'cors';
 
 export const defaultRoute = Router()
@@ -108,5 +109,17 @@ defaultRoute.get('/catalogo_prodotti' ,get_prodotti, (req:Request,res:Response)=
 })
 
 defaultRoute.get('/prodotto/acquisto/:id' ,tokenCheck, acquisto, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.post('/segnalazione/:id' ,tokenCheck, segnala, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/segnalazione/catalogo_segnalazioni' ,tokenCheck, get_all_segnalazioni, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+defaultRoute.get('/segnalazione/rimuovi/:id' ,tokenCheck, rimuovi_segnalazione, (req:Request,res:Response)=>{
     res.json(req.body)
 })
