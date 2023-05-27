@@ -17,7 +17,7 @@ export interface ICliente{
     data_nascita: Date,
     n_gettoni?:Number,
     associato?:String,
-    diario?:String,
+    diario?:String[],
     stripeCustomerId?:String
 }
 
