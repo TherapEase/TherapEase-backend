@@ -8,7 +8,7 @@ import { blacklist_cleaner } from './controllers/controller_logout';
 import scheduler from 'node-schedule'
 
   
-const app = express();
+export const app = express();
 dotenv.config();
 //cors
 
