@@ -107,12 +107,10 @@ export async function scrivi_pagina(req: Request, res: Response, next: NextFunct
 }
 
 
-export async function leggi_pagine(req: Request, res: Response, next: NextFunction) {
-    const id_cliente_associato = req.params.id
+export async function leggi_my_diario(req: Request, res: Response, next: NextFunction) {
 
-
-    //solo clienti e terapeuti possono leggere il diario
-    if (req.body.loggedUser.ruolo != 1 && req.body.loggedUser.ruolo != 2) {
+    //solo clienti possono leggere il diario
+    if (req.body.loggedUser.ruolo != 1) {
         res.status(403)
         req.body = {
             successful: false,
@@ -124,46 +122,207 @@ export async function leggi_pagine(req: Request, res: Response, next: NextFuncti
 
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
 
-    console.log(req.body.loggedUser.associati)
+    try {
+        let diario = await Pagina.find({ cliente: req.body.loggedUser._id }, 'data testo').exec()
 
-    //il terapeuta può leggere solo il diario del proprio cliente nella pagina /profilo/:id
-    const terapeuta = await Terapeuta.findOne({ _id: req.body.loggedUser._id })
+        res.status(200)
+        req.body = {
+            message: "Pages successfully retrieved!",
+            pagine: diario
+        }
+    }
+    catch (err) {
+        res.status(500)
+        req.body = {
+            successful: false,
+            message: "Server error in page reading - failed"
+        }
 
-    if (!(terapeuta.associati.includes(id_cliente_associato))) {
-       
+    }
+
+    next()
+    return
+}
+
+export async function leggi_diario_cliente(req: Request, res: Response, next: NextFunction) {
+    const id_cliente_associato = req.params.id
+    //solo clienti possono leggere il diario
+    if (req.body.loggedUser.ruolo != 2) {
+        res.status(403)
+        req.body = {
+            successful: false,
+            message: "Request denied!"
+        }
+        next()
+        return
+    }
+
+    await mongoose.connect(process.env.DB_CONNECTION_STRING)
+
+    try {
+
+        const terapeuta = await Terapeuta.findOne({ _id: req.body.loggedUser._id })
+        if (!terapeuta.associati.includes(id_cliente_associato)) {
             res.status(403)
             req.body = {
                 successful: false,
                 message: "Request denied!"
             }
-        
+            next()
+            return
+
+        }
+        let diario = await Pagina.find({ cliente: id_cliente_associato }, 'data testo').exec()
+
+        res.status(200)
+        req.body = {
+            message: "Pages successfully retrieved!",
+            pagine: diario
+        }
+
+    }
+    catch (err) {
+        res.status(500)
+        req.body = {
+            successful: false,
+            message: "Server error in page reading - failed"
+        }
+
+    }
+
+    next()
+    return
+}
+
+export async function modifica_pagina(req: Request, res: Response, next: NextFunction) {
+    /*
+    CAMPI MODIFICABILI
+    testo
+    */
+
+    //solo i clienti possono modificare il diario
+    const data = req.body.data
+
+    if (req.body.loggedUser.ruolo != 1) {
+        res.status(403)
+        req.body = {
+            successful: false,
+            message: "Request denied!"
+        }
+        next()
+        return
+    }
+
+    if (!req.body.testo) {
+        res.status(400)
+        req.body = {
+            successful: false,
+            message: "Not enough arguments!"
+        }
+
         next()
         return
     }
 
 
-        try {
-            let diario
-            if (req.body.loggedUser.ruolo == 1) {
-                diario = await Pagina.find({ cliente: req.body.loggedUser._id }, 'data testo').exec()
-            } else if (req.body.loggedUser.ruolo == 2) {
-                diario = await Pagina.find({ cliente: id_cliente_associato }, 'data testo').exec()
-            }
-            res.status(200)
-            req.body = {
-                message: "Pagine successfully retrieved!",
-                pagine: diario
-            }
-        }
-        catch (err) {
-            res.status(500)
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        const pagina = await Pagina.findOne({ data: data, cliente: req.body.loggedUser._id })
+
+        if (!pagina) {
+            res.status(400)
             req.body = {
                 successful: false,
-                message: "Server error in page reading - failed"
+                message: "Page does not exist!"
             }
+
+            next()
+            return
 
         }
 
+        let updated_data = {
+            testo: req.body.testo ? req.body.testo : pagina.testo
+        }
+        const updated_pagina = await Pagina.findOneAndUpdate({ data: data, cliente: req.body.loggedUser._id }, { testo: updated_data.testo }, { new: true }).exec()
+        res.status(200)
+        req.body = {
+            successful: true,
+            message: "Page updated successfully!"
+        }
+        next()
+        return
+
+
+
+    } catch (err) {
+        res.status(500)
+        req.body = {
+            successful: false,
+            message: "Server error in updating page - failed!"
+        }
+
+    }
+
+}
+
+
+export async function elimina_pagina(req: Request, res: Response, next: NextFunction) {
+    /*
+    CAMPI MODIFICABILI
+    testo
+    */
+
+    //solo i clienti possono modificare il diario
+    const data = req.body.data
+
+    if (req.body.loggedUser.ruolo != 1) {
+        res.status(403)
+        req.body = {
+            successful: false,
+            message: "Request denied!"
+        }
         next()
         return
     }
+
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        const pagina = await Pagina.findOneAndDelete({ data: data, cliente: req.body.loggedUser._id })
+        if (!pagina) {
+            res.status(400)
+            req.body = {
+                successful: false,
+                message: "Page does not exist!"
+            }
+
+            next()
+            return
+
+        }
+        console.log("pagina_id"+ pagina._id )
+        
+        const pagina_diario= await Diario.findOneAndUpdate({cliente: req.body.loggedUser._id}, {$pull: {pagine: pagina._id}})
+        console.log(pagina_diario)
+        res.status(200)
+        req.body = {
+            successful: true,
+            message: "Page deleted successfully!"
+        }
+        next()
+        return
+
+
+
+    } catch (err) {
+        res.status(500)
+        req.body = {
+            successful: false,
+            message: "Server error in deleting page - failed!"
+        }
+
+    }
+
+}
