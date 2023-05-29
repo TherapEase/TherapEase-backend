@@ -99,9 +99,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
                 indirizzo:ind
             })
         }
-        await utente_schema.save();
-        // console.log("utente salvato")
-        // console.log(utente_schema)
+        await Utente.create(utente_schema)
 
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
 

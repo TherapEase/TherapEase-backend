@@ -2,9 +2,11 @@ import request from 'supertest'
 import { app } from '../server'
 import { after, describe } from 'node:test'
 import { Utente, IUtente } from '../schemas/utente_schema'
-import mongoose, { Document, FilterQuery,Query } from 'mongoose'
+import { Cliente, ICliente } from '../schemas/cliente_schema'
+import mongoose, { Document, FilterQuery,Query, mongo } from 'mongoose'
+import { Db, MongoClient } from 'mongodb'
 
-describe('POST /api/v1/registrazione',()=>{
+describe('POST /api/v1/registrazione e /registrazione',()=>{
     /**
      * Su <BASE>/registrazione inserisci i dati richiesti, ovvero
      *  {username: "mario_rossi",
@@ -18,11 +20,6 @@ describe('POST /api/v1/registrazione',()=>{
      * 
      *  il provesso termina HTTP 200 OK e viene restituito un token
      */
-    beforeAll(()=>{
-        //mongoose.Document.prototype.save = jest.fn().mockImplementation(()=>{Promise.resolve(true)})
-        //Utente.prototype.save = jest.fn().mockImplementation(()=>{Promise.resolve(true)})
-        jest.spyOn(Utente.prototype,"save").mockResolvedValue(true)
-    })
     const mario_doc ={
         username:"mario",
         password:"abcABC123$$",
@@ -34,40 +31,26 @@ describe('POST /api/v1/registrazione',()=>{
         foto_profilo:"",
         data_nascita:"2020"
     }
+    beforeAll(async()=>{
+        mongoose.connect= jest.fn().mockImplementation((conn_string)=>Promise.resolve(true))
+        Utente.create= jest.fn().mockImplementation((doc)=>Promise.resolve(true))
+    })
     afterAll(()=>{
-        //jest.restoreAllMocks().clearAllMocks()
+        jest.restoreAllMocks().clearAllMocks()
     })
 
     it('POST /registrazione ok',async ()=>{
         //mario rossi non è registrato: la ricerca torna un valore falsy
-        Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
         //mockingoose(Utente).toReturn({},"findOne")
         //non vogliamo che venga salvato sul db
         //mockingoose(Utente).toReturn(true,"save")
+        Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
         
-        
-
         const res = await request(app).post('/api/v1/registrazione').send(mario_doc)
-        console.log(res.body.message)
         expect(res.status).toBe(200)
         expect(res.body).toHaveProperty("token")
     })
-})
 
-
-
-describe('POST /api/v1/login', ()=>{
-
-    //let UtenteSpy:jest.SpyInstance
-
-    beforeAll(()=>{
-        //UtenteSpy = jest.spyOn(Utente,'findOne').mockImplementation()
-
-
-    })
-    afterAll(async()=>{
-        //jest.resetAllMocks().clearAllMocks()
-    })
     it(('POST /login senza password'),async()=>{
         const res = await request(app).post('/api/v1/login').send({
             username:"mario_rossi"
