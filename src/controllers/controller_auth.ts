@@ -160,6 +160,8 @@ export async function login(req:Request,res:Response,next:NextFunction) {
                 successful: false,
                 message: "User not found!"
             }
+            next()
+            return
         };
 
         // controllo la password
@@ -194,7 +196,7 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         res.status(500)
         req.body={
             successful:false,
-            message:"Server error in login - failed!"
+            message:"Server error in login - failed!" + err
         }
         next()
         return

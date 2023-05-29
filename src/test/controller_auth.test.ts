@@ -108,13 +108,7 @@ describe('POST /api/v1/registrazione e /registrazione',()=>{
         expect(res.status).toBe(409)
     })
 
-    it(('POST /login senza password'),async()=>{
-        const res = await request(app).post('/api/v1/login').send({
-            username:"mario_rossi"
-        })
-        expect(res.status).toBe(400)
-    })
-    it(('POST /login ok'),async ()=>{
+    it(('POST /login di un utente registrato con campi corretti'),async ()=>{
         Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue({
             _id:123,
             username:"mario_rossi",
@@ -125,7 +119,35 @@ describe('POST /api/v1/registrazione e /registrazione',()=>{
             username:'mario_rossi',
             password:'abcABC123$'
         })
-        console.log(res.body.message)
         expect(res.status).toBe(200)
     })
+
+    it(('POST /login senza password'),async()=>{
+        const res = await request(app).post('/api/v1/login').send({
+            username:"mario_rossi"
+        })
+        expect(res.status).toBe(400)
+    })
+
+    it(('POST /login di un utente non registrato'),async ()=>{
+        const res = await request(app).post('/api/v1/login').send({
+            username:"patty12",
+            password:"!!p4SS!!!"
+        })
+        expect(res.status).toBe(404)
+    })
+
+    it(('POST /login di un utente registrato, password non corretta'),async ()=>{
+        Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue({
+            _id:123,
+            username:"mario_rossi",
+            password:"$2b$08$eZn3ZBFTgjqO9Y.7IKrEOukAj3nsPbec/gMPwWnV2gim.yhVmawSi",
+            ruolo:1
+        })}})
+        const res = await request(app).post('/api/v1/login').send({
+            username:'mario_rossi',
+            password:'abcABC123?'
+        })
+    })
+    
 })
