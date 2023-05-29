@@ -50,7 +50,7 @@ export async function get_all_segnalazioni(req:Request,res:Response,next:NextFun
     next()
 }
 
-export async function rimuovi_segnalazione(req:Request,res:Response,next:NextFunction) {
+export async function gestisci_segnalazione(req:Request,res:Response,next:NextFunction) {
         // controllo ruolo
         if(req.body.loggedUser.ruolo!=4){
             res.status(403)
@@ -65,20 +65,28 @@ export async function rimuovi_segnalazione(req:Request,res:Response,next:NextFun
         try{
             // controllo presenza della segnalazione
             await mongoose.connect(process.env.DB_CONNECTION_STRING)
-            let presente= await Segnalazione.findOneAndDelete({_id:req.params.id}).exec()
+            let presente= await Segnalazione.findOne({_id:req.params.id}).exec()
             if(!presente){
                 res.status(409)
                 req.body={
                     successful: false,
-                    message: "Element doesn’t exist or can’t be removed!"
+                    message: "Element doesn’t exist!"
                 }
                 next()
                 return 
             }else{
+                const schema_segnalazione= new Segnalazione<ISegnalazione>({
+                    segnalato: presente['segnalato'],
+                    testo: presente['testo'],
+                    data: presente['data'],
+                    gestita:true
+                });
+                await schema_segnalazione.save();
+                //presente['gestita'] = true
                 res.status(200)
                 req.body={
                     successful: true,
-                    message: "Report successfully deleted!"
+                    message: "Report successfully managed!"
                 }
                 next()
                 return 
@@ -87,7 +95,7 @@ export async function rimuovi_segnalazione(req:Request,res:Response,next:NextFun
             res.status(500)
             req.body={
                 successful: false,
-                message: "Server error in report removal - failed!"
+                message: "Server error in report management - failed!"
             }
             next()
             return 
@@ -170,6 +178,7 @@ if(req.body.loggedUser.ruolo == 1) {
         const segnalato=id_terapeuta
         const testo=req.body.testo
         const data=req.body.data
+        const gestita=req.body.gestita
 
         if(!segnalato || !testo || !data){
             res.status(400)
@@ -197,7 +206,8 @@ if(req.body.loggedUser.ruolo == 1) {
                 const schema_segnalazione= new Segnalazione<ISegnalazione>({
                     segnalato:segnalato,
                     testo:testo, 
-                    data:data
+                    data:data,
+                    gestita: gestita
                 });
                 await schema_segnalazione.save();
                 res.status(200)
@@ -276,6 +286,7 @@ if(req.body.loggedUser.ruolo == 1) {
         const segnalato=id_cliente
         const testo=req.body.testo
         const data=req.body.data
+        const gestita=req.body.gestita
 
         if(!segnalato || !testo || !data){
             res.status(400)
@@ -303,7 +314,8 @@ if(req.body.loggedUser.ruolo == 1) {
                 const schema_segnalazione= new Segnalazione<ISegnalazione>({
                     segnalato:segnalato,
                     testo:testo, 
-                    data:data
+                    data:data,
+                    gestita:gestita
                 });
                 await schema_segnalazione.save();
                 res.status(200)
