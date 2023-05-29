@@ -203,7 +203,7 @@ export async function login(req:Request,res:Response,next:NextFunction) {
     }
 }
 
-function createToken(_id:string, username:string, ruolo:Number):string{
+export function createToken(_id:string, username:string, ruolo:Number):string{
     return jwt.sign({
         _id:_id,
         username:username,

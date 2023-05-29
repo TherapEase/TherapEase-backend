@@ -1,10 +1,8 @@
 import request from 'supertest'
 import { app } from '../server'
-import { after, describe } from 'node:test'
+import { describe } from 'node:test'
 import { Utente, IUtente } from '../schemas/utente_schema'
-import { Cliente, ICliente } from '../schemas/cliente_schema'
-import mongoose, { Document, FilterQuery,Query, mongo } from 'mongoose'
-import { Db, MongoClient } from 'mongodb'
+import mongoose from 'mongoose'
 
         /**
          * 
@@ -18,7 +16,7 @@ import { Db, MongoClient } from 'mongodb'
          */
 
 
-describe('POST /api/v1/registrazione e /registrazione',()=>{
+describe('POST /api/v1/registrazione e api/v1/login',()=>{
     /**
      * Su <BASE>/registrazione inserisci i dati richiesti, ovvero
      *  {username: "mario_rossi",
