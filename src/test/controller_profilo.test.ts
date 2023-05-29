@@ -5,7 +5,9 @@ import jwt from 'jsonwebtoken'
 
 import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
+import { Utente } from '../schemas/utente_schema'
 import { createToken } from '../controllers/controller_auth'
+import { JWTToken } from '../schemas/token_schema'
 
 describe('test /api/v1/il_mio_profilo /api/v1/il_mio_profilo/modifica /api/v1/profilo/:id ',()=>{
     
@@ -13,7 +15,6 @@ describe('test /api/v1/il_mio_profilo /api/v1/il_mio_profilo/modifica /api/v1/pr
     let token = createToken("123","mario_rossi",1)
 
     beforeEach(()=>{
-        mongoose.connect= jest.fn().mockImplementation((conn_string)=>Promise.resolve(true)) //bypass del connect
         mario_doc={
             username:"mario",
             password:"abcABC123$$",
@@ -25,15 +26,21 @@ describe('test /api/v1/il_mio_profilo /api/v1/il_mio_profilo/modifica /api/v1/pr
             foto_profilo:"",
             data_nascita:"2020"
         }
+
+        mongoose.connect= jest.fn().mockImplementation((conn_string)=>Promise.resolve(true)) //bypass del connect
+        JWTToken.find = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue([])}})//assumiamo il token non blacklisted
+        Utente.findById=jest.fn().mockResolvedValue(mario_doc) //per il tokenCheck, ritorna l'utente
     })
     afterEach(()=>{
         jest.restoreAllMocks().clearAllMocks()
     })
 
     it('GET /api/v1/il_mio_profilo di un utente autenticato',async ()=>{
-        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{exec:jest.fn().mockResolvedValue(mario_doc)})
-        const res = await request(app).get('/api/v1/il_mio_profilo').set("x-access-token",token).send()
+        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
 
+        const res = await request(app).get('/api/v1/il_mio_profilo').set("x-access-token",token).send()
+        console.log(res.body.message)
         expect(res.status).toBe(200)
     })
 })

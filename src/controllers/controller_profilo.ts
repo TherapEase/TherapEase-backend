@@ -57,13 +57,16 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
             message:"My_profile obtained successfully!",
             profile:utente
         }
-        next()    
+        next()
+        return
     } catch (error) {
         res.status(500)
         req.body={
             successful:false,
             message:"Server error in retrieving my_profile - failed!"
         }
+        next()
+        return
     }
 }
 
