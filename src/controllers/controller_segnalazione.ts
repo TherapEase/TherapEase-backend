@@ -174,7 +174,7 @@ if(req.body.loggedUser.ruolo == 1) {
         const data=req.body.data
         const gestita=req.body.gestita
 
-        if(!segnalato || !testo || !data){
+        if(!segnalato || !testo || !data || !gestita){
             res.status(400)
             req.body={
                 successful: false,
