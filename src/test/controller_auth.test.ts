@@ -146,6 +146,7 @@ describe('POST /api/v1/registrazione e api/v1/login',()=>{
             username:'mario_rossi',
             password:'abcABC123?'
         })
+        expect(res.status).toBe(401)
     })
     
 })

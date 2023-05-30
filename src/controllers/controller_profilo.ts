@@ -193,9 +193,9 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
             return
         }
         if(utente.ruolo==1)
-            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario')
+            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario').exec()
         else if(utente.ruolo==2)
-            utente = await Terapeuta.findById(req.params.id,'username ruolo nome cognome email cf foto_profilo data_nascita associati limite_clienti indirizzo recensioni')
+            utente = await Terapeuta.findById(req.params.id,'username ruolo nome cognome email cf foto_profilo data_nascita associati limite_clienti indirizzo recensioni').exec()
         
         /**
          * 
