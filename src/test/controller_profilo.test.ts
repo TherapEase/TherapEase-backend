@@ -1,7 +1,6 @@
 import request from 'supertest'
 import { app } from '../server'
 import mongoose from 'mongoose'
-import jwt from 'jsonwebtoken'
 
 import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
