@@ -13,23 +13,14 @@ import { send_mail } from './gmail_connector'
 //metodo per visualizzare tutte le segnalazioni
 
 export async function get_all_segnalazioni(req:Request,res:Response,next:NextFunction) {
-    if(req.body.loggedUser.ruolo!=4){ //se non sei un admin
-        res.status(403)
-        req.body={
-            successful:false,
-            message:"Invalid role!"
-        }
-        next()
-        return
-    }
     
-    
+
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
 
     
         console.log("dbconnesso")
-        const catalogo_segnalazioni =await Segnalazione.find({}).exec()   //prendo tutte le segnalazioni
+        const catalogo_segnalazioni =await Segnalazione.find({gestita:false}, {}).exec()   //prendo tutte le segnalazioni
         
         console.log(catalogo_segnalazioni)
         res.status(200)
@@ -174,7 +165,7 @@ if(req.body.loggedUser.ruolo == 1) {
         const data=req.body.data
         const gestita=req.body.gestita
 
-        if(!segnalato || !testo || !data || !gestita){
+        if( !testo || !data){
             res.status(400)
             req.body={
                 successful: false,

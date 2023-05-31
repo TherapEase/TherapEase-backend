@@ -42,6 +42,8 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
             utente = await Cliente.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
         else if (req.body.loggedUser.ruolo==2)
             utente = await Terapeuta.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limite_clienti indirizzo').exec()
+        else if(req.body.loggedUser.ruolo==4)
+            utente = await Utente.findById(req.body.loggedUser._id, 'username ruolo')
         else{
             res.status(403)
             req.body={
@@ -233,13 +235,13 @@ export async function get_all_clienti(req:Request,res:Response,next:NextFunction
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         // console.log("dbconnesso")
-        const catalogo_terapeuti=await Cliente.find({ruolo:1}, 'nome cognome foto_profilo')
+        const catalogo_clienti=await Cliente.find({ruolo:1}, 'nome cognome foto_profilo')
         // console.log(catalogo_terapeuti)
         res.status(200)
         req.body={
             successful:true,
             message:"Client catalog retrieved successfully!",
-            catalogo: catalogo_terapeuti
+            catalogo: catalogo_clienti
         }
     } catch (err) {
         res.status(500)
