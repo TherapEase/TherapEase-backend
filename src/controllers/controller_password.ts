@@ -14,6 +14,14 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
     const mail = req.body.email_address
     const cf= req.body.codice_fiscale
 
+    if(!(username&&mail&&cf)){
+        res.status(400)
+        req.body={
+            successful:false,
+            message:"Please specify all fields"
+        }
+    }
+
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const utente = await Utente.findOne({username:username}).exec()
@@ -35,7 +43,6 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
         })
         console.log(new_password)
         const hashed_password = await check_and_hash(new_password)
-        console.log(hashed_password)
         let utente_completo
         if(utente.ruolo==1)
             utente_completo = await Cliente.findOneAndUpdate({username:username, email:mail,cf:cf},{password:hashed_password}).exec()      
@@ -43,8 +50,6 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
             utente_completo = await Terapeuta.findOneAndUpdate({username:username, email:mail,cf:cf},{password:hashed_password}).exec()
         
         if(!utente_completo) {
-            console.log(utente_completo)
-            console.log(username+mail+cf)
             res.status(404)
             req.body={
                 successful:false,
