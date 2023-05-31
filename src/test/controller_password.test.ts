@@ -1,6 +1,7 @@
 import request from 'supertest'
 import { app } from '../server'
 import mongoose from 'mongoose'
+import bcrypt from 'bcrypt'
 import { createToken } from '../controllers/controller_auth'
 import { JWTToken } from '../schemas/token_schema'
 
@@ -14,7 +15,7 @@ describe("test /api/v1/cambio_password",()=>{
         mario_doc={
             _id:"123",
             username:"mario",
-            password:"$2b$08$eZn3ZBFTgjqO9Y.7IKrEOukAj3nsPbec/gMPwWnV2gim.yhVmawSi",
+            password:bcrypt.hashSync("ABCabc123$",parseInt(process.env.SALT_ROUNDS)),
             ruolo:1,
             nome:"mario",
             cognome:"rossi",
@@ -43,7 +44,8 @@ describe("test /api/v1/cambio_password",()=>{
     })
     it('POST /api/v1/cambio_password di autente autenticato con password uguale alla vecchia',async () => {
         Utente.findByIdAndUpdate=jest.fn().mockImplementation((_id,pass)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        const res = await request(app).post('/api/v1/cambio_password/').set("x-access_token",token).send({
+
+        const res = await request(app).post('/api/v1/cambio_password/').set("x-access-token",token).send({
             password:"ABCabc123$"
         })
         expect(res.status).toBe(409)
