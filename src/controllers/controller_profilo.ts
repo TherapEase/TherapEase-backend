@@ -229,6 +229,56 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
     }
 }
 
+export async function delete_profilo(req:Request,res:Response,next:NextFunction){
+    /**
+     * DELETE /path --> non ha body
+     */
+    const _id = req.params.id
+    if(!_id){
+        res.status(400)
+        req.body={
+            successful:false,
+            message:"Not enough arguments!"
+        }
+    }
+       //se _id e token corrispondono o se il token è amministrativo allora posso eliminare
+    if(!(req.body.loggedUser._id==_id||req.body.loggedUser.ruolo==4)){
+        res.status(403)
+        req.body={
+            successful:false,
+            message:"Not authorized to delete this profile!"
+        }
+    }
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let utente = await Utente.findByIdAndDelete(_id).exec()
+        if(!utente){
+            res.status(404)
+            req.body={
+                successful:false,
+                message:"This user doesn't exist!"
+            }
+            next()
+            return
+        }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"User deleted successfully!"
+        }
+        next()
+        return
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal server error!"
+        }
+        next()
+        return
+    }
+}
+
 /**
  * 
  * TODO: aggiungere unique ai campi univoci degli schemi
