@@ -39,7 +39,8 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
             length:12,
             numbers:true,
             symbols:true,
-            exclude:'"#^()+_\-=}{[\]|:;"/.><,`~"'
+            exclude:'"#^()+_\-=}{[\]|:;"/.><,`~"',
+            strict:true
         })
         console.log(new_password)
         const hashed_password = await check_and_hash(new_password)
@@ -73,6 +74,8 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
             successful:false,
             message:"Server error in password recovery - failed!"
         }
+        next()
+        return
     }
 }
 
@@ -113,10 +116,13 @@ export async function cambio_password(req:Request,res:Response,next:NextFunction
         next()
         return
     } catch (error) {
+        console.log("error catched")
         res.status(500)
         req.body={
             successful:false,
             message:"Server error in password change - failed!"
-        }        
+        }     
+        next()
+        return   
     }
 }
