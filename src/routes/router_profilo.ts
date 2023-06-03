@@ -16,6 +16,12 @@ profilo_router.get('/il_mio_profilo',tokenCheck, get_my_profilo, (req:Request,re
 profilo_router.post('/il_mio_profilo/modifica',tokenCheck, modify_profilo, (req:Request,res:Response)=>{
     res.json(req.body)
 })
+profilo_router.delete('/il_mio_profilo/elimina',tokenCheck,(req:Request,res:Response,next:NextFunction)=>{
+    req.params.id=req.body.loggedUser._id
+    next()
+},delete_profilo,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
 
 profilo_router.get('/profilo/:id',tokenCheck,get_profilo,(req:Request,res:Response)=>{
     res.json(req.body)
