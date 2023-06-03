@@ -2,6 +2,7 @@ import { Request,Response,NextFunction } from 'express'
 import mongoose from 'mongoose'
 import { IProdotto, Prodotto } from '../schemas/prodotto_schema'
 import { Cliente } from '../schemas/cliente_schema'
+import { ISessione, Sessione } from '../schemas/sessione_stripe_schema'
 
 export async function inserisci_prodotto(req:Request,res:Response,next:NextFunction){
     
@@ -173,6 +174,12 @@ export async function checkout(req:Request,res:Response,next:NextFunction){
             return 
         }
 
+        const sessione_to_save= new Sessione<ISessione> ({
+            n_gettoni: presente.n_gettoni   ,
+            id_cliente: req.body.loggedUser._id
+        })
+        await Sessione.create(sessione_to_save)
+
         const stripe = require('stripe')(process.env.SK_STRIPE);
         console.log("stripe begin")
         const session=await stripe.checkout.sessions.create({
@@ -188,9 +195,13 @@ export async function checkout(req:Request,res:Response,next:NextFunction){
                 },
                 quantity: 1,
             }],
-            success_url: "http://localhost:3001/prodotto/checkout_success", // to change
-            cancel_url: "http://localhost:3001/prodotto/checkout_failed", // to change con una pagina con un messaggio di errore
+            success_url: "http://localhost:3001/api/v1/prodotto/checkout_success/"+sessione_to_save._id, // to change
+            cancel_url: "http://localhost:3001/api/v1/prodotto/checkout_failed", // to change con una pagina con un messaggio di errore
         })
+
+
+
+        console.log(session);
 
         res.status(200)
         req.body={
@@ -217,38 +228,38 @@ export async function checkout(req:Request,res:Response,next:NextFunction){
 // E' L'INSICUREZZA FATTA A FUNZIONE MA NON SO COME ALTRO FARE
 export async function checkout_success(req:Request,res:Response,next:NextFunction){
     
-    // controllo ruolo
-    if(req.body.loggedUser.ruolo!=1){
-        res.status(403)
-        req.body={
-            successful: false,
-            message: "Request denied!"
-        }
-        next()
-        return 
-    }
-    
     try {
         // controllo presenza prodotto
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        let presente= await Prodotto.findById(req.params.id).exec()
+        let presente= await Sessione.findById(req.params.id).exec()
         if(!presente){
             res.status(409)
             req.body={
                 successful: false,
-                message: "Element doesn’t exist or can’t be removed!"
+                message: "Element doesn’t exist!"
             }
             next()
             return 
         }
 
-        aggiungi_gettoni(req.body.loggedUser._id, presente.n_gettoni)
+        aggiungi_gettoni(presente.id_cliente, presente.n_gettoni)
+        console.log("gettoni aggiunti")
+        await Sessione.findByIdAndDelete(req.params.id)
+
+
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Gettoni aggiunti!"
+        }
+        next()
+        return
     
     } catch (err) {
         res.status(500)
         req.body={
             successful:false,
-            message:"Server error in redirect - failed!"+ err
+            message:"Server error checkout success - failed!"+ err
         }
         next()
         return
