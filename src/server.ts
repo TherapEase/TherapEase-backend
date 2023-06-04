@@ -5,7 +5,9 @@ import {defaultRoute} from './routes/routes'
 import bodyParser from 'body-parser';
 import cors from 'cors'
 import { blacklist_cleaner } from './controllers/controller_logout';
-import scheduler from 'node-schedule'
+import scheduler from 'node-schedule';
+import {Server} from 'socket.io';
+import http from 'http'
 
   
 export const app = express();
@@ -35,8 +37,13 @@ const job = scheduler.scheduleJob(clean_tokens,async function(){
     console.log("Blacklist cleaned")
 })
 
+const server = http.createServer(app)
+export const io = new Server(server)
+io.on('connection',()=>{
+    console.log('an user connected')
+})
 // Server setup
-app.listen(process.env.SERVER_PORT,() => {
+server.listen(process.env.SERVER_PORT,() => {
     console.log('The application is listening on port http://localhost:'+process.env.SERVER_PORT);
 })
 
