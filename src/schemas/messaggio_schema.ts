@@ -1,6 +1,6 @@
 import {Schema, model} from "mongoose"
 
-interface Messaggio{
+export interface IMessaggio{
     testo: String,
     data: Date,
     mittente: String, //bisogna capire come gestire l'id ereditario
@@ -26,4 +26,4 @@ const schema= new Schema({
     letto:{type:Boolean, default:false}
 })
 
-export const Messaggio = model<Messaggio>('Messaggio', schema)
+export const Messaggio = model<IMessaggio>('Messaggio', schema,"Messaggi")
