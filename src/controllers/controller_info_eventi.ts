@@ -20,7 +20,8 @@ export async function aggiungi_evento(req:Request,res:Response,next:NextFunction
     const data= req.body.data
     const foto= req.body.foto
     const testo=req.body.testo
-    if(!data || !testo){
+    const titolo=req.body.titolo
+    if(!data || !testo || !titolo){
         res.status(400)
         req.body={
             successful: false,
@@ -30,45 +31,72 @@ export async function aggiungi_evento(req:Request,res:Response,next:NextFunction
         return
     }
 
+
+    // controllo che la data sia nel futuro
+    if(new Date(data).getTime() <=Date.now()){
+        res.status(400)
+        req.body={
+            successful:false,
+            message:"Cannot add an event in the past!"
+        }
+        next()
+        return 
+    }
+
     try {
         mongoose.connect(process.env.DB_CONNECTION_STRING)
 
-        let schema_info;
-        if(!data){
-            schema_info=new Info<IInfo>({
-                testo: testo,
-                data: data,
-                foto: ""
-            })
+        // controllo evento gia presente
+        const presente=await Info.findOne({data:data, titolo: titolo, testo:testo})
+        if(!presente){
+            let schema_info;
+            if(!foto){
+                schema_info=new Info<IInfo>({
+                    testo: testo,
+                    data: data,
+                    foto: "",
+                    titolo: titolo
+                })
+            }else{
+                schema_info=new Info<IInfo>({
+                    testo: testo,
+                    data: data,
+                    foto: foto,
+                    titolo: titolo
+                })
+            }
+    
+            await Info.create(schema_info)
+            console.log("DONE")
+    
+            res.status(200)
+            req.body={
+                successful:true,
+                message:"Event successfully added!"
+            }
+            next()
+            return
         }else{
-            schema_info=new Info<IInfo>({
-                testo: testo,
-                data: data,
-                foto: foto
-            })
+            res.status(409)
+            req.body={
+                successful:false,
+                message:"Event already present!"
+            }
+            next()
+            return 
         }
-
-        await Info.create(schema_info)
-
-
-        res.status(200)
-        req.body={
-            successful:true,
-            message:"Event successfully added!"
-        }
-        next()
-
     } catch (error) {
         res.status(500)
         req.body={
             successful:false,
-            message:"Server error in adding event - failed!"
+            message:"Server error in adding event - failed! "+ error
         }
         next()
     }
 
 }
 
+// Se l'evento non esiste gia non da errore, va bene?
 export async function rimuovi_evento(req:Request,res:Response,next:NextFunction) {
     
     // controllo ruolo
@@ -84,13 +112,12 @@ export async function rimuovi_evento(req:Request,res:Response,next:NextFunction)
 
     try {
         mongoose.connect(process.env.DB_CONNECTION_STRING)
-
-
+        await Info.findByIdAndDelete(req.params.id)
 
         res.status(200)
         req.body={
             successful:true,
-            message:"Event successfully added!"
+            message:"Event successfully deleted or not present!"
         }
         next()
 
@@ -98,9 +125,8 @@ export async function rimuovi_evento(req:Request,res:Response,next:NextFunction)
         res.status(500)
         req.body={
             successful:false,
-            message:"Server error in logout - failed!"
+            message:"Server error in event elimination - failed!"
         }
         next()
     }
-
 }

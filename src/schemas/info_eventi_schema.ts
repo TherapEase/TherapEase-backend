@@ -3,13 +3,15 @@ import {Schema, model} from 'mongoose'
 export interface IInfo{
     testo: String,
     data: Date,
-    foto: String
+    foto: String,
+    titolo: String
 }
 
 const schema= new Schema({
-    Test: {type: String, required:true},
+    testo: {type: String, required:true},
     data: {type:Date, required:true},
     foto: {type: String, default:""},
+    titolo: {type: String, required:true}
 })
 
 
