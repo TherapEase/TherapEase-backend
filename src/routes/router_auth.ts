@@ -27,6 +27,6 @@ auth_router.post('/cambio_password',tokenCheck, cambio_password, (req:Request,re
     res.json(req.body)
 })
 
-auth_router.get('/conferma_mail/:ver_token',tokenCheck,conferma_mail,(req:Request,res:Response)=>{
+auth_router.get('/conferma_mail/:ver_token',conferma_mail,(req:Request,res:Response)=>{
     res.json(req.body)
 })

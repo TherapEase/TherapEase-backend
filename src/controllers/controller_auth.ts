@@ -252,15 +252,6 @@ export async function conferma_mail(req:Request, res:Response,next :NextFunction
         next()
         return
     }
-    if(req.body.loggedUser._id!=decoded._id){
-        res.status(403)
-        req.body={
-            successful:false,
-            message: "This mail isn't associated with the logged user"
-        }
-        next()
-        return
-    }
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let utente
@@ -274,6 +265,8 @@ export async function conferma_mail(req:Request, res:Response,next :NextFunction
                 successful:false,
                 message:"User not found"
             }
+            next()
+            return
         }
         res.status(200)
         req.body={
