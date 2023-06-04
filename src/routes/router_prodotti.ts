@@ -21,17 +21,11 @@ prodotti_router.get('/prodotto/checkout/:id' ,tokenCheck, checkout, (req:Request
 })
 
 prodotti_router.get('/prodotto/checkout_success/:id' ,checkout_success, (req:Request,res:Response)=>{
-    res.end(`<h1>Operazione avvenuta con successo</h1>
-    <a href="http://localhost:8080/dashboard">Torna alla Home</a>
-                `)
-    //res.json(req.body)
+    res.redirect("http://localhost:8080/profilo")
 })
 
 prodotti_router.get('/prodotto/checkout_failed', checkout_failed, (req:Request,res:Response)=>{
-    res.end(`<h1>Operazione NON avvenuta con successo</h1>
-    <a href="http://localhost:8080/dashboard">Torna alla Home</a>
-                `)
+    res.redirect("http://localhost:8080/offerta")
 })
-
 
 
