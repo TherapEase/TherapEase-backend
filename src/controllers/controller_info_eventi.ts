@@ -130,3 +130,26 @@ export async function rimuovi_evento(req:Request,res:Response,next:NextFunction)
         next()
     }
 }
+
+export async function get_all_eventi(req:Request,res:Response,next:NextFunction) {
+    try {
+        mongoose.connect(process.env.DB_CONNECTION_STRING)
+        const eventi=await Info.find()
+
+        res.status(200)
+        req.body={
+            successful:true,
+            eventi:eventi,
+            message:"Event successfully deleted or not present!"
+        }
+        next()
+
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Server error in showing events - failed!"
+        }
+        next()
+    }
+}
