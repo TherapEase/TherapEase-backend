@@ -13,6 +13,6 @@ segnalazioni_router.get('/catalogo_segnalazioni', get_all_segnalazioni, (req:Req
     res.json(req.body)
 })
 
-segnalazioni_router.get('/segnalazione/gestisci/:id' ,tokenCheck, gestisci_segnalazione, (req:Request,res:Response)=>{
+segnalazioni_router.post('/segnalazione/gestisci/:id' ,tokenCheck, gestisci_segnalazione, (req:Request,res:Response)=>{
     res.json(req.body)
 })

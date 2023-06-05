@@ -21,11 +21,18 @@ export async function read_recensioni_associato(req:Request,res:Response,next:Ne
         return
     }
 
+        
     
 
         try {
             await mongoose.connect(process.env.DB_CONNECTION_STRING)
+
+            //const io = await Cliente.findById({_id:req.body.loggedUser._id}, 'associato')
+            
+            //const id_associato = io
+            
     
+
         
             console.log("dbconnesso")
             const catalogo_recensioni =await Recensione.find({recensito:req.params.id}, {}).exec()   //prendo tutte le recensioni
@@ -43,7 +50,7 @@ export async function read_recensioni_associato(req:Request,res:Response,next:Ne
             res.status(500)
             req.body={
                 successful:false,
-                message:"Server error in review catalog - failed!"
+                message:"Server error in review catalog - failed!"+err
             }
         }
         next()
@@ -165,11 +172,11 @@ export async function scrivi_recensione(req:Request,res:Response,next:NextFuncti
 
         const voto=req.body.voto
         const testo=req.body.testo
-        const autore=req.body.loggedUser.username
-        const data=req.body.data
+        const autore=id_cliente
+        const data=new Date()
         const recensito=id_terapeuta
 
-        if(!voto || !data) {
+        if(!voto) {
             res.status(400)
             req.body={
                 successful: false,
