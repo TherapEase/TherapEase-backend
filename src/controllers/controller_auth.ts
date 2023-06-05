@@ -191,10 +191,9 @@ export async function login(req:Request,res:Response,next:NextFunction) {
             utente_completo = await Cliente.findById(utente_trovato._id).exec()
         else if (utente_trovato.ruolo==2)
             utente_completo = await Terapeuta.findById(utente_trovato._id).exec()
-        if (utente_trovato.ruolo!=4  && utente_trovato.ruolo!=3){
-            if(!utente_completo.mail_confermata)
-                await send_confirmation_mail(utente_completo._id.toString(),utente_completo.email.toString())
-        }
+        if(!utente_completo.mail_confermata)
+            await send_confirmation_mail(utente_completo._id.toString(),utente_completo.email.toString())
+        // res.status(200).json({ success: true, token: token })
         res.status(200)
         req.body={
             successful:true,

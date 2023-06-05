@@ -42,8 +42,17 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
             utente = await Cliente.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
         else if (req.body.loggedUser.ruolo==2)
             utente = await Terapeuta.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limite_clienti indirizzo').exec()
-        else{
+
+        else if(req.body.loggedUser.ruolo==4){
             utente = await Utente.findById(req.body.loggedUser._id,'username ruolo').exec()
+        }else{
+            res.status(403)
+            req.body={
+                successful:false,
+                message:"Invalid role!"
+            }
+            next()
+            return
         }
         res.status(200)
         req.body={
