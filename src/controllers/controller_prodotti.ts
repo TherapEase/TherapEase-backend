@@ -225,7 +225,6 @@ export async function checkout(req:Request,res:Response,next:NextFunction){
 };
 
 
-// E' L'INSICUREZZA FATTA A FUNZIONE MA NON SO COME ALTRO FARE
 export async function checkout_success(req:Request,res:Response,next:NextFunction){
     
     try {
@@ -267,7 +266,6 @@ export async function checkout_success(req:Request,res:Response,next:NextFunctio
 };
 
 
-// FA SCHIFO, PROBABILMENTE SI PUO' FARE TUTTA DI FRONT DIRETTAMENTE
 export async function checkout_failed(req:Request,res:Response,next:NextFunction){
     console.log("Checkout failed!")
 };
