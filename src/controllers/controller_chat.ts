@@ -122,7 +122,7 @@ export async function get_all_messaggi(req:Request,res:Response,next:NextFunctio
     }
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        let chat = await Chat.findByIdAndUpdate(id_chat,{"messaggi.letto":true}).exec()
+        let chat = await Chat.findByIdAndUpdate(id_chat,{$set:{"messaggi.$.letto":true}}).exec()
         if(!chat){
             res.status(404)
             req.body={
@@ -132,7 +132,7 @@ export async function get_all_messaggi(req:Request,res:Response,next:NextFunctio
             next()
             return
         }
-        if(!chat.messaggi){
+        if(!chat){
             res.status(200)
             req.body={
                 successful:true,
