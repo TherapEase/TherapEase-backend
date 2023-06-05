@@ -1,10 +1,11 @@
 import {Request, Response,NextFunction} from 'express'
 import mongoose from 'mongoose'
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 
 import {Utente,IUtente} from '../schemas/utente_schema'
 import {Cliente, ICliente} from '../schemas/cliente_schema'
 import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
+import { send_mail } from './gmail_connector'
 
 export async function registrazione(req:Request,res:Response,next:NextFunction) {
     /* STRUTTURA RICHIESTA: utente base
@@ -102,7 +103,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         await utente_schema.save();
         // console.log("utente salvato")
         // console.log(utente_schema)
-
+        await send_confirmation_mail(utente_schema._id.toString(),utente_schema.email.toString())
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
 
         //in alernativa usare res.redirect(/login) e sfruttare il login handler
@@ -153,7 +154,7 @@ export async function login(req:Request,res:Response,next:NextFunction) {
     try {
         // recupero utente dal database
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        const utente_trovato = await Utente.findOne({username: username}).exec()
+        let utente_trovato = await Utente.findOne({username: username}).exec()
 
         // se non esiste, ritorno un errore
         if (!utente_trovato){
@@ -162,6 +163,8 @@ export async function login(req:Request,res:Response,next:NextFunction) {
                 successful: false,
                 message: "User not found!"
             }
+            next()
+            return
         };
 
         // controllo la password
@@ -181,7 +184,15 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         //creo il token aggiungendo i vari campi utili
         
         const token = createToken(utente_trovato._id.toString(),utente_trovato.username.toString(),utente_trovato.ruolo)
-    
+        
+        //recupero il cliente per inviare la mail di conferma nel caso non fosse confermato
+        let utente_completo
+        if(utente_trovato.ruolo==1)
+            utente_completo = await Cliente.findById(utente_trovato._id).exec()
+        else if (utente_trovato.ruolo==2)
+            utente_completo = await Terapeuta.findById(utente_trovato._id).exec()
+        if(!utente_completo.mail_confermata)
+            await send_confirmation_mail(utente_completo._id.toString(),utente_completo.email.toString())
         // res.status(200).json({ success: true, token: token })
         res.status(200)
         req.body={
@@ -209,4 +220,68 @@ function createToken(_id:string, username:string, ruolo:Number):string{
         username:username,
         ruolo:ruolo
     },process.env.TOKEN_SECRET,{expiresIn:"2 days"})
+}
+
+async function send_confirmation_mail(_id:string, email:string){
+    const ver_token = jwt.sign({
+        _id:_id,
+        email: email
+    },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
+    const testo="Clicca sul link seguente per verificare il tuo indirizzo di posta elettronica: "+"REDIRECT URL"+ver_token //mettere il link a cui si viene ridiretti al front
+    await send_mail("Verify your email address",testo,email)
+}
+
+export async function conferma_mail(req:Request, res:Response,next :NextFunction){
+    const ver_token = req.params.ver_token
+    if(!ver_token){
+        res.status(400),
+        req.body={
+            successful:false,
+            message:"No token provided"
+        }
+        next()
+        return
+    }
+    const decoded = jwt.verify(ver_token,process.env.TOKEN_SECRET) as JwtPayload
+    if(!decoded){
+        res.status(403)
+        req.body={
+            successful:false,
+            message:"The provided token isn't valid!"
+        }
+        next()
+        return
+    }
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let utente
+        if(req.body.loggedUser.ruolo==1)
+            utente= Cliente.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
+        else if (req.body.loggedUser.ruolo==2)
+            utente = Terapeuta.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
+        if(!utente){
+            res.status(404)
+            req.body={
+                successful:false,
+                message:"User not found"
+            }
+            next()
+            return
+        }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Email verified"
+        }
+        next()
+        return
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal server error in mail verification"
+        }
+        next()
+        return
+    }
 }
