@@ -2,6 +2,7 @@ import { Request,Response,NextFunction } from 'express'
 import mongoose from 'mongoose'
 import { IProdotto, Prodotto } from '../schemas/prodotto_schema'
 import { Cliente } from '../schemas/cliente_schema'
+import { ISessione, Sessione } from '../schemas/sessione_stripe_schema'
 
 export async function inserisci_prodotto(req:Request,res:Response,next:NextFunction){
     
@@ -146,7 +147,7 @@ export async function aggiungi_gettoni(id_cliente:string, n_gettoni:Number) {
     await Cliente.findOneAndUpdate({_id:id_cliente},{n_gettoni:new_gettoni}).exec()
 }
 
-export async function acquisto(req:Request,res:Response,next:NextFunction){
+export async function checkout(req:Request,res:Response,next:NextFunction){
     
     // controllo ruolo
     if(req.body.loggedUser.ruolo!=1){
@@ -173,41 +174,40 @@ export async function acquisto(req:Request,res:Response,next:NextFunction){
             return 
         }
 
-        // creazione clienteStripe se non è già presente
-        const stripe = require('stripe')(process.env.SK_STRIPE);
-        let cliente= await Cliente.findOne({_id:req.body.loggedUser._id}).exec()
-        if(cliente.stripeCustomerId==""){
-            const customer= await stripe.customers.create({
-                email: "annachiarafortuna01@gmail.com",//cliente.email as string, //serve sempre una mail valida
-                name: cliente.nome
-            })
-            console.log(customer)
-            cliente= await Cliente.findOneAndUpdate({_id:req.body.loggedUser._id}, {stripeCustomerId:customer.id}, {new:true}).exec()
-            console.log(cliente)
-        }
-        
-        //controllo gettoni non negativi
-        if(cliente.n_gettoni.valueOf()<0){
-            res.status(500)
-            req.body={
-                successful:false,
-                message:"Internal Error: gettoni is less than 0"
-            }
-        }
-        // pagamento
-        await stripe.paymentIntents.create({
-            amount: presente.prezzo*100, //in centesimi
-            currency: 'eur',
-            customer: cliente.stripeCustomerId,
-            payment_method: 'pm_card_visa' //penso che corrisponda a una carta fake che vale per i pagamenti
-        });
+        const sessione_to_save= new Sessione<ISessione> ({
+            n_gettoni: presente.n_gettoni   ,
+            id_cliente: req.body.loggedUser._id
+        })
+        await Sessione.create(sessione_to_save)
 
-        aggiungi_gettoni(req.body.loggedUser._id, presente.n_gettoni)
+        const stripe = require('stripe')(process.env.SK_STRIPE);
+        console.log("stripe begin")
+        const session=await stripe.checkout.sessions.create({
+            payment_method_types:['card'],
+            mode: 'payment', //one time payment
+            line_items: [{
+                price_data:{
+                    currency: 'eur',
+                    product_data: {
+                        name: presente.nome,
+                    }, 
+                    unit_amount: presente.prezzo*100, // in cents
+                },
+                quantity: 1,
+            }],
+            success_url: "http://localhost:3001/api/v1/prodotto/checkout_success/"+sessione_to_save._id, // to change
+            cancel_url: "http://localhost:3001/api/v1/prodotto/checkout_failed", // to change con una pagina con un messaggio di errore
+        })
+
+
+
+        console.log(session);
 
         res.status(200)
         req.body={
             successful:true,
-            message:"Successful payment!"
+            url: session.url,
+            message:"Successful redirect to checkout!"
         }
         next()
         return
@@ -216,10 +216,58 @@ export async function acquisto(req:Request,res:Response,next:NextFunction){
         res.status(500)
         req.body={
             successful:false,
-            message:"Server error in buying product - failed!"+ err
+            message:"Server error in redirect - failed!"+ err
         }
         next()
         return
     }
 
+};
+
+
+// E' L'INSICUREZZA FATTA A FUNZIONE MA NON SO COME ALTRO FARE
+export async function checkout_success(req:Request,res:Response,next:NextFunction){
+    
+    try {
+        // controllo presenza prodotto
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let presente= await Sessione.findById(req.params.id).exec()
+        if(!presente){
+            res.status(409)
+            req.body={
+                successful: false,
+                message: "Element doesn’t exist!"
+            }
+            next()
+            return 
+        }
+
+        aggiungi_gettoni(presente.id_cliente, presente.n_gettoni)
+        console.log("gettoni aggiunti")
+        await Sessione.findByIdAndDelete(req.params.id)
+
+
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Gettoni aggiunti!"
+        }
+        next()
+        return
+    
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Server error checkout success - failed!"+ err
+        }
+        next()
+        return
+    }
+};
+
+
+// FA SCHIFO, PROBABILMENTE SI PUO' FARE TUTTA DI FRONT DIRETTAMENTE
+export async function checkout_failed(req:Request,res:Response,next:NextFunction){
+    console.log("Checkout failed!")
 };
