@@ -4,7 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "jest --forceExit",
+    "test": "jest --forceExit --detectOpenHandles",
+    "test:ci": "jest --forceExit --detectOpenHandles --ci",
     "dev": "npx tsc && node out/server.js",
     "build": "npx tsc",
     "start": "node out/server.js"
