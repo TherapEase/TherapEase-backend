@@ -1,11 +1,14 @@
 import { Request,Response,NextFunction, Router } from "express";
-import { get_all_messaggi, get_nuovi_messaggi, open_chat, send_messaggio } from "../controllers/controller_chat";
+import { close_chat, get_all_messaggi, get_nuovi_messaggi, open_chat, send_messaggio } from "../controllers/controller_chat";
 import { tokenCheck } from "../controllers/token_checker";
 import { io } from "../server";
 
 export const chat_router = Router()
 
-chat_router.post('/chat/nuova_chat',tokenCheck,open_chat,(req:Request,res:Response)=>{
+chat_router.get('/chat/nuova_chat',tokenCheck,open_chat,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+chat_router.get('chat/:id_chat/close',tokenCheck,close_chat,(req:Request,res:Response)=>{
     res.json(req.body)
 })
 

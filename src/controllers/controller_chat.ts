@@ -48,7 +48,47 @@ export async function open_chat(req:Request,res:Response,next:NextFunction) {
         return
     }
 }
-
+export async function close_chat(req:Request, res:Response, next:NextFunction) {
+    //segna la chat come risolta
+    const id_chat = req.params.id_chat
+    if(!id_chat){
+        res.status(400)
+        req.body={
+            successful:false,
+            message: "Not enough arguments!"
+        }
+        next()
+        return
+    }
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let chat = Chat.findByIdAndUpdate(id_chat,{risolta:true}).exec()
+        if(!chat){
+            res.status(404)
+            req.body={
+                successful:false,
+                message:"This chat doesn't exist!"
+            }
+            next()
+            return
+        }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Chat closed successfully!"
+        }
+        next()
+        return
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal server error"
+        }
+        next()
+        return
+    }
+}
 export async function get_nuovi_messaggi(req:Request,res:Response,next:NextFunction){
     /**
      * ritorna i messaggi non letti nella chat
