@@ -1,19 +1,62 @@
 import { Request,Response,NextFunction } from "express";
 import mongoose from 'mongoose'
 
-import { Messaggio, IMessaggio } from "../schemas/messaggio_schema";
 import { Utente } from "../schemas/utente_schema";
+import { Chat, Messaggio } from "../schemas/chat_schema";
+
+export async function open_chat(req:Request,res:Response,next:NextFunction) {
+    /**
+     * route loggata, l'utente è nel body
+     * il supporto tecnico viene scelto casualmente tra quelli che non hanno chat aperte
+     */
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        //ricerca gli utenti st che non sono in una chat aperta 
+        const st = await Utente.find({ruolo:3, _id:{$nin: await Chat.find({risolta:false},'supporto_tecnico').exec()}}).exec()
+        console.log(st)
+        if(!st.length){
+            res.status(403)
+            req.body={
+                successful:false,
+                message:"No support available!"
+            }
+            next()
+            return
+        }
+        const chat = new Chat({
+            supporto_tecnico: st[Math.floor(Math.random()*st.length)]._id,
+            utente: req.body.loggedUser._id,
+            data_apertura:Date.now()
+        })
+        await Chat.create(chat)
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Created new chat",
+            chat_id:chat._id
+        }
+        next()
+        return
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal server error"
+        }
+        console.log(error)
+        next()
+        return
+    }
+}
 
 export async function get_nuovi_messaggi(req:Request,res:Response,next:NextFunction){
     /**
-     * ritorna i messaggi non letti per il destinatario
-     * destinatario= utente autenticato
-     * mittente = nei parametri della query, come _id
-     * 
+     * ritorna i messaggi non letti nella chat
+     * l'id della chat è specificato nei parametri
      */
 
-    const mittente = req.params.mittente
-    if(!mittente){
+    const id_chat = req.params.id_chat
+    if(!id_chat){
         res.status(400)
         req.body={
             successful:false,
@@ -24,18 +67,21 @@ export async function get_nuovi_messaggi(req:Request,res:Response,next:NextFunct
     }
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        if(! await Utente.findById(mittente).exec()){
+        if(! await Chat.findById(id_chat).exec()){
             res.status(404)
             req.body={
                 successful:false,
-                message:"This user doesn't exist"
+                message:"This chat doesn't exist"
             }
             next()
             return
         }
-        let messaggi = await Messaggio.find({mittente:mittente,destinatario:req.body.loggedUser._id,letto:false}).exec()
-        await Messaggio.updateMany({mittente:mittente,destinatario:req.body.loggedUser._id,letto:false},{$set:{letto:true}}).exec()
-        if(!messaggi){
+        //let messaggi = await Messaggio.find({mittente:mittente,destinatario:req.body.loggedUser._id,letto:false}).exec()
+        let chat = await Chat.findOneAndUpdate({_id:id_chat,risolta:false,"messaggi.letto":false},{$set:{"messaggi.$.letto":true}}).exec()
+        //let chat = await Chat.findOne({_id:id_chat,risolta:false, "messaggi.letto":false}).exec()
+        //manca la conferma di lettura
+        
+        if(!chat){
             res.status(200)
             req.body={
                 successful:true,
@@ -48,7 +94,7 @@ export async function get_nuovi_messaggi(req:Request,res:Response,next:NextFunct
         req.body={
             successful:true,
             message:"Unread messages retrieved successfully",
-            messaggi:messaggi
+            chat:chat
         }
         next()
         return
@@ -58,13 +104,14 @@ export async function get_nuovi_messaggi(req:Request,res:Response,next:NextFunct
             successful:false,
             message:"Internal Server Error"
         }
+        console.log(error)
         next()
         return
     }
 }
 export async function get_all_messaggi(req:Request,res:Response,next:NextFunction) {
-    const mittente = req.params.mittente
-    if(!mittente){
+    const id_chat = req.params.id_chat
+    if(!id_chat){
         res.status(400)
         req.body={
             successful:false,
@@ -75,18 +122,17 @@ export async function get_all_messaggi(req:Request,res:Response,next:NextFunctio
     }
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        if(! await Utente.findById(mittente).exec()){
+        let chat = await Chat.findByIdAndUpdate(id_chat,{"messaggi.letto":true}).exec()
+        if(!chat){
             res.status(404)
             req.body={
                 successful:false,
-                message:"This user doesn't exist"
+                message:"This chat doesn't exist"
             }
             next()
             return
         }
-        let messaggi = await Messaggio.find({mittente:mittente,destinatario:req.body.loggedUser._id}).exec()
-        await Messaggio.updateMany({mittente:mittente,destinatario:req.body.loggedUser._id},{$set:{letto:true}}).exec()
-        if(!messaggi){
+        if(!chat.messaggi){
             res.status(200)
             req.body={
                 successful:true,
@@ -99,7 +145,7 @@ export async function get_all_messaggi(req:Request,res:Response,next:NextFunctio
         req.body={
             successful:true,
             message:"Messages retrieved successfully",
-            messaggi:messaggi
+            chat:chat
         }
         next()
         return
@@ -115,16 +161,16 @@ export async function get_all_messaggi(req:Request,res:Response,next:NextFunctio
 }
 export async function send_messaggio(req:Request,res:Response,next:NextFunction) {
     /**
-     * POST con: testo, destinatario
-     * Il mittente è l'utente loggato
-     * La data è Date.now()
+     * Mittente loggato,
+     * id_chat parametro query
+     * testo nel body
      */
 
     const testo = req.body.testo
-    const destinatario = req.body.destinatario
+    const id_chat = req.params.id_chat
     const mittente = req.body.loggedUser._id
 
-    if(!testo||!destinatario){
+    if(!testo||!id_chat){
         res.status(400)
         req.body={
             successful:false,
@@ -135,22 +181,18 @@ export async function send_messaggio(req:Request,res:Response,next:NextFunction)
     }
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        if(! await Utente.findById(destinatario).exec()){
+        let chat = await Chat.findById(id_chat).exec() 
+        if(!chat){
             res.status(404)
             req.body={
                 successful:false,
-                message:"This user doesn't exist"
+                message:"This chat doesn't exist"
             }
             next()
             return
         }
-        let messaggio = await Messaggio.create(new Messaggio({
-            testo:testo,
-            data:Date.now(),
-            mittente: mittente,
-            destinatario:destinatario,
-            letto:false
-        }))
+        await chat.updateOne({$push:{messaggi:new Messaggio(testo,new Date(Date.now()),mittente)}}).exec()
+        
         res.status(200)
         req.body={
             successful:true,
