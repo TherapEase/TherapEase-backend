@@ -1,6 +1,6 @@
 import {Router, Response, Request, NextFunction} from 'express'
 import { tokenCheck } from '../controllers/token_checker'
-import { inserisci_prodotto,rimuovi_prodotto,get_prodotti,acquisto } from '../controllers/controller_prodotti'
+import { inserisci_prodotto,rimuovi_prodotto,get_prodotti,checkout, checkout_success, checkout_failed } from '../controllers/controller_prodotti'
 
 
 export const prodotti_router = Router()
@@ -16,6 +16,16 @@ prodotti_router.get('/catalogo_prodotti' ,get_prodotti, (req:Request,res:Respons
     res.json(req.body)
 })
 
-prodotti_router.get('/prodotto/acquisto/:id' ,tokenCheck, acquisto, (req:Request,res:Response)=>{
+prodotti_router.get('/prodotto/checkout/:id' ,tokenCheck, checkout, (req:Request,res:Response)=>{
     res.json(req.body)
 })
+
+prodotti_router.get('/prodotto/checkout_success/:id' ,checkout_success, (req:Request,res:Response)=>{
+    res.redirect("http://localhost:8080/profilo")
+})
+
+prodotti_router.get('/prodotto/checkout_failed', checkout_failed, (req:Request,res:Response)=>{
+    res.redirect("http://localhost:8080/offerta")
+})
+
+
