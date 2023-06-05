@@ -1,7 +1,7 @@
 import {Router, Request,Response,NextFunction} from 'express'
 
 import { tokenCheck } from '../controllers/token_checker'
-import { get_all_terapeuti,get_my_profilo, modify_profilo,get_profilo } from '../controllers/controller_profilo'
+import { get_all_terapeuti,get_my_profilo, modify_profilo,get_profilo, get_all_clienti } from '../controllers/controller_profilo'
 
 export const profilo_router = Router()
 
@@ -18,5 +18,9 @@ profilo_router.post('/il_mio_profilo/modifica',tokenCheck, modify_profilo, (req:
 })
 
 profilo_router.get('/profilo/:id',tokenCheck,get_profilo,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+profilo_router.get('/catalogo_clienti', get_all_clienti ,(req:Request,res:Response)=>{
     res.json(req.body)
 })

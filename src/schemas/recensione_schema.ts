@@ -1,17 +1,19 @@
 import { Schema, model } from "mongoose"
 
-interface Recensione {
+export interface IRecensione {
     voto: Number,
     testo?: String,
-    cliente: String,
+    autore: String,
     data: Date
+    recensito: String
 }
 
 const schema = new Schema({
     voto: { type: Number, required: true },
     testo: { type: String, default: "" },
-    cliente: { type: String, required: true },
-    data: { type: Date, required: true }
+    autore: { type: String, required: true },
+    data: { type: Date, required: true },
+    recensito: { type: String, required: true },
 })
 
-export const Recensione = model<Recensione>('Recensione', schema)
+export const Recensione = model<IRecensione>('Recensione', schema)
