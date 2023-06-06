@@ -24,7 +24,7 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
     //DATA format:2024-11-02T04:20:00.000Z
     const data=req.body.data
     const presenza= req.body.presenza
-    if(!data || !presenza){
+    if(!data){
         res.status(400)
         req.body={
             successful: false,
