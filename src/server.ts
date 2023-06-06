@@ -38,7 +38,17 @@ const job = scheduler.scheduleJob(clean_tokens,async function(){
 })
 
 const server = http.createServer(app)
-export const io = new Server(server)
+export const io = new Server(server,
+    {
+        cors:{
+            origin:"http://localhost:8080"
+        }
+})
+// export const io = new Server({
+    // cors:{
+    //     origin:"http://localhost:8080"
+    // }
+// })
 io.on('connection',()=>{
     console.log('an user connected')
 })

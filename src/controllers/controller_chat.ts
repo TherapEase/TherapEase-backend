@@ -33,7 +33,7 @@ export async function open_chat(req:Request,res:Response,next:NextFunction) {
         req.body={
             successful:true,
             message:"Created new chat",
-            chat_id:chat._id
+            chat:chat
         }
         next()
         return
@@ -126,6 +126,7 @@ export async function get_nuovi_messaggi(req:Request,res:Response,next:NextFunct
             req.body={
                 successful:true,
                 message:"No new messages",
+                chat:chat
             }
             next()
             return
@@ -162,7 +163,8 @@ export async function get_all_messaggi(req:Request,res:Response,next:NextFunctio
     }
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        let chat = await Chat.findByIdAndUpdate(id_chat,{$set:{"messaggi.$.letto":true}}).exec()
+        //let chat = await Chat.findByIdAndUpdate(id_chat,{$set:{"messaggi.$.letto":true}}).exec()
+        let chat = await Chat.findById(id_chat).exec()
         if(!chat){
             res.status(404)
             req.body={
@@ -172,11 +174,12 @@ export async function get_all_messaggi(req:Request,res:Response,next:NextFunctio
             next()
             return
         }
-        if(!chat){
+        if(!chat.messaggi){
             res.status(200)
             req.body={
                 successful:true,
                 message:"No messages found",
+                chat:chat
             }
             next()
             return
@@ -193,7 +196,7 @@ export async function get_all_messaggi(req:Request,res:Response,next:NextFunctio
         res.status(500)
         req.body={
             successful:false,
-            message:"Internal Server Error"
+            message:"Internal Server Error" + error
         }
         next()
         return
