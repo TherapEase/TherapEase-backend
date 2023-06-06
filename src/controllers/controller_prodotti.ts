@@ -168,7 +168,7 @@ export async function checkout(req:Request,res:Response,next:NextFunction){
             res.status(409)
             req.body={
                 successful: false,
-                message: "Element doesn’t exist or can’t be removed!"
+                message: "Element doesn’t exist!"
             }
             next()
             return 
@@ -268,4 +268,9 @@ export async function checkout_success(req:Request,res:Response,next:NextFunctio
 
 export async function checkout_failed(req:Request,res:Response,next:NextFunction){
     console.log("Checkout failed!")
+    res.status(200)
+    req.body={
+        successful:true,
+        message:"Successful redirecting after payment failure!"
+    }
 };

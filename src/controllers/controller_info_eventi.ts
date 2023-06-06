@@ -34,7 +34,7 @@ export async function aggiungi_evento(req:Request,res:Response,next:NextFunction
 
     // controllo che la data sia nel futuro
     if(new Date(data).getTime() <=Date.now()){
-        res.status(400)
+        res.status(409)
         req.body={
             successful:false,
             message:"Cannot add an event in the past!"
@@ -67,7 +67,6 @@ export async function aggiungi_evento(req:Request,res:Response,next:NextFunction
             }
     
             await Info.create(schema_info)
-            console.log("DONE")
     
             res.status(200)
             req.body={
