@@ -100,17 +100,10 @@ export async function read_my_recensioni(req:Request,res:Response,next:NextFunct
     
 }
 
-
-
-
 export async function scrivi_recensione(req:Request,res:Response,next:NextFunction) {
 
-    //cose che bisogna controllare
-    //solo un cliente può scrivere una recensione
-    //il cliente deve essere associato al terapeuta
-
-
-    if(req.body.loggedUser.ruolo!=1){ //se non sei un cliente
+    // controllo ruolo, imposto cliente
+    if(req.body.loggedUser.ruolo!=1){ 
         res.status(403)
         req.body={
             successful:false,
@@ -120,125 +113,112 @@ export async function scrivi_recensione(req:Request,res:Response,next:NextFuncti
         return
     }
 
-    const id_terapeuta=req.params.id     //prendo l'id del terapeuta dai parametri
+    const id_terapeuta=req.params.id   
+    await mongoose.connect(process.env.DB_CONNECTION_STRING)
+    let cliente = req.body.loggedUser    
+    let terapeuta=await Terapeuta.findById(id_terapeuta).exec()   
 
+    // controllo esistenza terapeuta
+    if(!terapeuta){  
+        res.status(404)
+        req.body={
+            successful: false,
+            message: "User not found!"
+        }
+        next()
+        return      
+    }
+
+    if(cliente.ruolo!=1 || terapeuta.ruolo!=2){ 
+        res.status(403)
+        req.body={
+            successful: false,
+            message: "Invalid role!"
+        }
+        next()
+        return  
+    }
+
+    const id_cliente = req.body.loggedUser._id
+    
+    // controllo associazione cliente-terapeuta
+    if(!(terapeuta.associati.includes(id_cliente.toString())||cliente.associato==(id_terapeuta.toString()))){       
+        res.status(409)
+        req.body={
+            successful:false,
+            message: "Client and therapist are not associated!"
+        }
+        next()
+        return
+    }
+
+    //controllo presenza campi
+    const voto=req.body.voto
+    const testo=req.body.testo
+    const autore=id_cliente
+    const data=new Date()
+    const recensito=id_terapeuta
+    if(!voto) {
+        res.status(400)
+        req.body={
+            successful: false,
+            message: "Not enough arguments!"
+        }
+        next()
+        return
+    }
+
+    if(voto<1 || voto>5){
+        res.status(401)
+        req.body={
+            successful: false,
+            message: "Invalid ''voto'', must be <5 and >1!"
+        }
+        next()
+        return
+    }
+
+    try{
+        // controllo se esiste già
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        let cliente = req.body.loggedUser    //il cliente è quello al momento loggato nel sito
-        let terapeuta=await Terapeuta.findById(id_terapeuta).exec()   //cerco il terapeuta
-
-        console.log("cliente: "+JSON.stringify(cliente))
-        console.log("terapeuta: "+terapeuta)
-
-        if(!(terapeuta&&cliente)){    //se non trovo uno di questi due user fallisce tutto
-            res.status(404)
-            req.body={
-                successful: false,
-                message: "User not found!"
-            }
-            next()
-            return      
-        }
-
-        //devo controllare che i ruoli del cliente e del terapeuta siano corretti altrimenti niente funziona
-
-        if(cliente.ruolo!=1 || terapeuta.ruolo!=2){    //
-            res.status(403)
-            req.body={
-                successful: false,
-                message: "Invalid role!"
-            }
-            next()
-            return  
-        }
-
-        const id_cliente = req.body.loggedUser._id
-        
-
-        console.log("id cliente: "+id_cliente)
-        console.log("id terapeuta: "+id_terapeuta)
-
-        //ora devo controllare che sti due utenti siano associati tra loro 
-        if(!(terapeuta.associati.includes(id_cliente.toString())||cliente.associato==(id_terapeuta.toString()))){       
+        let esistente = await Recensione.findOne({voto:voto, testo:testo, autore:autore, data:data}).exec()
+        if(esistente){
             res.status(409)
             req.body={
-                successful:false,
-                message: "Client and therapist are not associated!"
-            }
-            next()
-            return
-        }
-
-        //creazione della recensione
-
-        const voto=req.body.voto
-        const testo=req.body.testo
-        const autore=id_cliente
-        const data=new Date()
-        const recensito=id_terapeuta
-
-        if(!voto) {
-            res.status(400)
-            req.body={
                 successful: false,
-                message: "Not enough arguments!"
-            }
-            next()
-            return
-        }
-
-        try{
-            // controllo se esiste già
-            await mongoose.connect(process.env.DB_CONNECTION_STRING)
-            let esistente = await Recensione.findOne({voto:voto, testo:testo, autore:autore, data:data}).exec()
-            if(esistente){
-                res.status(409)
-                req.body={
-                    successful: false,
-                    message: "Review already present!"
-                }
-                next()
-                return 
-            }else{
-                const schema_recensione= new Recensione<IRecensione>({
-                    voto:voto,
-                    testo:testo, 
-                    autore:autore,
-                    data:data,
-                    recensito:recensito
-                });
-                await schema_recensione.save();
-                res.status(200)
-                req.body={
-                    successful: true,
-                    message: "Review successfully inserted!"
-                }
-
-                //aggiungi recensione al terapeuta
-                await Terapeuta.findByIdAndUpdate({_id:id_terapeuta}, {$push:{recensioni:schema_recensione._id.toString()}}) 
-
-                next()
-                return
-            }
-    
-        }catch(err){
-            res.status(500)
-            req.body={
-                successful: false,
-                message: "Server error in review creation - failed! "+err
+                message: "Review already present!"
             }
             next()
             return 
+        }else{
+            const schema_recensione= new Recensione<IRecensione>({
+                voto:voto,
+                testo:testo, 
+                autore:autore,
+                data:data,
+                recensito:recensito
+            });
+            await schema_recensione.save();
+            res.status(200)
+            req.body={
+                successful: true,
+                message: "Review successfully inserted!"
+            }
+
+            //aggiungi recensione al terapeuta
+            await Terapeuta.findByIdAndUpdate({_id:id_terapeuta}, {$push:{recensioni:schema_recensione._id.toString()}}) 
+
+            next()
+            return
         }
 
-
-
-
-
-
-
-
-
-
-
-
+    }catch(err){
+        res.status(500)
+        req.body={
+            successful: false,
+            message: "Server error in review creation - failed! "
+        }
+        next()
+        return 
+    }
 }

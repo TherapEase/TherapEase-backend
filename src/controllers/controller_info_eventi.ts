@@ -95,7 +95,6 @@ export async function aggiungi_evento(req:Request,res:Response,next:NextFunction
 
 }
 
-// Se l'evento non esiste gia non da errore, va bene?
 export async function rimuovi_evento(req:Request,res:Response,next:NextFunction) {
     
     // controllo ruolo
