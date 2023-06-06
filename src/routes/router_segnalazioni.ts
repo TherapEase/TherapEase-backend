@@ -9,10 +9,10 @@ segnalazioni_router.post('/segnalazione/:id' ,tokenCheck, segnala, (req:Request,
     res.json(req.body)
 })
 
-segnalazioni_router.get('/catalogo_segnalazioni', get_all_segnalazioni, (req:Request,res:Response)=>{
+segnalazioni_router.get('/catalogo_segnalazioni',tokenCheck, get_all_segnalazioni, (req:Request,res:Response)=>{
     res.json(req.body)
 })
 
-segnalazioni_router.post('/segnalazione/gestisci/:id' ,tokenCheck, gestisci_segnalazione, (req:Request,res:Response)=>{
+segnalazioni_router.get('/segnalazione/gestisci/:id' ,tokenCheck, gestisci_segnalazione, (req:Request,res:Response)=>{
     res.json(req.body)
 })
