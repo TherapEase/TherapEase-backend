@@ -77,18 +77,20 @@ export async function scrivi_pagina(req: Request, res: Response, next: NextFunct
                 await Diario.findOneAndUpdate({ cliente: id_cliente }, { $push: { pagine: pagina_schema._id.toString() } }).exec()
             }
             res.status(200)
-            req.body={
-                successful:true,
-                message:"Page successfully created"
+            req.body = {
+                successful: true,
+                message: "Page successfully created"
             }
             next()
             return
         }
         res.status(403)
-        req.body={
-            successful:false,
-            message:"Page already present"
+        req.body = {
+            successful: false,
+            message: "Page already present"
         }
+        next()
+        return
 
     } catch (err) {
         res.status(500)
@@ -97,6 +99,8 @@ export async function scrivi_pagina(req: Request, res: Response, next: NextFunct
             message: "Server error in page creation - failed"
         }
     }
+    next()
+    return
 }
 
 
@@ -294,9 +298,9 @@ export async function elimina_pagina(req: Request, res: Response, next: NextFunc
             return
 
         }
-        console.log("pagina_id"+ pagina._id )
-        
-        const pagina_diario= await Diario.findOneAndUpdate({cliente: req.body.loggedUser._id}, {$pull: {pagine: pagina._id}},{new:true}).exec()
+        console.log("pagina_id" + pagina._id)
+
+        const pagina_diario = await Diario.findOneAndUpdate({ cliente: req.body.loggedUser._id }, { $pull: { pagine: pagina._id } }, { new: true }).exec()
         console.log(pagina_diario)
         res.status(200)
         req.body = {
