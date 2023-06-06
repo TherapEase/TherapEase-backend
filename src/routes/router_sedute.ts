@@ -1,6 +1,6 @@
 import {Router, Request, Response, NextFunction} from 'express'
 import { tokenCheck } from '../controllers/token_checker'
-import { crea_slot_seduta,elimina_slot_seduta,prenota_seduta,mostra_calendario_completo,mostra_calendario_disponibili,mostra_calendario_prenotate } from '../controllers/controller_sedute'
+import { crea_slot_seduta,elimina_slot_seduta,prenota_seduta,mostra_calendario_completo,mostra_calendario_disponibili,mostra_calendario_prenotate, annulla_prenotazione_seduta } from '../controllers/controller_sedute'
 export const sedute_router = Router()
 
 sedute_router.post('/definisci_slot', tokenCheck, crea_slot_seduta,(req:Request,res:Response)=>{
@@ -24,5 +24,10 @@ sedute_router.get('/calendario/disponibili',tokenCheck, mostra_calendario_dispon
 })
 
 sedute_router.get('/calendario/prenotate',tokenCheck, mostra_calendario_prenotate,(req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+
+sedute_router.post('/annullaprenotazione', tokenCheck, annulla_prenotazione_seduta,(req:Request,res:Response)=>{
     res.json(req.body)
 })
