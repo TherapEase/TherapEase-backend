@@ -48,6 +48,39 @@ export async function open_chat(req:Request,res:Response,next:NextFunction) {
         return
     }
 }
+
+export async function get_open_chats(req:Request,res:Response,next:NextFunction) {
+    //utente loggato
+    let id = req.body.loggedUser._id
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let open_chats= await Chat.find({$or:[{utente:id},{supporto_tecnico:id}],risolta:false},'_id').exec()
+        if(!open_chats){
+            res.status(404)
+            req.body={
+                successful:false,
+                message:"No open chats"
+            }
+            next()
+            return
+        }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Chats retrieved successfully",
+            chat_ids:open_chats
+        }
+        next()
+        return
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal server error"
+        }
+    }
+}
+
 export async function close_chat(req:Request, res:Response, next:NextFunction) {
     //segna la chat come risolta
     const id_chat = req.params.id_chat
