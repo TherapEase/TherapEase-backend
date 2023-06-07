@@ -15,7 +15,7 @@ auth_router.post('/login', login ,(req:Request,res:Response)=>{
     res.json(req.body)
 })
 
-auth_router.get('/logout',tokenCheck,logout,(req:Request,res:Response)=>{
+auth_router.post('/logout',tokenCheck,logout,(req:Request,res:Response)=>{
     res.json(req.body)
 })
 

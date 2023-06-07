@@ -12,6 +12,7 @@ associazione_router.get('/catalogo_associati', tokenCheck, get_all_associati ,(r
 associazione_router.post('/associazione/:id',tokenCheck, associazione,(req:Request,res:Response)=>{
     res.json(req.body)
 })
+
 associazione_router.post('/associazione/rimuovi/:id',tokenCheck,rimuovi_associazione,(req:Request,res:Response)=>{
     res.json(req.body)
 })

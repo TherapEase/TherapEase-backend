@@ -8,7 +8,7 @@ prodotti_router.post('/prodotto/inserisci' ,tokenCheck, inserisci_prodotto, (req
     res.json(req.body)
 })
 
-prodotti_router.post('/prodotto/rimuovi/:id' ,tokenCheck, rimuovi_prodotto, (req:Request,res:Response)=>{
+prodotti_router.delete('/prodotto/rimuovi/:id' ,tokenCheck, rimuovi_prodotto, (req:Request,res:Response)=>{
     res.json(req.body)
 })
 
@@ -21,11 +21,11 @@ prodotti_router.post('/prodotto/checkout/:id' ,tokenCheck, checkout, (req:Reques
 })
 
 prodotti_router.get('/prodotto/checkout_success/:id' ,checkout_success, (req:Request,res:Response)=>{
-    res.redirect("http://localhost:8081/profilo")
+    res.redirect("http://localhost:8080/profilo")
 })
 
 prodotti_router.get('/prodotto/checkout_failed', checkout_failed, (req:Request,res:Response)=>{
-    res.redirect("http://localhost:8081/offerta")
+    res.redirect("http://localhost:8080/offerta")
 })
 
 
