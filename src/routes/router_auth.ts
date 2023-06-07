@@ -7,26 +7,14 @@ import { recupero_password, cambio_password } from '../controllers/controller_pa
 
 export const auth_router = Router()
 
-auth_router.post('/registrazione',registrazione,async (req:Request,res:Response)=>{
-    res.json(req.body)
-})
+auth_router.post('/registrazione',registrazione)
 
-auth_router.post('/login', login ,(req:Request,res:Response)=>{
-    res.json(req.body)
-})
+auth_router.post('/login', login)
 
-auth_router.post('/logout',tokenCheck,logout,(req:Request,res:Response)=>{
-    res.json(req.body)
-})
+auth_router.post('/logout',tokenCheck,logout)
 
-auth_router.post('/recuperopassword',recupero_password, (req:Request,res:Response)=>{
-    res.json(req.body)
-})
+auth_router.post('/recuperopassword',recupero_password)
 
-auth_router.post('/cambio_password',tokenCheck, cambio_password, (req:Request,res:Response)=>{
-    res.json(req.body)
-})
+auth_router.post('/cambio_password',tokenCheck, cambio_password)
 
-auth_router.get('/conferma_mail/:ver_token',conferma_mail,(req:Request,res:Response)=>{
-    res.json(req.body)
-})
+auth_router.get('/conferma_mail/:ver_token',conferma_mail)

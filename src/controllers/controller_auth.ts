@@ -7,7 +7,7 @@ import {Cliente, ICliente} from '../schemas/cliente_schema'
 import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
 import { send_mail } from './gmail_connector'
 
-export async function registrazione(req:Request,res:Response,next:NextFunction) {
+export async function registrazione(req:Request,res:Response) {
     /* STRUTTURA RICHIESTA: utente base
     *  username: string
     *  password :string
@@ -38,22 +38,16 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
    const ind=req.body.indirizzo
    
    if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||fp||!dn) {       
-    res.status(400)
-    req.body = {
+    res.status(400).json({
         successful:false,
         message:"Not enough arguments!"
-    }
-    next()
-    return
+    })
    }
    else if (ruolo<1||ruolo>2) {
-    res.status(403)
-    req.body = {
+    res.status(403).json({
         successful:false,
         message:"Invalid role!"
-    }
-    next()
-    return
+    })
    }
    
 
@@ -77,11 +71,10 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         }
         else if (ruolo==2){
             if(!doc||!lim){
-                res.status(400)
-                req.body={
+                res.status(400).json({
                     successful:false,
                     message:"Not enough arguments!"
-                }
+                })
             }
             utente_schema= new Terapeuta({
                 username:username,
@@ -102,48 +95,36 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
         await send_confirmation_mail(utente_schema._id.toString(),utente_schema.email.toString())
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
 
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"User registered correctly!",
             token : token
-        }
-        next()
-        return
+        })
     }else {
-        res.status(409)
-        req.body={
+        res.status(409).json({
             successful:false,
             message:"User already exists!"
-        }
-        next()
-        return
+        })
     }
    }catch(err){
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful: false,
             message:"Server error in registration - failed!"
-        }
-        next()
-        return
+        })
    }
 }   
 
 
-export async function login(req:Request,res:Response,next:NextFunction) {
+export async function login(req:Request,res:Response) {
     const username=req.body.username
     const password=req.body.password
 
     // controllo su campi mancanti
     if (!username || !password){
-        res.status(400)
-        req.body={
+        res.status(400).json({
             successful: false,
             message: "Not enough arguments!"
-        }
-        next()
-        return
+        })
     } 
 
     try {
@@ -153,13 +134,10 @@ export async function login(req:Request,res:Response,next:NextFunction) {
 
         // se non esiste, ritorno un errore
         if (!utente_trovato){
-            res.status(404)
-            req.body={
+            res.status(404).json({
                 successful: false,
                 message: "User not found!"
-            }
-            next()
-            return
+            })
         };
 
         // controllo la password
@@ -167,13 +145,10 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         const passwordCorretta= await modello_utente.checkPassword(password)
 
         if (!passwordCorretta){
-                res.status(401)
-                req.body={
-                    successful:false,
-                    message:"Incorrect password!"
-                }
-            next()
-            return
+            res.status(401).json({
+                successful:false,
+                message:"Incorrect password!"
+            })
         };
     
         //creo il token aggiungendo i vari campi utili
@@ -189,23 +164,16 @@ export async function login(req:Request,res:Response,next:NextFunction) {
             if(!utente_completo.mail_confermata)
                 await send_confirmation_mail(utente_completo._id.toString(),utente_completo.email.toString())
         }
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"User authenticated!",
             token: token 
-        }
-        next()
-        return
-    
+        })
     } catch (err) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in login - failed!"
-        }
-        next()
-        return
+        })
     }
 }
 
@@ -226,26 +194,20 @@ async function send_confirmation_mail(_id:string, email:string){
     await send_mail("Verify your email address",testo,email)
 }
 
-export async function conferma_mail(req:Request, res:Response,next :NextFunction){
+export async function conferma_mail(req:Request, res:Response){
     const ver_token = req.params.ver_token
     if(!ver_token){
-        res.status(400),
-        req.body={
+        res.status(400).json({
             successful:false,
             message:"No token provided"
-        }
-        next()
-        return
+        })
     }
     const decoded = jwt.verify(ver_token,process.env.TOKEN_SECRET) as JwtPayload
     if(!decoded){
-        res.status(403)
-        req.body={
+        res.status(403).json({
             successful:false,
             message:"The provided token isn't valid!"
-        }
-        next()
-        return
+        })
     }
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
@@ -255,28 +217,19 @@ export async function conferma_mail(req:Request, res:Response,next :NextFunction
         else if (req.body.loggedUser.ruolo==2)
             utente = Terapeuta.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
         if(!utente){
-            res.status(404)
-            req.body={
+            res.status(404).json({
                 successful:false,
                 message:"User not found"
-            }
-            next()
-            return
+            })
         }
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Email verified"
-        }
-        next()
-        return
+        })
     } catch (error) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Internal server error in mail verification"
-        }
-        next()
-        return
+        })
     }
 }
