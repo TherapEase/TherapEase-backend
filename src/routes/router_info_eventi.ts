@@ -9,11 +9,11 @@ info_router.post('/aggiungi_evento' ,tokenCheck, aggiungi_evento, (req:Request,r
     res.json(req.body)
 })
 
-info_router.get('/rimuovi_evento/:id' ,tokenCheck, rimuovi_evento, (req:Request,res:Response)=>{
+info_router.post('/rimuovi_evento/:id' ,tokenCheck, rimuovi_evento, (req:Request,res:Response)=>{
     res.json(req.body)
 })
 
-info_router.get('/eventi' , get_all_eventi, (req:Request,res:Response)=>{
+info_router.get('/eventi', get_all_eventi, (req:Request,res:Response)=>{
     res.json(req.body)
 })
 
