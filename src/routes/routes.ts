@@ -12,13 +12,12 @@ import { info_router } from './router_info_eventi';
 //import cors from 'cors';
 
 export const defaultRoute = Router()
-
+export const defret= (req:Request,res:Response)=>{res.json(req.body)}
 
 defaultRoute.use('/',auth_router,profilo_router,sedute_router,associazione_router,prodotti_router, segnalazioni_router, recensioni_router, diario_router, info_router)
 
-defaultRoute.use('/test',(req:Request,res:Response)=>{
-    res.json(req.body)
-})
+
+defaultRoute.use('/test', defret)
 
 defaultRoute.use('/', (req:Request,res:Response)=>{
     res.status(404).json({

@@ -94,7 +94,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
             successful: false,
             message: "Request denied - Invalid role"
         }
-        next()
+        // next()
         return 
     }
 
@@ -111,7 +111,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                 successful: false,
                 message: "User not found!"
             }
-            next()
+            // next()
             return      
         }
 
@@ -121,7 +121,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                 successful: false,
                 message: "Invalid role!"
             }
-            next()
+            // next()
             return  
         }
 
@@ -134,7 +134,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                 successful:false,
                 message: "Client and therapist are not associated!"
             }
-            next()
+            // next()
             return
         }
 
@@ -150,7 +150,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                 successful: false,
                 message: "Not enough arguments!"
             }
-            next()
+            // next()
             return
         }
 
@@ -164,7 +164,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                     successful: false,
                     message: "Report already present!"
                 }
-                next()
+                // next()
                 return 
             }else{
                 const schema_segnalazione= new Segnalazione<ISegnalazione>({
@@ -179,7 +179,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                     successful: true,
                     message: "Report successfully inserted!"
                 }
-                next()
+                // next()
                 return
             }
     
@@ -189,7 +189,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                 successful: false,
                 message: "Server error in report creation - failed!"
             }
-            next()
+            // next()
             return 
         }
     } else if(req.body.loggedUser.ruolo == 2) {
@@ -205,7 +205,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                 successful: false,
                 message: "User not found!"
             }
-            next()
+            // next()
             return      
         }
 
@@ -216,7 +216,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                 successful: false,
                 message: "Invalid role!"
             }
-            next()
+            // next()
             return  
         }
 
@@ -229,7 +229,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                 successful:false,
                 message: "Client and therapist are not associated!"
             }
-            next()
+            // next()
             return
         }
 
@@ -245,7 +245,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                 successful: false,
                 message: "Not enough arguments!"
             }
-            next()
+            // next()
             return
         }
 
@@ -259,7 +259,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                     successful: false,
                     message: "Report already present!"
                 }
-                next()
+                // next()
                 return 
             }else{
                 const schema_segnalazione= new Segnalazione<ISegnalazione>({
@@ -274,7 +274,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                     successful: true,
                     message: "Report successfully inserted!"
                 }
-                next()
+                // next()
                 return
             }
     
@@ -284,7 +284,7 @@ export async function segnala(req:Request,res:Response,next:NextFunction) {
                 successful: false,
                 message: "Server error in report creation - failed!"
             }
-            next()
+            // next()
             return 
         }
     }

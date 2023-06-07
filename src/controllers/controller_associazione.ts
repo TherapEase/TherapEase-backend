@@ -12,19 +12,23 @@ async function remove_associazione_precedente(id_cliente: string) {
         const cliente=await Cliente.findById(id_cliente).exec() 
     
         if(cliente.associato==""){
-            return
+            return true
         }else{
             const id_terapeuta=cliente.associato
             const terapeuta=await Terapeuta.findByIdAndUpdate(id_terapeuta, {$pull:{associati:id_cliente}},{new:true}).exec()
             if((terapeuta.associati.includes(cliente._id.toString()))){
-                return
+                return true
             }else{
-                await remove_prenotazioni_if_disassociato(id_cliente, id_terapeuta)
-                return
+                const val=await remove_prenotazioni_if_disassociato(id_cliente, id_terapeuta)
+                if(val){
+                    return true
+                }else{
+                    return false
+                }
             }
         }
     }catch (err){
-        return err
+        return false
     }  
 }
 
@@ -99,7 +103,16 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         }
 
         //pulisce l'asssociazione precedente dal terapeuta precedente
-        await remove_associazione_precedente(id_cliente)
+        const val=await remove_associazione_precedente(id_cliente)
+        if(val==false){
+            res.status(500)
+            req.body={
+                successful: false,
+                message: "Server error in association - failed!"
+            }
+            next()
+            return
+        }
         
         /**
          * Se il campo del cliente è vuoto o contiene un terapeuta diverso ci associo quello nuovo 

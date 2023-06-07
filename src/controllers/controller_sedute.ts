@@ -238,12 +238,17 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
 }
 
 export async function remove_prenotazioni_if_disassociato(id_cliente:string, id_terapeuta:String) {
-    await mongoose.connect(process.env.DB_CONNECTION_STRING)
-    let sedute_modificate=await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta, abilitato:true},{cliente:""}).exec()
-    
-    // riaccredita gettoni pari al numero di sedute annullate, ancora annullabili
-    aggiungi_gettoni(id_cliente, sedute_modificate.modifiedCount)
-    await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta},{cliente:""}).exec()
+    try{
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let sedute_modificate=await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta, abilitato:true},{cliente:""}).exec()
+        
+        // riaccredita gettoni pari al numero di sedute annullate, ancora annullabili
+        aggiungi_gettoni(id_cliente, sedute_modificate.modifiedCount)
+        await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta},{cliente:""}).exec()
+    }catch(err){
+        return false
+    }
+    return true
 }
 
 export async function annulla_prenotazione_seduta(req:Request,res:Response,next:NextFunction) {
