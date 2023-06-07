@@ -97,7 +97,6 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
     }
 }
 
-
 export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunction) {
     //controllo accesso, solo terapeuta
     if(req.body.loggedUser.ruolo!=2){
@@ -157,7 +156,6 @@ export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunc
         return 
     }
 }
-
 
 export async function prenota_seduta(req:Request,res:Response,next:NextFunction) {
     //controllo accesso, solo cliente

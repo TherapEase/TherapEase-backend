@@ -18,7 +18,6 @@ export async function get_all_segnalazioni(req:Request,res:Response,next:NextFun
 
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        console.log("dbconnesso")
         const catalogo_segnalazioni =await Segnalazione.find({gestita:false}, {}).exec()   //prendo tutte le segnalazioni
         
         console.log(catalogo_segnalazioni)
@@ -34,7 +33,7 @@ export async function get_all_segnalazioni(req:Request,res:Response,next:NextFun
         res.status(500)
         req.body={
             successful:false,
-            message:"Server error in report catalog - failed!"+ err
+            message:"Server error in report catalog - failed!"
         }
         next()
         return

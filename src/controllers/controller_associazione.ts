@@ -24,10 +24,9 @@ async function remove_associazione_precedente(id_cliente: string) {
             }
         }
     }catch (err){
-        return
+        return err
     }  
 }
-
 
 export async function associazione(req:Request,res:Response,next:NextFunction) {
     
