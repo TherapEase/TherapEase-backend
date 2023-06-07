@@ -33,7 +33,7 @@ export async function open_chat(req:Request,res:Response,next:NextFunction) {
         req.body={
             successful:true,
             message:"Created new chat",
-            chat:chat
+            chat_id:chat._id
         }
         next()
         return
