@@ -118,6 +118,7 @@ export async function cambio_password(req:Request,res:Response,next:NextFunction
         }
         next()
         return
+        
     } catch (error) {
         console.log("error catched")
         res.status(500)

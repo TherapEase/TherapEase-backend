@@ -68,10 +68,10 @@ export async function inserisci_prodotto(req:Request,res:Response,next:NextFunct
         next()
         return 
     }
-
 };
 
 export async function rimuovi_prodotto(req:Request,res:Response,next:NextFunction){
+    
     // controllo ruolo
     if(req.body.loggedUser.ruolo!=4){
         res.status(403)
@@ -113,17 +113,12 @@ export async function rimuovi_prodotto(req:Request,res:Response,next:NextFunctio
         next()
         return 
     }
-   
-
-
 };
 
 export async function get_prodotti(req:Request,res:Response,next:NextFunction){
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        // console.log("dbconnesso")
         const catalogo_prodotti=await Prodotto.find({}).exec()
-        // console.log(catalogo_terapeuti)
         res.status(200)
         req.body={
             successful:true,
@@ -199,10 +194,6 @@ export async function checkout(req:Request,res:Response,next:NextFunction){
             cancel_url: "http://localhost:3001/api/v1/prodotto/checkout_failed", // to change con una pagina con un messaggio di errore
         })
 
-
-
-        console.log(session);
-
         res.status(200)
         req.body={
             successful:true,
@@ -221,7 +212,6 @@ export async function checkout(req:Request,res:Response,next:NextFunction){
         next()
         return
     }
-
 };
 
 
@@ -242,9 +232,7 @@ export async function checkout_success(req:Request,res:Response,next:NextFunctio
         }
 
         aggiungi_gettoni(presente.id_cliente, presente.n_gettoni)
-        console.log("gettoni aggiunti")
         await Sessione.findByIdAndDelete(req.params.id)
-
 
         res.status(200)
         req.body={

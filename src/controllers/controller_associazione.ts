@@ -1,36 +1,31 @@
 import {Request,Response,NextFunction} from 'express'
 import mongoose from 'mongoose'
-
-import { Cliente,ICliente } from '../schemas/cliente_schema'
-import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
-
+import { Cliente, } from '../schemas/cliente_schema'
+import { Terapeuta } from '../schemas/terapeuta_schema'
 import { remove_prenotazioni_if_disassociato } from './controller_sedute'
 
+
 async function remove_associazione_precedente(id_cliente: string) {
-    console.log("REMOVE ASSOCIAZIONE PRECEDENTE")
+    
     try{
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        console.log("dbconnesso")
-
         const cliente=await Cliente.findById(id_cliente).exec() 
+    
         if(cliente.associato==""){
-            console.log("client already free")
             return
         }else{
             const id_terapeuta=cliente.associato
             const terapeuta=await Terapeuta.findByIdAndUpdate(id_terapeuta, {$pull:{associati:id_cliente}},{new:true}).exec()
             if((terapeuta.associati.includes(cliente._id.toString()))){
-                console.log("remove from Therapist failed")
                 return
             }else{
                 await remove_prenotazioni_if_disassociato(id_cliente, id_terapeuta)
+                return
             }
-            console.log("remotion successful")
         }
     }catch (err){
-        console.log("remove association failed")
-    }
-    
+        return
+    }  
 }
 
 
@@ -50,7 +45,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
     try{
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
 
-        let terapeuta=await Terapeuta.findById(id_terapeuta).exec()     //recupero dal db i due utenti, per verificarne esistenza e campi
+        let terapeuta=await Terapeuta.findById(id_terapeuta).exec()    
         let cliente= await Cliente.findById(id_cliente).exec()
 
         if(!(terapeuta&&cliente)){ 
@@ -60,7 +55,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
                 message: "User not found!"
             }
             next()
-            return      //i return sono necessari: altrimenti rischia di eseguire il resto del codice comunque bypassando il controllo
+            return      
         }
 
         if(cliente.ruolo!=1 || terapeuta.ruolo!=2){
@@ -245,11 +240,8 @@ export async function get_all_associati(req:Request,res:Response,next:NextFuncti
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
 
         let id_terapeuta=req.body.loggedUser._id
-        //let id_cliente=req.params.id
-        // console.log("dbconnesso")
         const catalogo_associati =await Cliente.find({ruolo:1, associato:id_terapeuta}, 'nome cognome foto_profilo')
         
-        // console.log(catalogo_terapeuti)
         res.status(200)
         req.body={
             successful:true,
@@ -264,6 +256,8 @@ export async function get_all_associati(req:Request,res:Response,next:NextFuncti
             successful:false,
             message:"Server error in client catalog - failed!"
         }
+        next()
+        return
     }
-    next()
+    
 }

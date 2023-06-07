@@ -21,7 +21,6 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
     }
 
     // controllo presenza campi
-    //DATA format:2024-11-02T04:20:00.000Z
     const data=req.body.data
     const presenza= req.body.presenza
     if(!data){
@@ -96,7 +95,6 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
         next()
         return 
     }
-
 }
 
 
@@ -113,7 +111,6 @@ export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunc
     }
 
     // controllo presenza campi
-    //DATA format:2024-11-02T04:20:00.000Z
     const data=req.body.data
     if(!data){
         res.status(400)
@@ -159,7 +156,6 @@ export async function elimina_slot_seduta(req:Request,res:Response,next:NextFunc
         next()
         return 
     }
-
 }
 
 
@@ -176,7 +172,6 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
     }
 
     // controllo presenza campi
-    //DATA format:2024-11-02T04:20:00.000Z
     const data=req.body.data
     if(!data){
         res.status(400)
@@ -187,7 +182,6 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
         next()
         return
     }
-
 
     //nessun terapeuta associato
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
@@ -215,7 +209,7 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
             // email conferma prenotazione
             let promemoria_prenotazione = new Date(seduta.data)
             promemoria_prenotazione.setDate(promemoria_prenotazione.getDate()-1)
-            console.log("data seduta: "+seduta.data + "prenotazione "+promemoria_prenotazione)
+        
             const job = scheduler.scheduleJob(promemoria_prenotazione,async function(seduta:ISeduta) {
                 //mail di promemoria
                 send_mail("Promemoria Prenotazione","Le ricordiamo la sua prenotazione in data: "+seduta.data,cliente.email.toString())
@@ -248,6 +242,7 @@ export async function prenota_seduta(req:Request,res:Response,next:NextFunction)
 export async function remove_prenotazioni_if_disassociato(id_cliente:string, id_terapeuta:String) {
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
     let sedute_modificate=await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta, abilitato:true},{cliente:""}).exec()
+    
     // riaccredita gettoni pari al numero di sedute annullate, ancora annullabili
     aggiungi_gettoni(id_cliente, sedute_modificate.modifiedCount)
     await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta},{cliente:""}).exec()
@@ -266,7 +261,6 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response,next:
     }
 
     // controllo presenza campi
-    //DATA format:2024-11-02T04:20:00.000Z
     const data=req.body.data
     if(!data){
         res.status(400)
@@ -316,7 +310,6 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response,next:
         next()
         return
     }
-
 }
 
 export async function mostra_calendario_completo(req:Request, res:Response,next:NextFunction){
@@ -351,7 +344,6 @@ export async function mostra_calendario_completo(req:Request, res:Response,next:
         next()
         return
     }
-
 }
 
 export async function mostra_calendario_disponibili(req:Request, res:Response,next:NextFunction){
@@ -388,7 +380,6 @@ export async function mostra_calendario_disponibili(req:Request, res:Response,ne
         next()
         return
     }
-
 }
 
 export async function mostra_calendario_prenotate(req:Request, res:Response,next:NextFunction){
@@ -423,5 +414,4 @@ export async function mostra_calendario_prenotate(req:Request, res:Response,next
         next()
         return
     }
-
 }

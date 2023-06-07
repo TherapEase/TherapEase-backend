@@ -8,15 +8,16 @@ import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'
 export async function get_all_terapeuti(req:Request,res:Response,next:NextFunction) {
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        // console.log("dbconnesso")
         const catalogo_terapeuti=await Terapeuta.find({ruolo:2}, 'nome cognome foto_profilo')
-        // console.log(catalogo_terapeuti)
+
         res.status(200)
         req.body={
             successful:true,
             message:"Therapist catalog retrieved successfully!",
             catalogo: catalogo_terapeuti
         }
+        next()
+        return
     } catch (err) {
         res.status(500)
         req.body={
@@ -25,6 +26,7 @@ export async function get_all_terapeuti(req:Request,res:Response,next:NextFuncti
         }
     }
     next()
+    return
 }
 
 export async function get_my_profilo(req:Request,res:Response,next:NextFunction){
@@ -51,13 +53,17 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
             message:"My_profile obtained successfully!",
             profile:utente
         }
-        next()    
+        next()
+        return
+
     } catch (error) {
         res.status(500)
         req.body={
             successful:false,
             message:"Server error in retrieving my_profile - failed!"
         }
+        next()
+        return
     }
 }
 
@@ -143,8 +149,9 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
             successful:false,
             message: "Server error in updating my_profile - failed!"
         }
+        next()
+        return
     }
-    
 }
 
 export async function get_profilo(req:Request, res:Response, next: NextFunction) {
@@ -213,6 +220,8 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
             profilo:utente
         }
         next()
+        return
+
     } catch (error) {
         res.status(500)
         req.body={
@@ -220,6 +229,7 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
             message:"Server error in retrieving profile - failed!"
         }
         next()
+        return
     }
 }
 
@@ -235,14 +245,17 @@ export async function get_all_clienti(req:Request,res:Response,next:NextFunction
             message:"Client catalog retrieved successfully!",
             catalogo: catalogo_clienti
         }
+        next()
+        return
     } catch (err) {
         res.status(500)
         req.body={
             successful:false,
             message:"Server error in client catalog - failed!"
         }
+        next()
+        return
     }
-    next()
 }
 
 

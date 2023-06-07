@@ -59,7 +59,6 @@ export async function scrivi_pagina(req: Request, res: Response, next: NextFunct
 
             await Pagina.create(pagina_schema)
             let diario_presente = await Diario.findOne({ cliente: id_cliente }).exec()
-            console.log(diario_presente)
 
             /*controlla che il diario non sia già presente: 
             1. se non è presente, crea il diario, salva la pagina e inserisci l'id del diario in Utenti.diario
@@ -125,6 +124,8 @@ export async function leggi_my_diario(req: Request, res: Response, next: NextFun
             message: "Pages successfully retrieved!",
             pagine: diario
         }
+        next()
+        return
     }
     catch (err) {
         res.status(500)
@@ -132,11 +133,9 @@ export async function leggi_my_diario(req: Request, res: Response, next: NextFun
             successful: false,
             message: "Server error in page reading - failed"
         }
-
+        next()
+        return
     }
-
-    next()
-    return
 }
 
 export async function leggi_diario_cliente(req: Request, res: Response, next: NextFunction) {
@@ -152,10 +151,10 @@ export async function leggi_diario_cliente(req: Request, res: Response, next: Ne
         return
     }
 
-    await mongoose.connect(process.env.DB_CONNECTION_STRING)
+    
 
     try {
-
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const terapeuta = await Terapeuta.findOne({ _id: req.body.loggedUser._id }).exec()
         if (!terapeuta.associati.includes(id_cliente_associato)) {
             res.status(403)
@@ -174,6 +173,8 @@ export async function leggi_diario_cliente(req: Request, res: Response, next: Ne
             message: "Pages successfully retrieved!",
             pagine: diario
         }
+        next()
+        return
 
     }
     catch (err) {
@@ -182,18 +183,13 @@ export async function leggi_diario_cliente(req: Request, res: Response, next: Ne
             successful: false,
             message: "Server error in page reading - failed"
         }
+        next()
+        return
 
     }
-
-    next()
-    return
 }
 
 export async function modifica_pagina(req: Request, res: Response, next: NextFunction) {
-    /*
-    CAMPI MODIFICABILI
-    testo
-    */
 
     //solo i clienti possono modificare il diario
     const data = req.body.data
@@ -219,8 +215,6 @@ export async function modifica_pagina(req: Request, res: Response, next: NextFun
         return
     }
 
-
-
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const pagina = await Pagina.findOne({ data: data, cliente: req.body.loggedUser._id }).exec()
@@ -234,7 +228,6 @@ export async function modifica_pagina(req: Request, res: Response, next: NextFun
 
             next()
             return
-
         }
 
         let updated_data = {
@@ -249,8 +242,6 @@ export async function modifica_pagina(req: Request, res: Response, next: NextFun
         next()
         return
 
-
-
     } catch (err) {
         res.status(500)
         req.body = {
@@ -260,15 +251,10 @@ export async function modifica_pagina(req: Request, res: Response, next: NextFun
         next()
         return
     }
-
 }
 
 
 export async function elimina_pagina(req: Request, res: Response, next: NextFunction) {
-    /*
-    CAMPI MODIFICABILI
-    testo
-    */
 
     //solo i clienti possono modificare il diario
     const data = req.body.data
@@ -283,7 +269,6 @@ export async function elimina_pagina(req: Request, res: Response, next: NextFunc
         return
     }
 
-
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const pagina = await Pagina.findOneAndDelete({ data: data, cliente: req.body.loggedUser._id }).exec()
@@ -293,12 +278,9 @@ export async function elimina_pagina(req: Request, res: Response, next: NextFunc
                 successful: false,
                 message: "Page does not exist!"
             }
-
             next()
             return
-
         }
-        console.log("pagina_id" + pagina._id)
 
         const pagina_diario = await Diario.findOneAndUpdate({ cliente: req.body.loggedUser._id }, { $pull: { pagine: pagina._id } }, { new: true }).exec()
         console.log(pagina_diario)
@@ -309,8 +291,6 @@ export async function elimina_pagina(req: Request, res: Response, next: NextFunc
         }
         next()
         return
-
-
 
     } catch (err) {
         res.status(500)

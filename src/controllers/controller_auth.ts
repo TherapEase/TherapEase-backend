@@ -23,7 +23,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
     *  limite_clienti: num
     *  indirizzo:string
     */
-   //const {username,password, ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind}=req.body
+
    const username=req.body.username
    const password=req.body.password
    const ruolo = req.body.ruolo
@@ -37,9 +37,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
    const lim=req.body.limite_clienti
    const ind=req.body.indirizzo
    
-   //console.log([username,password, ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind])
-   
-   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||fp||!dn) {       //si potrebbe far fare al catch usando i campi required 
+   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||fp||!dn) {       
     res.status(400)
     req.body = {
         successful:false,
@@ -61,7 +59,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
 
    try{
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
-    let utente_presente = await Utente.findOne({username:username}).exec()    //check nel db
+    let utente_presente = await Utente.findOne({username:username}).exec()    
     if(!utente_presente){
         let utente_schema
         if(ruolo==1){
@@ -101,12 +99,9 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
             })
         }
         await utente_schema.save();
-        // console.log("utente salvato")
-        // console.log(utente_schema)
         await send_confirmation_mail(utente_schema._id.toString(),utente_schema.email.toString())
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
 
-        //in alernativa usare res.redirect(/login) e sfruttare il login handler
         res.status(200)
         req.body={
             successful:true,
@@ -131,6 +126,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
             message:"Server error in registration - failed!"
         }
         next()
+        return
    }
 }   
 
@@ -138,7 +134,6 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
 export async function login(req:Request,res:Response,next:NextFunction) {
     const username=req.body.username
     const password=req.body.password
-
 
     // controllo su campi mancanti
     if (!username || !password){
@@ -182,7 +177,6 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         };
     
         //creo il token aggiungendo i vari campi utili
-        
         const token = createToken(utente_trovato._id.toString(),utente_trovato.username.toString(),utente_trovato.ruolo)
         
         //recupero il cliente per inviare la mail di conferma nel caso non fosse confermato

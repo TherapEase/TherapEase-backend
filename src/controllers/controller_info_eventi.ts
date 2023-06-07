@@ -31,7 +31,6 @@ export async function aggiungi_evento(req:Request,res:Response,next:NextFunction
         return
     }
 
-
     // controllo che la data sia nel futuro
     if(new Date(data).getTime() <=Date.now()){
         res.status(409)
@@ -44,7 +43,7 @@ export async function aggiungi_evento(req:Request,res:Response,next:NextFunction
     }
 
     try {
-        mongoose.connect(process.env.DB_CONNECTION_STRING)
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
 
         // controllo evento gia presente
         const presente=await Info.findOne({data:data, titolo: titolo, testo:testo})
@@ -91,8 +90,8 @@ export async function aggiungi_evento(req:Request,res:Response,next:NextFunction
             message:"Server error in adding event - failed! "+ error
         }
         next()
+        return 
     }
-
 }
 
 export async function rimuovi_evento(req:Request,res:Response,next:NextFunction) {
@@ -109,7 +108,7 @@ export async function rimuovi_evento(req:Request,res:Response,next:NextFunction)
     }
 
     try {
-        mongoose.connect(process.env.DB_CONNECTION_STRING)
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         await Info.findByIdAndDelete(req.params.id)
 
         res.status(200)
@@ -118,6 +117,7 @@ export async function rimuovi_evento(req:Request,res:Response,next:NextFunction)
             message:"Event successfully deleted or not present!"
         }
         next()
+        return 
 
     } catch (error) {
         res.status(500)
@@ -126,12 +126,13 @@ export async function rimuovi_evento(req:Request,res:Response,next:NextFunction)
             message:"Server error in event elimination - failed!"
         }
         next()
+        return 
     }
 }
 
 export async function get_all_eventi(req:Request,res:Response,next:NextFunction) {
     try {
-        mongoose.connect(process.env.DB_CONNECTION_STRING)
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const eventi=await Info.find()
 
         res.status(200)
@@ -141,6 +142,7 @@ export async function get_all_eventi(req:Request,res:Response,next:NextFunction)
             message:"Event successfully deleted or not present!"
         }
         next()
+        return 
 
     } catch (error) {
         res.status(500)
@@ -149,5 +151,6 @@ export async function get_all_eventi(req:Request,res:Response,next:NextFunction)
             message:"Server error in showing events - failed!"
         }
         next()
+        return 
     }
 }

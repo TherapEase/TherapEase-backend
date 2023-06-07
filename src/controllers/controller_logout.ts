@@ -16,8 +16,8 @@ export async function logout(req:Request,res:Response,next:NextFunction) {
     try {
         mongoose.connect(process.env.DB_CONNECTION_STRING)
         const decoded = jwt.verify(token,process.env.TOKEN_SECRET)
+        
         //aggiungo il token alla lista nera
-
         let blacklisted = new JWTToken({
             token:token,
             expiration: (decoded as JwtPayload).exp
@@ -30,6 +30,7 @@ export async function logout(req:Request,res:Response,next:NextFunction) {
             message:"Logout successfully executed!"
         }
         next()
+        return 
 
     } catch (error) {
         res.status(500)
@@ -38,6 +39,7 @@ export async function logout(req:Request,res:Response,next:NextFunction) {
             message:"Server error in logout - failed!"
         }
         next()
+        return 
     }
 
 }
