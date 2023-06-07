@@ -8,7 +8,7 @@ import { send_mail } from './gmail_connector'
 import { Recensione, IRecensione } from '../schemas/recensione_schema'
 
 
-export async function read_recensioni_associato(req:Request,res:Response,next:NextFunction) {
+export async function read_recensioni(req:Request,res:Response,next:NextFunction) {
     console.log(req.body.loggedUser.ruolo)
 
     if(req.body.loggedUser.ruolo!=1){ //se non sei un cliente 
@@ -112,12 +112,21 @@ export async function scrivi_recensione(req:Request,res:Response,next:NextFuncti
         next()
         return
     }
-
-    const id_terapeuta=req.params.id   
+  
     await mongoose.connect(process.env.DB_CONNECTION_STRING)
-    let cliente = req.body.loggedUser    
-    let terapeuta=await Terapeuta.findById(id_terapeuta).exec()   
+    let cliente = await Cliente.findById(req.body.loggedUser._id).exec()
 
+    if(cliente.associato==""){
+        res.status(409)
+        req.body={
+            successful:false,
+            message:"Client not associated to any therapist!"
+        }
+        next()
+        return
+    }
+
+    let terapeuta=await Terapeuta.findById(cliente.associato).exec()   
     // controllo esistenza terapeuta
     if(!terapeuta){  
         res.status(404)
@@ -129,36 +138,13 @@ export async function scrivi_recensione(req:Request,res:Response,next:NextFuncti
         return      
     }
 
-    if(cliente.ruolo!=1 || terapeuta.ruolo!=2){ 
-        res.status(403)
-        req.body={
-            successful: false,
-            message: "Invalid role!"
-        }
-        next()
-        return  
-    }
-
-    const id_cliente = req.body.loggedUser._id
-    
-    // controllo associazione cliente-terapeuta
-    if(!(terapeuta.associati.includes(id_cliente.toString())||cliente.associato==(id_terapeuta.toString()))){       
-        res.status(409)
-        req.body={
-            successful:false,
-            message: "Client and therapist are not associated!"
-        }
-        next()
-        return
-    }
-
     //controllo presenza campi
     const voto=req.body.voto
     const testo=req.body.testo
-    const autore=id_cliente
+    const autore=req.body.loggedUser._id
     const data=new Date()
-    const recensito=id_terapeuta
-    if(!voto) {
+    const recensito=cliente.associato
+    if(!voto || !testo) {
         res.status(400)
         req.body={
             successful: false,
@@ -199,15 +185,14 @@ export async function scrivi_recensione(req:Request,res:Response,next:NextFuncti
                 recensito:recensito
             });
             await schema_recensione.save();
+            //aggiungi recensione al terapeuta
+            await Terapeuta.findByIdAndUpdate({_id:terapeuta._id}, {$push:{recensioni:schema_recensione._id.toString()}}) 
+            
             res.status(200)
             req.body={
                 successful: true,
                 message: "Review successfully inserted!"
             }
-
-            //aggiungi recensione al terapeuta
-            await Terapeuta.findByIdAndUpdate({_id:id_terapeuta}, {$push:{recensioni:schema_recensione._id.toString()}}) 
-
             next()
             return
         }
