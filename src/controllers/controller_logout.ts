@@ -11,7 +11,7 @@ import { JWTToken } from "../schemas/token_schema";
 
 
 
-export async function logout(req:Request,res:Response,next:NextFunction) {
+export async function logout(req:Request,res:Response) {
     const token = req.body.token || req.query.token || req.headers['x-access-token']
     try {
         mongoose.connect(process.env.DB_CONNECTION_STRING)
@@ -24,24 +24,16 @@ export async function logout(req:Request,res:Response,next:NextFunction) {
         })
         await blacklisted.save()
 
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Logout successfully executed!"
-        }
-        next()
-        return 
-
+        })
     } catch (error) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in logout - failed!"
-        }
-        next()
-        return 
+        })
     }
-
 }
 
 export async function blacklist_cleaner() {

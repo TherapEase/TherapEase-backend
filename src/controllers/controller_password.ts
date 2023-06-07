@@ -12,30 +12,26 @@ import { send_mail } from './gmail_connector'
 
 
 
-export async function recupero_password(req:Request,res:Response,next:NextFunction){
+export async function recupero_password(req:Request,res:Response){
     const username = req.body.username
     const mail = req.body.email_address
     const cf= req.body.codice_fiscale
 
     if(!(username&&mail&&cf)){
-        res.status(400)
-        req.body={
+        res.status(400).json({
             successful:false,
             message:"Please specify all fields"
-        }
+        })
     }
 
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const utente = await Utente.findOne({username:username}).exec()
         if(!utente){
-            res.status(404)
-            req.body={
+            res.status(404).json({
                 successful:false,
                 message:"User not found!"
-            }
-            next()
-            return
+            })
         }
 
         const new_password = generator.generate({
@@ -54,79 +50,55 @@ export async function recupero_password(req:Request,res:Response,next:NextFuncti
             utente_completo = await Terapeuta.findOneAndUpdate({username:username, email:mail,cf:cf},{password:hashed_password}).exec()
         
         if(!utente_completo) {
-            res.status(404)
-            req.body={
+            res.status(404).json({
                 successful:false,
                 message: "User not found!"
-            }
-            next()
-            return
+            })
         }
 
         send_mail("CAMBIO PASSWORD","La tua nuova password è "+new_password,utente_completo.email.toString())
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Password restored correctly!"
-        }
-        next()
-        return
+        })
     } catch (error) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in password recovery - failed!"
-        }
-        next()
-        return
+        })
     }
 }
 
-export async function cambio_password(req:Request,res:Response,next:NextFunction) {
+export async function cambio_password(req:Request,res:Response) {
     try {
 
         let password = req.body.password
         if(!password){
-            res.status(400)
-            req.body={
+            res.status(400).json({
                 successful:false,
                 message:"Password not specified!"
-            }
-            next()
-            return
+            })
         }
-        
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let utente = await Utente.findById(req.body.loggedUser._id).exec()
         if(await bcrypt.compare(password,utente.password.toString())){
-            res.status(409)
-            req.body={
+            res.status(409).json({
                 successful:false,
                 message:"The password provided is the same as the old one"
-            }
-            next()
-            return
+            })
         }
         let hashed_password = await check_and_hash(password)
         //ricerco l'utente ed inserisco la password hashata
         utente = await Utente.findByIdAndUpdate(req.body.loggedUser._id,{password:hashed_password}).exec()
 
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Password successfully changed!"
-        }
-        next()
-        return
-        
+        })
     } catch (error) {
-        console.log("error catched")
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in password change - failed!"
-        }     
-        next()
-        return   
+        })
     }
 }
