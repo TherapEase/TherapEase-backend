@@ -1,17 +1,14 @@
 import { Request,Response,NextFunction } from 'express'
-import {Cliente, ICliente} from '../schemas/cliente_schema'
-import {Utente,IUtente} from '../schemas/utente_schema'
-import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'
+import { Cliente } from '../schemas/cliente_schema'
+import { Terapeuta} from '../schemas/terapeuta_schema'
 import mongoose from 'mongoose'
-import scheduler from 'node-schedule'
-import { send_mail } from './gmail_connector'
 import { Recensione, IRecensione } from '../schemas/recensione_schema'
 
-
+// metodo per leggere le recensioni del terapeuta di cui si sta visitando il profilo
 export async function read_recensioni(req:Request,res:Response,next:NextFunction) {
-    console.log(req.body.loggedUser.ruolo)
 
-    if(req.body.loggedUser.ruolo!=1){ //se non sei un cliente 
+    // controllo ruolo
+    if(req.body.loggedUser.ruolo!=1){
         res.status(403)
         req.body={
             successful:false,
@@ -21,46 +18,34 @@ export async function read_recensioni(req:Request,res:Response,next:NextFunction
         return
     }
 
-        
-    
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        const catalogo_recensioni =await Recensione.find({recensito:req.params.id}).exec()
 
-        try {
-            await mongoose.connect(process.env.DB_CONNECTION_STRING)
-
-            //const io = await Cliente.findById({_id:req.body.loggedUser._id}, 'associato')
-            
-            //const id_associato = io
-            
-    
-
-        
-            console.log("dbconnesso")
-            const catalogo_recensioni =await Recensione.find({recensito:req.params.id}, {}).exec()   //prendo tutte le recensioni
-            
-            console.log(catalogo_recensioni)
-            res.status(200)
-            req.body={
-                successful:true,
-                message:"All reviews retrieved successfully",
-                catalogo: catalogo_recensioni
-            }
-            next()
-            return
-        } catch (err) {
-            res.status(500)
-            req.body={
-                successful:false,
-                message:"Server error in review catalog - failed!"+err
-            }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"All reviews retrieved successfully",
+            catalogo: catalogo_recensioni
         }
         next()
-    
+        return
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Server error in review catalog - failed!"+err
+        }
+        next()
+        return
+    }
 }
 
+// metodo attraverso cui un terapeuta legge le sue stesse recensioni
 export async function read_my_recensioni(req:Request,res:Response,next:NextFunction) {
-    console.log(req.body.loggedUser.ruolo)
-
-    if(req.body.loggedUser.ruolo!=2){ //se non sei un cliente o un terapeuta
+    
+    // controllo ruolo
+    if(req.body.loggedUser.ruolo!=2){
         res.status(403)
         req.body={
             successful:false,
@@ -70,34 +55,27 @@ export async function read_my_recensioni(req:Request,res:Response,next:NextFunct
         return
     }
 
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        const catalogo_recensioni =await Recensione.find({recensito:req.body.loggedUser._id}, {}).exec()
 
-        try {
-            await mongoose.connect(process.env.DB_CONNECTION_STRING)
-
-            const my_id = req.body.loggedUser._id
-    
-        
-            console.log("dbconnesso")
-            const catalogo_recensioni =await Recensione.find({recensito:my_id}, {}).exec()   //prendo tutte le recensioni
-            
-            console.log(catalogo_recensioni)
-            res.status(200)
-            req.body={
-                successful:true,
-                message:"All reviews retrieved successfully",
-                catalogo: catalogo_recensioni
-            }
-            next()
-            return
-        } catch (err) {
-            res.status(500)
-            req.body={
-                successful:false,
-                message:"Server error in review catalog - failed!"
-            }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"All reviews retrieved successfully",
+            catalogo: catalogo_recensioni
         }
         next()
-    
+        return
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Server error in review catalog - failed!"
+        }
+        next()
+        return
+    }
 }
 
 export async function scrivi_recensione(req:Request,res:Response,next:NextFunction) {
@@ -184,8 +162,8 @@ export async function scrivi_recensione(req:Request,res:Response,next:NextFuncti
                 data:data,
                 recensito:recensito
             });
+            // salva nel db e aggiungi recensione al terapeuta
             await schema_recensione.save();
-            //aggiungi recensione al terapeuta
             await Terapeuta.findByIdAndUpdate({_id:terapeuta._id}, {$push:{recensioni:schema_recensione._id.toString()}}) 
             
             res.status(200)
@@ -196,7 +174,6 @@ export async function scrivi_recensione(req:Request,res:Response,next:NextFuncti
             next()
             return
         }
-
     }catch(err){
         res.status(500)
         req.body={
