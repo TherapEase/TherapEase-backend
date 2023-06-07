@@ -4,17 +4,14 @@ import { IProdotto, Prodotto } from '../schemas/prodotto_schema'
 import { Cliente } from '../schemas/cliente_schema'
 import { ISessione, Sessione } from '../schemas/sessione_stripe_schema'
 
-export async function inserisci_prodotto(req:Request,res:Response,next:NextFunction){
+export async function inserisci_prodotto(req:Request,res:Response){
     
     // controllo ruolo
     if(req.body.loggedUser.ruolo!=4){
-        res.status(403)
-        req.body={
+        res.status(403).json({
             successful: false,
             message: "Request denied!"
-        }
-        next()
-        return 
+        })
     }
 
     // controllo presenza campi
@@ -22,13 +19,10 @@ export async function inserisci_prodotto(req:Request,res:Response,next:NextFunct
     const prezzo=req.body.prezzo
     const n_gettoni=req.body.n_gettoni
     if(!nome || !prezzo || !n_gettoni){
-        res.status(400)
-        req.body={
+        res.status(400).json({
             successful: false,
             message: "Not enough arguments!"
-        }
-        next()
-        return
+        })
     }
 
     try{
@@ -36,13 +30,10 @@ export async function inserisci_prodotto(req:Request,res:Response,next:NextFunct
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let esistente = await Prodotto.findOne({nome:nome, n_gettoni:n_gettoni, prezzo:prezzo}).exec()
         if(esistente){
-            res.status(409)
-            req.body={
+            res.status(409).json({
                 successful: false,
                 message: "Product already present!"
-            }
-            next()
-            return 
+            })
         }else{
             const schema_prodotto= new Prodotto<IProdotto>({
                 nome:nome,
@@ -50,37 +41,28 @@ export async function inserisci_prodotto(req:Request,res:Response,next:NextFunct
                 n_gettoni:n_gettoni
             });
             await schema_prodotto.save();
-            res.status(200)
-            req.body={
+            res.status(200).json({
                 successful: true,
                 message: "Product successfully inserted!"
-            }
-            next()
-            return
+            })
         }
 
     }catch(err){
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful: false,
             message: "Server error in product creation - failed!"
-        }
-        next()
-        return 
+        })
     }
 };
 
-export async function rimuovi_prodotto(req:Request,res:Response,next:NextFunction){
+export async function rimuovi_prodotto(req:Request,res:Response){
     
     // controllo ruolo
     if(req.body.loggedUser.ruolo!=4){
-        res.status(403)
-        req.body={
+        res.status(403).json({
             successful: false,
             message: "Request denied!"
-        }
-        next()
-        return 
+        })
     }
 
     try{
@@ -88,51 +70,39 @@ export async function rimuovi_prodotto(req:Request,res:Response,next:NextFunctio
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let presente= await Prodotto.findOneAndDelete({_id:req.params.id}).exec()
         if(!presente){
-            res.status(409)
-            req.body={
+            res.status(409).json({
                 successful: false,
                 message: "Element doesn’t exist or can’t be removed!"
-            }
-            next()
-            return 
+            }) 
         }else{
-            res.status(200)
-            req.body={
+            res.status(200).json({
                 successful: true,
                 message: "Product successfully deleted!"
-            }
-            next()
-            return 
+            })
         }
     }catch(err){
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful: false,
             message: "Server error in product removal - failed!"
-        }
-        next()
-        return 
+        })
     }
 };
 
-export async function get_prodotti(req:Request,res:Response,next:NextFunction){
+export async function get_prodotti(req:Request,res:Response){
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const catalogo_prodotti=await Prodotto.find({}).exec()
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Product catalog retrieved successfully!",
             catalogo: catalogo_prodotti
-        }
+        })
     } catch (err) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in product catalog - failed!"
-        }
+        })
     }
-    next()
 };
 
 export async function aggiungi_gettoni(id_cliente:string, n_gettoni:Number) {
@@ -142,17 +112,14 @@ export async function aggiungi_gettoni(id_cliente:string, n_gettoni:Number) {
     await Cliente.findOneAndUpdate({_id:id_cliente},{n_gettoni:new_gettoni}).exec()
 }
 
-export async function checkout(req:Request,res:Response,next:NextFunction){
+export async function checkout(req:Request,res:Response){
     
     // controllo ruolo
     if(req.body.loggedUser.ruolo!=1){
-        res.status(403)
-        req.body={
+        res.status(403).json({
             successful: false,
             message: "Request denied!"
-        }
-        next()
-        return 
+        })
     }
     
     try {
@@ -160,13 +127,10 @@ export async function checkout(req:Request,res:Response,next:NextFunction){
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let presente= await Prodotto.findById(req.params.id).exec()
         if(!presente){
-            res.status(409)
-            req.body={
+            res.status(409).json({
                 successful: false,
                 message: "Element doesn’t exist!"
-            }
-            next()
-            return 
+            })
         }
 
         const sessione_to_save= new Sessione<ISessione> ({
@@ -194,71 +158,53 @@ export async function checkout(req:Request,res:Response,next:NextFunction){
             cancel_url: "http://localhost:3001/api/v1/prodotto/checkout_failed", // to change con una pagina con un messaggio di errore
         })
 
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             url: session.url,
             message:"Successful redirect to checkout!"
-        }
-        next()
-        return
-    
+        })
     } catch (err) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
-            message:"Server error in redirect - failed!"+ err
-        }
-        next()
-        return
+            message:"Server error in redirect - failed!"
+        })
     }
-};
+}
 
 
-export async function checkout_success(req:Request,res:Response,next:NextFunction){
+export async function checkout_success(req:Request,res:Response){
     
     try {
         // controllo presenza prodotto
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let presente= await Sessione.findById(req.params.id).exec()
         if(!presente){
-            res.status(409)
-            req.body={
+            res.status(409).json({
                 successful: false,
                 message: "Element doesn’t exist!"
-            }
-            next()
-            return 
+            }).redirect("http://localhost:8080/profilo")
         }
 
         aggiungi_gettoni(presente.id_cliente, presente.n_gettoni)
         await Sessione.findByIdAndDelete(req.params.id)
 
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Gettoni aggiunti!"
-        }
-        next()
-        return
-    
+        }).redirect("http://localhost:8080/profilo")
     } catch (err) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
-            message:"Server error checkout success - failed!"+ err
-        }
-        next()
-        return
+            message:"Server error checkout success - failed!"
+        })
     }
-};
+}
 
 
-export async function checkout_failed(req:Request,res:Response,next:NextFunction){
+export async function checkout_failed(req:Request,res:Response){
     console.log("Checkout failed!")
-    res.status(200)
-    req.body={
+    res.status(200).json({
         successful:true,
         message:"Successful redirecting after payment failure!"
-    }
-};
+    }).redirect("http://localhost:8080/offerta")
+}
