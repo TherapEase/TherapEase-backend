@@ -5,14 +5,8 @@ import { get_all_associati,associazione,rimuovi_associazione } from '../controll
 export const associazione_router = Router()
 
 
-associazione_router.get('/catalogo_associati', tokenCheck, get_all_associati ,(req:Request,res:Response)=>{
-    res.json(req.body)
-})
+associazione_router.get('/catalogo_associati', tokenCheck, get_all_associati)
 
-associazione_router.post('/associazione/:id',tokenCheck, associazione,(req:Request,res:Response)=>{
-    res.json(req.body)
-})
+associazione_router.post('/associazione/:id',tokenCheck, associazione)
 
-associazione_router.post('/associazione/rimuovi/:id',tokenCheck,rimuovi_associazione,(req:Request,res:Response)=>{
-    res.json(req.body)
-})
+associazione_router.post('/associazione/rimuovi/:id',tokenCheck,rimuovi_associazione)

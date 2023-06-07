@@ -20,11 +20,7 @@ async function remove_associazione_precedente(id_cliente: string) {
                 return true
             }else{
                 const val=await remove_prenotazioni_if_disassociato(id_cliente, id_terapeuta)
-                if(val){
-                    return true
-                }else{
-                    return false
-                }
+                return val? true:false
             }
         }
     }catch (err){
@@ -32,17 +28,15 @@ async function remove_associazione_precedente(id_cliente: string) {
     }  
 }
 
-export async function associazione(req:Request,res:Response,next:NextFunction) {
+export async function associazione(req:Request,res:Response) {
     
     const id_cliente=req.body.loggedUser._id
     const id_terapeuta=req.params.id
     if (!id_cliente || !id_terapeuta){
-        res.status(400)
-        req.body={
+        res.status(400).json({
             successful: false,
             message: "Not enough arguments!"
-        }
-        next()
+        })
     } 
 
     try{
@@ -52,33 +46,23 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         let cliente= await Cliente.findById(id_cliente).exec()
 
         if(!(terapeuta&&cliente)){ 
-            res.status(404)
-            req.body={
+            res.status(404).json({
                 successful: false,
                 message: "User not found!"
-            }
-            next()
-            return      
+            })   
         }
-
         if(cliente.ruolo!=1 || terapeuta.ruolo!=2){
-            res.status(403)
-            req.body={
+            res.status(403).json({
                 successful: false,
                 message: "Invalid role!"
-            }
-            next()
-            return  
+            })
         }
 
         if(terapeuta.associati.length>=(terapeuta.limite_clienti as number)){
-            res.status(409)
-            req.body={
+            res.status(409).json({
                 successful: false,
                 message: "Therapist full, impossible association!"
-            }
-            next()
-            return  
+            })  
         }
 
 
@@ -93,25 +77,19 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
          */
 
         if(terapeuta.associati.includes(cliente._id.toString())&&cliente.associato==terapeuta._id.toString()){       
-            res.status(409)
-            req.body={
+            res.status(409).json({
                 successful:false,
                 message: "Client and therapist already associated!"
-            }
-            next()
-            return
+            })
         }
 
         //pulisce l'asssociazione precedente dal terapeuta precedente
         const val=await remove_associazione_precedente(id_cliente)
         if(val==false){
-            res.status(500)
-            req.body={
+            res.status(500).json({
                 successful: false,
                 message: "Server error in association - failed!"
-            }
-            next()
-            return
+            })
         }
         
         /**
@@ -125,13 +103,10 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
         
         //lancio un errore se non dovesse andare a buon fine la scrittura nel db
         if(cliente.associato!=id_terapeuta){
-            res.status(500)
-            req.body={
+            res.status(500).json({
                 successful: false,
                 message: "Server error in association - failed!"
-            }
-            next()
-            return
+            })
         }
 
         /**
@@ -154,32 +129,24 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
             //rollback associazione utente, che si suppone funzioni -> rimuovo eventuali link pendenti
             await Cliente.findByIdAndUpdate(id_cliente, {associato:""}).exec()
             await Terapeuta.findByIdAndUpdate(id_terapeuta,{$pull:{associati:id_cliente}}) 
-            res.status(500)
-            req.body={
+            res.status(500).json({
                 successful: false,
                 message: "Server error in association - failed!"
-            }
-            next()
-            return
+            })
         }
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Association successfully done!" 
-        }
-        next()
-        return
+        })
     } catch (err) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successfull:false,
             message:"Server error in association - failed!"
-        }
-        next()
+        })
     }
 }
 
-export async function rimuovi_associazione (req:Request, res:Response,next:NextFunction){
+export async function rimuovi_associazione (req:Request, res:Response){
     /**
      * 
      * L'utente autenticato manda una richiesta di disassociazione con parametro l'id della controparte
@@ -195,13 +162,10 @@ export async function rimuovi_associazione (req:Request, res:Response,next:NextF
         id_cliente=req.params.id
     }
     else{
-        res.status(403)
-        req.body={
+        res.status(403).json({
             successful:false,
             message:"Invalid role!"
-        }
-        next()
-        return
+        })
     }
 
     try {
@@ -211,40 +175,33 @@ export async function rimuovi_associazione (req:Request, res:Response,next:NextF
         let terapeuta = await Terapeuta.findOne({_id:id_terapeuta, associati:id_cliente}).exec()
         
         if(!(cliente&&terapeuta)){
-            res.status(404)
-            req.body={
+            res.status(404).json({
                 successful:false,
                 message:"User not found!"
-            }
+            })
         }
         cliente = await Cliente.findOneAndUpdate({_id:id_cliente, associato:id_terapeuta},{associato:""},{new:true}).exec()
         terapeuta = await Terapeuta.findOneAndUpdate({_id:id_terapeuta, associati:id_cliente},{$pull:{associati:id_cliente}},{new:true}).exec()
         await remove_prenotazioni_if_disassociato(id_cliente, id_terapeuta)
 
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Association successfully removed!"
-        }
+        })
     } catch (error) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in association removal - failed!"
-        }
+        })
     }
-    next()
 }
 
-export async function get_all_associati(req:Request,res:Response,next:NextFunction) {
+export async function get_all_associati(req:Request,res:Response) {
     if(req.body.loggedUser.ruolo!=2){
-        res.status(403)
-        req.body={
+        res.status(403).json({
             successful:false,
             message:"Invalid role!"
-        }
-        next()
-        return
+        })
     }
     
     
@@ -254,22 +211,15 @@ export async function get_all_associati(req:Request,res:Response,next:NextFuncti
         let id_terapeuta=req.body.loggedUser._id
         const catalogo_associati =await Cliente.find({ruolo:1, associato:id_terapeuta}, 'nome cognome foto_profilo')
         
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Therapist's client catalog retrieved successfully!",
             catalogo: catalogo_associati
-        }
-        next()
-        return
+        })
     } catch (err) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in client catalog - failed!"
-        }
-        next()
-        return
+        })
     }
-    
 }
