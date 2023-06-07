@@ -5,31 +5,25 @@ import {Cliente, ICliente} from '../schemas/cliente_schema'
 import {Utente,IUtente} from '../schemas/utente_schema'
 import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'
 
-export async function get_all_terapeuti(req:Request,res:Response,next:NextFunction) {
+export async function get_all_terapeuti(req:Request,res:Response) {
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const catalogo_terapeuti=await Terapeuta.find({ruolo:2}, 'nome cognome foto_profilo')
 
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Therapist catalog retrieved successfully!",
             catalogo: catalogo_terapeuti
-        }
-        next()
-        return
+        })
     } catch (err) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in therapist catalog - failed!"
-        }
+        })
     }
-    next()
-    return
 }
 
-export async function get_my_profilo(req:Request,res:Response,next:NextFunction){
+export async function get_my_profilo(req:Request,res:Response){
     /**
      * 
      * Questa funzione è dedita al recupero del proprio profilo per la visualizzazione delle informazioni personali
@@ -47,27 +41,20 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
         else{
             utente = await Utente.findById(req.body.loggedUser._id,'username ruolo').exec()
         }
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"My_profile obtained successfully!",
             profile:utente
-        }
-        next()
-        return
-
+        })
     } catch (error) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in retrieving my_profile - failed!"
-        }
-        next()
-        return
+        })
     }
 }
 
-export async function modify_profilo(req:Request,res:Response,next:NextFunction) {
+export async function modify_profilo(req:Request,res:Response) {
     /**
      * CAMPI MODIFICABILI:
      * nome
@@ -136,25 +123,19 @@ export async function modify_profilo(req:Request,res:Response,next:NextFunction)
                 documenti: updated_data.documenti
             },{new:true}).exec()
         }
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"My_profile updated successfully!"
-        }
-        next()
-        return
+        })
     } catch (error) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message: "Server error in updating my_profile - failed!"
-        }
-        next()
-        return
+        })
     }
 }
 
-export async function get_profilo(req:Request, res:Response, next: NextFunction) {
+export async function get_profilo(req:Request, res:Response) {
     try {
         mongoose.connect(process.env.DB_CONNECTION_STRING)
         /**
@@ -171,24 +152,18 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
         else if(req.body.loggedUser.ruolo==2)
             richiedente = await Terapeuta.findById(req.body.loggedUser._id).exec()
         else{
-            res.status(403)
-            req.body={
+            res.status(403).json({
                 successful:false,
                 message:"Invalid role!"
-            }
-            next()
-            return
+            })
         }
 
         let utente:IUtente|ICliente|ITerapeuta = await Utente.findById(req.params.id).exec()
         if(!utente){
-            res.status(404),
-            req.body={
+            res.status(404).json({
                 successful:false,
                 message:"User not found!"
-            }
-            next()
-            return
+            })
         }
         if(utente.ruolo==1)
             utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario')
@@ -204,66 +179,39 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
          */
 
         if(richiedente.ruolo==utente.ruolo||((richiedente instanceof Terapeuta)&&!(richiedente as ITerapeuta).associati.includes(req.params.id))){
-            res.status(403)
-            req.body={
+            res.status(403).json({
                 successful: false,
                 message: "Request denied!"
-            }
-            next()
-            return
+            })
         }
-
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Profile obtained successfully!",
-            profilo:utente
-        }
-        next()
-        return
-
+            profile:utente
+        })
     } catch (error) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in retrieving profile - failed!"
-        }
-        next()
-        return
+        })
     }
 }
 
-export async function get_all_clienti(req:Request,res:Response,next:NextFunction) {
+export async function get_all_clienti(req:Request,res:Response) {
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         // console.log("dbconnesso")
         const catalogo_clienti=await Cliente.find({ruolo:1}, 'nome cognome foto_profilo')
         // console.log(catalogo_terapeuti)
-        res.status(200)
-        req.body={
+        res.status(200).json({
             successful:true,
             message:"Client catalog retrieved successfully!",
             catalogo: catalogo_clienti
-        }
-        next()
-        return
+        })
     } catch (err) {
-        res.status(500)
-        req.body={
+        res.status(500).json({
             successful:false,
             message:"Server error in client catalog - failed!"
-        }
-        next()
-        return
+        })
     }
 }
-
-
-
-/**
- * 
- * TODO: aggiungere unique ai campi univoci degli schemi
- *       trovare il punto dove chiamare SCHEMA.CreateIndex() per inizializzare gli indici (?)
- */
-
-
