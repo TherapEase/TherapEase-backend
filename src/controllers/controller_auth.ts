@@ -93,6 +93,7 @@ export async function registrazione(req:Request,res:Response) {
         }
         await utente_schema.save();
         await send_confirmation_mail(utente_schema._id.toString(),utente_schema.email.toString())
+        //se fallisce non è un problema, verrà fatto un nuovo tentativo al prossimo login, non mi sembra corretto fermare il tutto perché ha fallito l'invio mail  
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
 
         res.status(200).json({
@@ -162,7 +163,7 @@ export async function login(req:Request,res:Response) {
             utente_completo = await Terapeuta.findById(utente_trovato._id).exec()
         if (utente_trovato.ruolo!=4  && utente_trovato.ruolo!=3){
             if(!utente_completo.mail_confermata)
-                await send_confirmation_mail(utente_completo._id.toString(),utente_completo.email.toString())
+                await send_confirmation_mail(utente_completo._id.toString(),utente_completo.email.toString()) //come sopra
         }
         res.status(200).json({
             successful:true,
@@ -186,12 +187,17 @@ function createToken(_id:string, username:string, ruolo:Number):string{
 }
 
 async function send_confirmation_mail(_id:string, email:string){
-    const ver_token = jwt.sign({
-        _id:_id,
-        email: email
-    },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
-    const testo="Clicca sul link seguente per verificare il tuo indirizzo di posta elettronica: "+"REDIRECT URL"+ver_token //mettere il link a cui si viene ridiretti al front
-    await send_mail("Verify your email address",testo,email)
+    try {
+        const ver_token = jwt.sign({
+            _id:_id,
+            email: email
+        },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
+        const testo="Clicca sul link seguente per verificare il tuo indirizzo di posta elettronica: "+process.env.API_URL+'/conferma_mail/'+ver_token //mettere il link a cui si viene ridiretti al front
+        await send_mail("Verify your email address",testo,email)
+        return true
+    } catch (error) {
+        return false
+    }
 }
 
 export async function conferma_mail(req:Request, res:Response){
