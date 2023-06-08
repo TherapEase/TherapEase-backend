@@ -1,5 +1,4 @@
 import { Request,Response } from 'express'
-import mongoose from 'mongoose'
 import { IProdotto, Prodotto } from '../schemas/prodotto_schema'
 import { Cliente } from '../schemas/cliente_schema'
 import { ISessione, Sessione } from '../schemas/sessione_stripe_schema'
@@ -27,7 +26,6 @@ export async function inserisci_prodotto(req:Request,res:Response){
 
     try{
         // controllo se esiste già
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let esistente = await Prodotto.findOne({nome:nome, n_gettoni:n_gettoni, prezzo:prezzo}).exec()
         if(esistente){
             res.status(409).json({
@@ -67,7 +65,6 @@ export async function rimuovi_prodotto(req:Request,res:Response){
 
     try{
         // controllo presenza prodotto
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let presente= await Prodotto.findOneAndDelete({_id:req.params.id}).exec()
         if(!presente){
             res.status(409).json({
@@ -90,7 +87,6 @@ export async function rimuovi_prodotto(req:Request,res:Response){
 
 export async function get_prodotti(req:Request,res:Response){
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const catalogo_prodotti=await Prodotto.find({}).exec()
         res.status(200).json({
             successful:true,
@@ -106,7 +102,6 @@ export async function get_prodotti(req:Request,res:Response){
 };
 
 export async function aggiungi_gettoni(id_cliente:string, n_gettoni:Number) {
-    await mongoose.connect(process.env.DB_CONNECTION_STRING)
     let cliente= await Cliente.findById(id_cliente).exec()
     let new_gettoni=(cliente.n_gettoni as number)+ (n_gettoni as number)
     await Cliente.findOneAndUpdate({_id:id_cliente},{n_gettoni:new_gettoni}).exec()
@@ -124,7 +119,6 @@ export async function checkout(req:Request,res:Response){
     
     try {
         // controllo presenza prodotto
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let presente= await Prodotto.findById(req.params.id).exec()
         if(!presente){
             res.status(409).json({
@@ -176,13 +170,12 @@ export async function checkout_success(req:Request,res:Response){
     
     try {
         // controllo presenza prodotto
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let presente= await Sessione.findById(req.params.id).exec()
         if(!presente){
             res.status(409).json({
                 successful: false,
                 message: "Element doesn’t exist!"
-            }).redirect("http://localhost:8080/profilo")
+            }).redirect("http://localhost:8080/profilo")//da cambiare
         }
 
         aggiungi_gettoni(presente.id_cliente, presente.n_gettoni)
@@ -191,7 +184,7 @@ export async function checkout_success(req:Request,res:Response){
         res.status(200).json({
             successful:true,
             message:"Gettoni aggiunti!"
-        }).redirect("http://localhost:8080/profilo")
+        }).redirect("http://localhost:8080/profilo")//da cambiare
     } catch (err) {
         res.status(500).json({
             successful:false,
@@ -206,5 +199,5 @@ export async function checkout_failed(req:Request,res:Response){
     res.status(200).json({
         successful:true,
         message:"Successful redirecting after payment failure!"
-    }).redirect("http://localhost:8080/offerta")
+    }).redirect("http://localhost:8080/offerta")//da cambiare
 }

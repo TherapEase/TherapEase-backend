@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import { tokenCheck } from '../controllers/token_checker'
+import { tokenCheck } from '../services/token_checker'
 import { crea_slot_seduta,elimina_slot_seduta,prenota_seduta,mostra_calendario_completo,mostra_calendario_disponibili,mostra_calendario_prenotate, annulla_prenotazione_seduta } from '../controllers/controller_sedute'
 export const sedute_router = Router()
 

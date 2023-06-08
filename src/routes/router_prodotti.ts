@@ -1,5 +1,5 @@
-import {Router, Response, Request, NextFunction} from 'express'
-import { tokenCheck } from '../controllers/token_checker'
+import {Router} from 'express'
+import { tokenCheck } from '../services/token_checker'
 import { inserisci_prodotto,rimuovi_prodotto,get_prodotti,checkout, checkout_success, checkout_failed } from '../controllers/controller_prodotti'
 
 

@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import { tokenCheck } from '../controllers/token_checker'
+import { tokenCheck } from '../services/token_checker'
 import { get_all_associati,associazione,rimuovi_associazione } from '../controllers/controller_associazione'
 
 export const associazione_router = Router()

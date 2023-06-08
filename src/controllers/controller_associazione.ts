@@ -1,5 +1,4 @@
 import {Request,Response} from 'express'
-import mongoose from 'mongoose'
 import { Cliente, } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
 import { remove_prenotazioni_if_disassociato } from './controller_sedute'
@@ -8,7 +7,6 @@ import { remove_prenotazioni_if_disassociato } from './controller_sedute'
 async function remove_associazione_precedente(id_cliente: string) {
     
     try{
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const cliente=await Cliente.findById(id_cliente).exec() 
     
         if(cliente.associato==""){
@@ -40,8 +38,6 @@ export async function associazione(req:Request,res:Response) {
     } 
 
     try{
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
-
         let terapeuta=await Terapeuta.findById(id_terapeuta).exec()    
         let cliente= await Cliente.findById(id_cliente).exec()
 
@@ -169,8 +165,6 @@ export async function rimuovi_associazione (req:Request, res:Response){
     }
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
-
         let cliente= await Cliente.findOne({_id:id_cliente, associato:id_terapeuta}).exec()
         let terapeuta = await Terapeuta.findOne({_id:id_terapeuta, associati:id_cliente}).exec()
         
@@ -206,8 +200,6 @@ export async function get_all_associati(req:Request,res:Response) {
     
     
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
-
         let id_terapeuta=req.body.loggedUser._id
         const catalogo_associati =await Cliente.find({ruolo:1, associato:id_terapeuta}, 'nome cognome foto_profilo')
         

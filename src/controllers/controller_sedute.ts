@@ -2,9 +2,8 @@ import { Request,Response } from 'express'
 import {Cliente} from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
 import { Seduta, ISeduta } from '../schemas/seduta_schema'
-import mongoose from 'mongoose'
 import scheduler from 'node-schedule'
-import { send_mail } from './gmail_connector'
+import { send_mail } from '../services/gmail_connector'
 import { aggiungi_gettoni } from './controller_prodotti'
 
 export async function crea_slot_seduta(req:Request,res:Response) {
@@ -32,7 +31,6 @@ export async function crea_slot_seduta(req:Request,res:Response) {
         })
     }
     try{
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         //controllo che non sia già presente
         let seduta_presente = await Seduta.findOne({data:data, terapeuta:req.body.loggedUser._id}).exec()
         console.log(seduta_presente)
@@ -97,7 +95,6 @@ export async function elimina_slot_seduta(req:Request,res:Response) {
     }
 
     try{
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let seduta_presente = await Seduta.findOneAndDelete({data:data, terapeuta:req.body.loggedUser._id, abilitato:true}).exec()
         if(!seduta_presente){  
             res.status(409).json({
@@ -142,7 +139,6 @@ export async function prenota_seduta(req:Request,res:Response) {
     }
 
     //nessun terapeuta associato
-    await mongoose.connect(process.env.DB_CONNECTION_STRING)
     let cliente = await Cliente.findById(req.body.loggedUser._id).exec()
     if(cliente.associato==""){
         res.status(409).json({
@@ -187,7 +183,6 @@ export async function prenota_seduta(req:Request,res:Response) {
 
 export async function remove_prenotazioni_if_disassociato(id_cliente:string, id_terapeuta:String) {
     try{
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let sedute_modificate=await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta, abilitato:true},{cliente:""}).exec()
         
         // riaccredita gettoni pari al numero di sedute annullate, ancora annullabili
@@ -218,7 +213,6 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
     }
 
     try{
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         // posso farlo perchè se tolgo l'associazione elimino automaticamente tutte le prenotazioni
         let seduta= await Seduta.findOneAndUpdate({data:data, cliente:req.body.loggedUser._id}, {cliente:""}).exec()
         if(!seduta){
@@ -250,7 +244,6 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
 
 export async function mostra_calendario_completo(req:Request, res:Response){
     try{
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         if(req.body.loggedUser.ruolo==1){
             res.status(200).json({
                 successful: true,
@@ -275,7 +268,6 @@ export async function mostra_calendario_completo(req:Request, res:Response){
 
 export async function mostra_calendario_disponibili(req:Request, res:Response){
     try{
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         if(req.body.loggedUser.ruolo==1){
             let cliente=await Cliente.findById(req.body.loggedUser._id).exec()
 
@@ -302,7 +294,6 @@ export async function mostra_calendario_disponibili(req:Request, res:Response){
 
 export async function mostra_calendario_prenotate(req:Request, res:Response){
     try{
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         if(req.body.loggedUser.ruolo==1){
             res.status(200).json({
                 successful: true,

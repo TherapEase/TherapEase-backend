@@ -2,7 +2,6 @@ import { Request,Response } from 'express'
 import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
 import { Segnalazione, ISegnalazione } from '../schemas/segnalazione_schema'
-import mongoose from 'mongoose'
 
 export async function get_all_segnalazioni(req:Request,res:Response) {
     // controllo ruolo
@@ -14,7 +13,6 @@ export async function get_all_segnalazioni(req:Request,res:Response) {
     }
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const catalogo_segnalazioni =await Segnalazione.find({gestita:false}, {}).exec()   //prendo tutte le segnalazioni
         
         console.log(catalogo_segnalazioni)
@@ -42,7 +40,6 @@ export async function gestisci_segnalazione(req:Request,res:Response) {
     
     try{
         // controllo presenza della segnalazione
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let segnalazione= await Segnalazione.findOneAndUpdate({_id:req.params.id}, {gestita:true}).exec()
         if(!segnalazione){
             res.status(409).json({
@@ -74,8 +71,6 @@ export async function segnala(req:Request,res:Response) {
 
     if(req.body.loggedUser.ruolo == 1) { 
         const id_terapeuta=req.params.id
-
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let cliente = req.body.loggedUser
         let terapeuta=await Terapeuta.findById(id_terapeuta).exec()
 
@@ -118,7 +113,6 @@ export async function segnala(req:Request,res:Response) {
 
         try{
             // controllo se esiste già
-            await mongoose.connect(process.env.DB_CONNECTION_STRING)
             let esistente = await Segnalazione.findOne({segnalato:segnalato, testo:testo, data:data}).exec()
             if(esistente){
                 res.status(409).json({
@@ -146,9 +140,7 @@ export async function segnala(req:Request,res:Response) {
             })
         }
     } else if(req.body.loggedUser.ruolo == 2) {
-    const id_cliente=req.params.id
-
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        const id_cliente=req.params.id
         let terapeuta = req.body.loggedUser
         let cliente=await Cliente.findById(id_cliente).exec()
 
@@ -192,7 +184,6 @@ export async function segnala(req:Request,res:Response) {
 
         try{
             // controllo se esiste già
-            await mongoose.connect(process.env.DB_CONNECTION_STRING)
             let esistente = await Segnalazione.findOne({segnalato:segnalato, testo:testo, data:data}).exec()
             if(esistente){
                 res.status(409).json({

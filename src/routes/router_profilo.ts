@@ -1,6 +1,6 @@
 import {Router} from 'express'
 
-import { tokenCheck } from '../controllers/token_checker'
+import { tokenCheck } from '../services/token_checker'
 import { get_all_terapeuti,get_my_profilo, modify_profilo,get_profilo, get_all_clienti } from '../controllers/controller_profilo'
 
 export const profilo_router = Router()

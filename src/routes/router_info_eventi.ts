@@ -1,5 +1,5 @@
-import {Router, Response, Request, NextFunction} from 'express'
-import { tokenCheck } from '../controllers/token_checker'
+import {Router} from 'express'
+import { tokenCheck } from '../services/token_checker'
 import { aggiungi_evento, get_all_eventi, rimuovi_evento } from '../controllers/controller_info_eventi'
 
 

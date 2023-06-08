@@ -1,5 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express'
-import { tokenCheck } from '../controllers/token_checker'
+import { Router} from 'express'
+import { tokenCheck } from '../services/token_checker'
 import { elimina_pagina, leggi_diario_cliente, leggi_my_diario, modifica_pagina, scrivi_pagina } from '../controllers/controller_diario'
 export const diario_router = Router()
 

@@ -1,11 +1,10 @@
 import {Request, Response} from 'express'
-import mongoose from 'mongoose'
 import jwt, { JwtPayload } from 'jsonwebtoken'
 
 import {Utente,IUtente} from '../schemas/utente_schema'
 import {Cliente, ICliente} from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
-import { send_mail } from './gmail_connector'
+import { send_mail } from '../services/gmail_connector'
 
 export async function registrazione(req:Request,res:Response) {
     /* STRUTTURA RICHIESTA: utente base
@@ -52,7 +51,6 @@ export async function registrazione(req:Request,res:Response) {
    
 
    try{
-    await mongoose.connect(process.env.DB_CONNECTION_STRING)
     let utente_presente = await Utente.findOne({username:username}).exec()    
     if(!utente_presente){
         let utente_schema
@@ -130,7 +128,6 @@ export async function login(req:Request,res:Response) {
 
     try {
         // recupero utente dal database
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let utente_trovato = await Utente.findOne({username: username}).exec()
 
         // se non esiste, ritorno un errore
@@ -216,7 +213,6 @@ export async function conferma_mail(req:Request, res:Response){
         })
     }
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let utente
         if(req.body.loggedUser.ruolo==1)
             utente= Cliente.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()

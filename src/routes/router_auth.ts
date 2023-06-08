@@ -1,6 +1,6 @@
 import {Router} from 'express'
 import { registrazione, login, conferma_mail } from '../controllers/controller_auth'
-import { tokenCheck } from '../controllers/token_checker'
+import { tokenCheck } from '../services/token_checker'
 import { logout } from '../controllers/controller_logout'
 import { recupero_password, cambio_password } from '../controllers/controller_password'
 

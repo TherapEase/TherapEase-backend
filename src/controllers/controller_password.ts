@@ -1,5 +1,4 @@
-import {Request,Response,NextFunction} from 'express'
-import mongoose from 'mongoose'
+import {Request,Response} from 'express'
 import bcrypt from 'bcrypt'
 import generator from 'generate-password'
 
@@ -7,8 +6,8 @@ import {Utente,IUtente} from '../schemas/utente_schema'
 import {Cliente, ICliente} from '../schemas/cliente_schema'
 import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
 
-import { check_and_hash } from './password_hasher'
-import { send_mail } from './gmail_connector'
+import { check_and_hash } from '../services/password_hasher'
+import { send_mail } from '../services/gmail_connector'
 
 
 
@@ -25,7 +24,6 @@ export async function recupero_password(req:Request,res:Response){
     }
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const utente = await Utente.findOne({username:username}).exec()
         if(!utente){
             res.status(404).json({
@@ -79,7 +77,6 @@ export async function cambio_password(req:Request,res:Response) {
                 message:"Password not specified!"
             })
         }
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let utente = await Utente.findById(req.body.loggedUser._id).exec()
         if(await bcrypt.compare(password,utente.password.toString())){
             res.status(409).json({

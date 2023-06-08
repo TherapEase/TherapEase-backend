@@ -1,12 +1,10 @@
-import { Request,Response,NextFunction } from 'express'
-import mongoose from 'mongoose'
+import { Request,Response} from 'express'
 import {Cliente, ICliente} from '../schemas/cliente_schema'
 import {Utente,IUtente} from '../schemas/utente_schema'
 import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'
 
 export async function get_all_terapeuti(req:Request,res:Response) {
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const catalogo_terapeuti=await Terapeuta.find({ruolo:2}, 'nome cognome foto_profilo')
 
         res.status(200).json({
@@ -31,7 +29,6 @@ export async function get_my_profilo(req:Request,res:Response){
      */
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let utente: IUtente|ITerapeuta
         if(req.body.loggedUser.ruolo==1)
             utente = await Cliente.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita n_gettoni associato').exec()
@@ -70,7 +67,6 @@ export async function modify_profilo(req:Request,res:Response) {
      */
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         if(req.body.loggedUser.ruolo==1){
             const cliente = await Cliente.findById(req.body.loggedUser._id).exec()
             let updated_data ={
@@ -136,7 +132,6 @@ export async function modify_profilo(req:Request,res:Response) {
 
 export async function get_profilo(req:Request, res:Response) {
     try {
-        mongoose.connect(process.env.DB_CONNECTION_STRING)
         /**
          * Restituisce i dati "pubblici" di un profilo
          * si potrebbe fare un controllo dei permessi tramite token
@@ -198,8 +193,6 @@ export async function get_profilo(req:Request, res:Response) {
 
 export async function get_all_clienti(req:Request,res:Response) {
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
-        // console.log("dbconnesso")
         const catalogo_clienti=await Cliente.find({ruolo:1}, 'nome cognome foto_profilo')
         // console.log(catalogo_terapeuti)
         res.status(200).json({

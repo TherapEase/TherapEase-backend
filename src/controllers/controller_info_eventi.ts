@@ -1,5 +1,4 @@
-import { Request,Response, NextFunction } from "express";
-import mongoose from "mongoose";
+import { Request,Response} from "express";
 import { IInfo, Info } from "../schemas/info_eventi_schema";
 
 
@@ -34,7 +33,6 @@ export async function aggiungi_evento(req:Request,res:Response) {
     }
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
 
         // controllo evento gia presente
         const presente=await Info.findOne({data:data, titolo: titolo, testo:testo})
@@ -87,7 +85,6 @@ export async function rimuovi_evento(req:Request,res:Response) {
     }
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         await Info.findByIdAndDelete(req.params.id)
 
         res.status(200).json({
@@ -104,7 +101,6 @@ export async function rimuovi_evento(req:Request,res:Response) {
 
 export async function get_all_eventi(req:Request,res:Response) {
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const eventi=await Info.find()
 
         res.status(200).json({

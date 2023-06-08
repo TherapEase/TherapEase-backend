@@ -1,6 +1,6 @@
 import {Request,Response,NextFunction} from 'express'
 import jwt, { JwtPayload } from 'jsonwebtoken'
-import { isBlacklisted } from './controller_logout'
+import { isBlacklisted } from '../controllers/controller_logout'
 import mongoose from 'mongoose'
 import {Utente} from '../schemas/utente_schema'
 

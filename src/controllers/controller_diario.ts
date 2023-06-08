@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import { Pagina, IPagina } from '../schemas/pagina_schema'
-import mongoose from 'mongoose'
 import { Terapeuta } from '../schemas/terapeuta_schema'
 import { Cliente } from '../schemas/cliente_schema'
 import { Diario, IDiario } from '../schemas/diario_schema'
@@ -37,7 +36,6 @@ export async function scrivi_pagina(req: Request, res: Response) {
         })
     }
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         //controllo che non sia già presente una pagina quel giorno
         let pagina_presente = await Pagina.findOne({ data: data, cliente: id_cliente }).exec()
         if (!pagina_presente) {
@@ -93,7 +91,6 @@ export async function leggi_my_diario(req: Request, res: Response) {
         })
     }
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let diario = await Pagina.find({ cliente: req.body.loggedUser._id }, 'data testo').exec()
 
         res.status(200).json({
@@ -119,7 +116,6 @@ export async function leggi_diario_cliente(req: Request, res: Response) {
         })
     }
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const terapeuta = await Terapeuta.findOne({ _id: req.body.loggedUser._id }).exec()
         if (!terapeuta.associati.includes(id_cliente_associato)) {
             res.status(403).json({
@@ -162,7 +158,6 @@ export async function modifica_pagina(req: Request, res: Response) {
     }
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const pagina = await Pagina.findOne({ data: data, cliente: req.body.loggedUser._id }).exec()
 
         if (!pagina) {
@@ -202,7 +197,6 @@ export async function elimina_pagina(req: Request, res: Response) {
     }
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const pagina = await Pagina.findOneAndDelete({ data: data, cliente: req.body.loggedUser._id }).exec()
         if (!pagina) {
             res.status(400).json({

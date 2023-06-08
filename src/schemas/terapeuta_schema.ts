@@ -1,8 +1,5 @@
-import {Hash} from "crypto"
 import {Schema, model} from "mongoose"
-import bcrypt from 'bcrypt'
-import dotenv from 'dotenv'
-import { check_and_hash } from "../controllers/password_hasher"
+import { check_and_hash } from "../services/password_hasher"
 
 
 export interface ITerapeuta {

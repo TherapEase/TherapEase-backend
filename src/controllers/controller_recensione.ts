@@ -1,7 +1,6 @@
 import { Request,Response} from 'express'
 import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta} from '../schemas/terapeuta_schema'
-import mongoose from 'mongoose'
 import { Recensione, IRecensione } from '../schemas/recensione_schema'
 
 // metodo per leggere le recensioni del terapeuta di cui si sta visitando il profilo
@@ -16,7 +15,6 @@ export async function read_recensioni(req:Request,res:Response) {
     }
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const catalogo_recensioni =await Recensione.find({recensito:req.params.id}).exec()
 
         res.status(200).json({
@@ -43,7 +41,6 @@ export async function read_my_recensioni(req:Request,res:Response) {
         })
     }
     try {
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         const catalogo_recensioni =await Recensione.find({recensito:req.body.loggedUser._id}, {}).exec()
 
         res.status(200).json({
@@ -68,9 +65,7 @@ export async function scrivi_recensione(req:Request,res:Response) {
             message:"Invalid role!"
         })
     }
-
-    await mongoose.connect(process.env.DB_CONNECTION_STRING)
-    let cliente = await Cliente.findById(req.body.loggedUser._id).exec()
+    let cliente = await Cliente.findById(req.body.loggedUser._id).exec()    //connessione al db senza try catch, sistemare
 
     if(cliente.associato==""){
         res.status(409).json({
@@ -110,7 +105,6 @@ export async function scrivi_recensione(req:Request,res:Response) {
 
     try{
         // controllo se esiste già
-        await mongoose.connect(process.env.DB_CONNECTION_STRING)
         let esistente = await Recensione.findOne({voto:voto, testo:testo, autore:autore, data:data}).exec()
         if(esistente){
             res.status(409).json({

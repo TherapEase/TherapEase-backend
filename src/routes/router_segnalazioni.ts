@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import { tokenCheck } from '../controllers/token_checker'
+import { tokenCheck } from '../services/token_checker'
 import { gestisci_segnalazione, get_all_segnalazioni, segnala } from '../controllers/controller_segnalazione';
 
 
