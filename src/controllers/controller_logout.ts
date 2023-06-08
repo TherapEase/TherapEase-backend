@@ -1,7 +1,6 @@
 import { Request,Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import jwt, { JwtPayload } from 'jsonwebtoken'
-import dotenv from 'dotenv'
 import { JWTToken } from "../schemas/token_schema";
 
 /**

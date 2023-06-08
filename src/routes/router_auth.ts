@@ -1,5 +1,4 @@
-import {Router, Request, Response, NextFunction} from 'express'
-
+import {Router} from 'express'
 import { registrazione, login, conferma_mail } from '../controllers/controller_auth'
 import { tokenCheck } from '../controllers/token_checker'
 import { logout } from '../controllers/controller_logout'

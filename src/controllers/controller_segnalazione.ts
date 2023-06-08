@@ -1,4 +1,4 @@
-import { Request,Response,NextFunction } from 'express'
+import { Request,Response } from 'express'
 import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
 import { Segnalazione, ISegnalazione } from '../schemas/segnalazione_schema'

@@ -1,10 +1,10 @@
-import {Request, Response,NextFunction} from 'express'
+import {Request, Response} from 'express'
 import mongoose from 'mongoose'
 import jwt, { JwtPayload } from 'jsonwebtoken'
 
 import {Utente,IUtente} from '../schemas/utente_schema'
 import {Cliente, ICliente} from '../schemas/cliente_schema'
-import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
+import { Terapeuta } from '../schemas/terapeuta_schema'
 import { send_mail } from './gmail_connector'
 
 export async function registrazione(req:Request,res:Response) {

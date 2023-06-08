@@ -1,7 +1,6 @@
-import {Router, Request, Response, NextFunction} from 'express'
+import {Router} from 'express'
 import { tokenCheck } from '../controllers/token_checker'
 import { gestisci_segnalazione, get_all_segnalazioni, segnala } from '../controllers/controller_segnalazione';
-import { defret } from './routes';
 
 
 export const segnalazioni_router = Router()

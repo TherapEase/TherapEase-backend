@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import { Pagina, IPagina } from '../schemas/pagina_schema'
 import mongoose from 'mongoose'
 import { Terapeuta } from '../schemas/terapeuta_schema'

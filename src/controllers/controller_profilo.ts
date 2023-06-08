@@ -1,6 +1,5 @@
 import { Request,Response,NextFunction } from 'express'
 import mongoose from 'mongoose'
-
 import {Cliente, ICliente} from '../schemas/cliente_schema'
 import {Utente,IUtente} from '../schemas/utente_schema'
 import { Terapeuta, ITerapeuta } from '../schemas/terapeuta_schema'

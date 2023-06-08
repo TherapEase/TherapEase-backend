@@ -1,4 +1,4 @@
-import {Router, Request, Response, NextFunction} from 'express'
+import {Router} from 'express'
 import { tokenCheck } from '../controllers/token_checker'
 import { get_all_associati,associazione,rimuovi_associazione } from '../controllers/controller_associazione'
 
