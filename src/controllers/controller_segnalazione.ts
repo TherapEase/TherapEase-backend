@@ -68,7 +68,7 @@ export async function segnala(req:Request,res:Response) {
     if(req.body.loggedUser.ruolo!=1 && req.body.loggedUser.ruolo!=2){
         res.status(403).json({
             successful: false,
-            message: "Request denied - Invalid role"
+            message: "Request denied!"
         })
     }
 

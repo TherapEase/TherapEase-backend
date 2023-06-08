@@ -75,7 +75,7 @@ export async function scrivi_recensione(req:Request,res:Response) {
     if(cliente.associato==""){
         res.status(409).json({
             successful:false,
-            message:"Client not associated to any therapist!"
+            message:"Client is not associated to a therapist!"
         })
     }
 
@@ -102,7 +102,7 @@ export async function scrivi_recensione(req:Request,res:Response) {
     }
 
     if(voto<1 || voto>5){
-        res.status(401).json({
+        res.status(409).json({
             successful: false,
             message: "Invalid ''voto'', must be <5 and >1!"
         })
