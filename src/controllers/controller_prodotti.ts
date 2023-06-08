@@ -175,7 +175,7 @@ export async function checkout_success(req:Request,res:Response){
             res.status(409).json({
                 successful: false,
                 message: "Element doesn’t exist!"
-            }).redirect("http://localhost:8080/profilo")//da cambiare
+            }).redirect(process.env.DEPLOY_FRONT+"/profilo")//da cambiare
         }
 
         aggiungi_gettoni(presente.id_cliente, presente.n_gettoni)
@@ -184,7 +184,7 @@ export async function checkout_success(req:Request,res:Response){
         res.status(200).json({
             successful:true,
             message:"Gettoni aggiunti!"
-        }).redirect("http://localhost:8080/profilo")//da cambiare
+        }).redirect(process.env.DEPLOY_FRONT+"/profilo")//da cambiare
     } catch (err) {
         res.status(500).json({
             successful:false,
@@ -199,5 +199,5 @@ export async function checkout_failed(req:Request,res:Response){
     res.status(200).json({
         successful:true,
         message:"Successful redirecting after payment failure!"
-    }).redirect("http://localhost:8080/offerta")//da cambiare
+    }).redirect(process.env.DEPLOY_FRONT+"/offerta")//da cambiare
 }
