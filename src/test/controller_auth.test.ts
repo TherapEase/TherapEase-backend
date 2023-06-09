@@ -3,7 +3,9 @@ import { app } from '../server'
 import { describe } from 'node:test'
 import { Utente, IUtente } from '../schemas/utente_schema'
 import mongoose from 'mongoose'
-
+import { Cliente } from '../schemas/cliente_schema'
+import { Terapeuta } from '../schemas/terapeuta_schema'
+import { send_mail } from '../controllers/gmail_connector'
         /**
          * 
          * Le query vengono eseguite come Utente.findOne(...).exec() ciò significa che:
@@ -34,24 +36,28 @@ describe('POST /api/v1/registrazione e api/v1/login',()=>{
     let giovi_doc:any
     beforeEach(async()=>{
         mario_doc ={
+            _id:123,
             username:"mario",
             password:"abcABC123$$",
             ruolo:1,
             nome:"mario",
             cognome:"rossi",
             email:"mariorossi@gmail.com",
+            mail_confermata:false,
             codice_fiscale: "RSSMRA",
             foto_profilo:"",
             data_nascita:"2020"
         }
 
         giovi_doc ={
+            _id:321,
             username:"giovi",
             password:"abcABC123$$",
             ruolo:2,
             nome:"Giovanna",
             cognome:"Bianchi",
             email:"giovannabianchi@gmail.com",
+            mail_confermata:false,
             codice_fiscale: "BNCGVN",
             foto_profilo:"",
             data_nascita:"2020"
@@ -113,6 +119,9 @@ describe('POST /api/v1/registrazione e api/v1/login',()=>{
             password:"$2b$08$eZn3ZBFTgjqO9Y.7IKrEOukAj3nsPbec/gMPwWnV2gim.yhVmawSi",
             ruolo:1
         })}})
+        Cliente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findOne = jest.fn().mockImplementation(()=>{return {exec:jest.fn().mockResolvedValue(giovi_doc)}})
+        
         const res = await request(app).post('/api/v1/login').send({
             username:'mario_rossi',
             password:'abcABC123$'

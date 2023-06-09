@@ -203,6 +203,7 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         return
     
     } catch (err) {
+        console.log(err)
         res.status(500)
         req.body={
             successful:false,
