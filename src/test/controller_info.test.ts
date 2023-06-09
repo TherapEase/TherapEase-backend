@@ -10,7 +10,7 @@ import { Session } from 'node:inspector'
 import { Sessione } from '../schemas/sessione_stripe_schema'
 import { Info } from '../schemas/info_eventi_schema'
 
-describe('eventi info tests',()=>{
+describe('eventi_info tests',()=>{
     let mario_doc:any
     let admin_doc:any
     let evento1_doc:any
@@ -39,12 +39,14 @@ describe('eventi info tests',()=>{
             ruolo:4
         }
         evento1_doc={
+            _id:"3000",
             data:"2023-12-12",
             foto:"",
             testo:"Ciao1",
             titolo:"Test prima prova"
         }
         evento2_doc={
+            _id:"3001",
             data:"2024-12-12",
             foto:"",
             testo:"Ciao",
@@ -59,8 +61,9 @@ describe('eventi info tests',()=>{
             return Promise.resolve(null)
         })}})
         Info.find = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue([evento1_doc, evento2_doc])}})
-        Info.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Info.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(evento2_doc)}})
         Info.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true))
+        Info.findOneAndDelete = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(evento2_doc)}})
     })
 
     afterEach(()=>{
@@ -75,11 +78,10 @@ describe('eventi info tests',()=>{
     })
 
 
+
     it('POST /api/v1/aggiungi_evento admin, evento non esistente',async () => {
         Info.findOne = jest.fn().mockImplementation(()=>Promise.resolve(false))
         
-        Utente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
-
         const res = await request(app).post('/api/v1/aggiungi_evento').set("x-access-token", token_a).send({
             data:"2024-12-12T12:00",
             testo:"Ciao",
@@ -88,5 +90,57 @@ describe('eventi info tests',()=>{
         expect(res.status).toBe(200)
     })
 
+    it('POST /api/v1/aggiungi_evento NOT admin',async () => {
+        const res = await request(app).post('/api/v1/aggiungi_evento').set("x-access-token", token).send({
+            data:"2024-12-12T12:00",
+            testo:"Ciao",
+            titolo:"Test prova"
+        })
+        expect(res.status).toBe(403)
+    })
+
+    it('POST /api/v1/aggiungi_evento admin, mancanza campi',async () => {
+        Info.findOne = jest.fn().mockImplementation(()=>Promise.resolve(false))
+        
+        const res = await request(app).post('/api/v1/aggiungi_evento').set("x-access-token", token_a).send({
+            data:"2024-12-12T12:00",
+            testo:"Ciao"
+        })
+        expect(res.status).toBe(400)
+    })
+
+    it('POST /api/v1/aggiungi_evento admin, evento nel passato',async () => {
+        Info.findOne = jest.fn().mockImplementation(()=>Promise.resolve(false))
+        
+        const res = await request(app).post('/api/v1/aggiungi_evento').set("x-access-token", token_a).send({
+            data:"2020-12-12T12:00",
+            testo:"Ciao",
+            titolo:"Test prova"
+        })
+        expect(res.status).toBe(409)
+    })
+
+
+    it('POST /api/v1/aggiungi_evento admin, evento gia esistente',async () => {
+        
+        const res = await request(app).post('/api/v1/aggiungi_evento').set("x-access-token", token_a).send({
+            data:"2024-12-12T12:00",
+            testo:"Ciao",
+            titolo:"Test prova"
+        })
+        expect(res.status).toBe(409)
+    })
+
+
+    it('DELETE /api/v1/rimuovi_evento/:id admin, evento esistente',async () => {
+        const res = await request(app).delete("/api/v1/rimuovi_evento/"+evento1_doc._id).set("x-access-token", token_a).send()
+        expect(res.status).toBe(200)
+    })
+
+    it('DELETE /api/v1/rimuovi_evento/:id admin, evento non esistente',async () => {
+        Info.findOneAndDelete = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        const res = await request(app).delete("/api/v1/rimuovi_evento/"+evento1_doc._id).set("x-access-token", token_a).send()
+        expect(res.status).toBe(200)
+    })
 
 })
