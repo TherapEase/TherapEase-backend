@@ -2,14 +2,7 @@ import request from 'supertest'
 import { app } from '../server'
 import { describe } from 'node:test'
 import { Utente, IUtente } from '../schemas/utente_schema'
-import mongoose, { Document, FilterQuery,Query } from 'mongoose'
-
-describe('GET /api/v1/', ()=>{
-
-    let UtenteSpy:jest.SpyInstance
-
-    beforeAll(()=>{
-        //UtenteSpy = jest.spyOn(Utente,'findOne').mockImplementation()
+import mongoose from 'mongoose'
 
         /**
          * 
@@ -21,28 +14,139 @@ describe('GET /api/v1/', ()=>{
          *  exec a sua volta viene fintamente implementato restituendo la promise
          * 
          */
+
+
+describe('POST /api/v1/registrazione e api/v1/login',()=>{
+    /**
+     * Su <BASE>/registrazione inserisci i dati richiesti, ovvero
+     *  {username: "mario_rossi",
+     *  password:"abcABC123$",
+     *  email:"mario.rossi@gmail.com",
+     *  nome:"mario", cognome:"rossi",
+     *  cf:"RSSMRA70A01H501S", data_nascita:"01/01/1970",
+     *  ruolo:"1"}
+     * 
+     *  mario rossi non deve essere registrato
+     * 
+     *  il provesso termina HTTP 200 OK e viene restituito un token
+     */
+    let mario_doc:any
+    let giovi_doc:any
+    beforeEach(async()=>{
+        mario_doc ={
+            username:"mario",
+            password:"abcABC123$$",
+            ruolo:1,
+            nome:"mario",
+            cognome:"rossi",
+            email:"mariorossi@gmail.com",
+            codice_fiscale: "RSSMRA",
+            foto_profilo:"",
+            data_nascita:"2020"
+        }
+
+        giovi_doc ={
+            username:"giovi",
+            password:"abcABC123$$",
+            ruolo:2,
+            nome:"Giovanna",
+            cognome:"Bianchi",
+            email:"giovannabianchi@gmail.com",
+            codice_fiscale: "BNCGVN",
+            foto_profilo:"",
+            data_nascita:"2020"
+        }
+
+        mongoose.connect= jest.fn().mockImplementation((conn_string)=>Promise.resolve(true)) //bypass del connect
+        Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Utente.create= jest.fn().mockImplementation((doc)=>Promise.resolve(true)) //bypass della create
+    })
+    afterEach(()=>{
+        jest.restoreAllMocks().clearAllMocks()
+    })
+
+    it('POST /registrazione cliente ok',async ()=>{
+        
+        const res = await request(app).post('/api/v1/registrazione').send(mario_doc)
+        expect(res.status).toBe(200)
+        expect(res.body).toHaveProperty("token")
+    })
+
+    it('POST /registrazione terapeuta ok',async()=>{
+        
+        const res = await request(app).post('/api/v1/registrazione').send(giovi_doc)
+        expect(res.status).toBe(200)
+        expect(res.body).toHaveProperty("token")
+    })
+
+    it('POST /registrazione utente con ruolo invalido', async()=>{
+        mario_doc.ruolo=6
+        const res = await request(app).post('/api/v1/registrazione').send(mario_doc)
+        expect(res.status).toBe(403)
+        expect(res.body.successful).toBe(false)
+    })
+    
+    it('POST /registrazione con campi mancanti',async()=>{
+        mario_doc={
+            username: "mario_rossi",
+            password:"abcABC123$",
+            email:"mario.rossi@gmail.com",
+            nome:"mario",
+            cf:"RSSMRA70A01H501S",
+            data_nascita:"01/01/1970"
+        }
+        const res = await request(app).post('/api/v1/registrazione').send(mario_doc)
+        expect(res.status).toBe(400)
+    })
+
+    it('POST /registrazione di un utente già registrato',async()=>{
+        Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(true)}})
+
+        const res = await request(app).post('/api/v1/registrazione').send(mario_doc)
+        expect(res.status).toBe(409)
+    })
+
+    it(('POST /login di un utente registrato con campi corretti'),async ()=>{
         Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue({
             _id:123,
             username:"mario_rossi",
             password:"$2b$08$eZn3ZBFTgjqO9Y.7IKrEOukAj3nsPbec/gMPwWnV2gim.yhVmawSi",
             ruolo:1
         })}})
-
-    })
-    afterAll(async()=>{
-        jest.resetAllMocks().clearAllMocks()
-    })
-    test(('POST /login senza password'),async()=>{
-        const res = await request(app).post('/api/v1/login').send({
-            username:"mario_rossi"
-        })
-        expect(res.status).toBe(400)
-    })
-    test(('POST /login ok'),async ()=>{
         const res = await request(app).post('/api/v1/login').send({
             username:'mario_rossi',
             password:'abcABC123$'
         })
         expect(res.status).toBe(200)
     })
+
+    it(('POST /login senza password'),async()=>{
+        const res = await request(app).post('/api/v1/login').send({
+            username:"mario_rossi"
+        })
+        expect(res.status).toBe(400)
+    })
+
+    it(('POST /login di un utente non registrato'),async ()=>{
+        const res = await request(app).post('/api/v1/login').send({
+            username:"patty12",
+            password:"!!p4SS!!!"
+        })
+        expect(res.status).toBe(404)
+    })
+
+    it(('POST /login di un utente registrato, password non corretta'),async ()=>{
+        Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue({
+            _id:123,
+            username:"mario_rossi",
+            password:"$2b$08$eZn3ZBFTgjqO9Y.7IKrEOukAj3nsPbec/gMPwWnV2gim.yhVmawSi",
+            ruolo:1
+        })}})
+        const res = await request(app).post('/api/v1/login').send({
+            username:'mario_rossi',
+            password:'abcABC123?'
+        })
+        expect(res.status).toBe(401)
+    })
+    
 })

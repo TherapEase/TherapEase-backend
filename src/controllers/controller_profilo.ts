@@ -51,13 +51,16 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
             message:"My_profile obtained successfully!",
             profile:utente
         }
-        next()    
+        next()
+        return
     } catch (error) {
         res.status(500)
         req.body={
             successful:false,
             message:"Server error in retrieving my_profile - failed!"
         }
+        next()
+        return
     }
 }
 
@@ -184,9 +187,9 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
             return
         }
         if(utente.ruolo==1)
-            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario')
+            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario').exec()
         else if(utente.ruolo==2)
-            utente = await Terapeuta.findById(req.params.id,'username ruolo nome cognome email cf foto_profilo data_nascita associati limite_clienti indirizzo recensioni')
+            utente = await Terapeuta.findById(req.params.id,'username ruolo nome cognome email cf foto_profilo data_nascita associati limite_clienti indirizzo recensioni').exec()
         
         /**
          * 

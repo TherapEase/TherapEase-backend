@@ -100,9 +100,7 @@ export async function registrazione(req:Request,res:Response,next:NextFunction) 
                 indirizzo:ind
             })
         }
-        await utente_schema.save();
-        // console.log("utente salvato")
-        // console.log(utente_schema)
+        await Utente.create(utente_schema)
         await send_confirmation_mail(utente_schema._id.toString(),utente_schema.email.toString())
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
 
@@ -208,14 +206,14 @@ export async function login(req:Request,res:Response,next:NextFunction) {
         res.status(500)
         req.body={
             successful:false,
-            message:"Server error in login - failed!"
+            message:"Server error in login - failed!" + err
         }
         next()
         return
     }
 }
 
-function createToken(_id:string, username:string, ruolo:Number):string{
+export function createToken(_id:string, username:string, ruolo:Number):string{
     return jwt.sign({
         _id:_id,
         username:username,
