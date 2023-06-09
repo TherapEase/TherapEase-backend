@@ -34,28 +34,17 @@ export async function crea_slot_seduta(req:Request,res:Response) {
         //controllo che non sia già presente
         let seduta_presente = await Seduta.findOne({data:data, terapeuta:req.body.loggedUser._id}).exec()
         console.log(seduta_presente)
-        if(!seduta_presente){  
-            let seduta_schema
-            if(presenza==true){
-                let terapeuta= await Terapeuta.findById(req.body.loggedUser._id).exec()
-                //inserisco
-                seduta_schema= new Seduta<ISeduta>({
-                    cliente: "",
-                    terapeuta: req.body.loggedUser._id,
-                    abilitato: true,
-                    data: data, 
-                    indirizzo: terapeuta.indirizzo
-                })
-            }else{
-                //inserisco
-                seduta_schema= new Seduta<ISeduta>({
-                    cliente: "",
-                    terapeuta: req.body.loggedUser._id,
-                    abilitato: true,
-                    data: data,
-                    indirizzo:""
-                })
-            }
+        if(!seduta_presente){
+            let terapeuta= await Terapeuta.findById(req.body.loggedUser._id).exec()
+            //inserisco
+            let seduta_schema= new Seduta<ISeduta>({
+                cliente: "",
+                terapeuta: req.body.loggedUser._id,
+                abilitato: true,
+                data: data, 
+                indirizzo: presenza?terapeuta.indirizzo:""
+            })
+            
             await seduta_schema.save();
 
             res.status(200).json({
@@ -137,16 +126,16 @@ export async function prenota_seduta(req:Request,res:Response) {
             message: "Not enough arguments!"
         })
     }
-
-    //nessun terapeuta associato
-    let cliente = await Cliente.findById(req.body.loggedUser._id).exec()
-    if(cliente.associato==""){
-        res.status(409).json({
-            successful: false,
-            message: "No therapist associated!"
-        })
-    }
     try{
+        //nessun terapeuta associato
+        let cliente = await Cliente.findById(req.body.loggedUser._id).exec()
+        if(cliente.associato==""){
+            res.status(409).json({
+                successful: false,
+                message: "No therapist associated!"
+            })
+        }
+    
         let seduta = await Seduta.findOneAndUpdate({terapeuta:cliente.associato, data:data, cliente:""},{cliente:req.body.loggedUser._id},{new:true})
         if(!seduta){
             res.status(409).json({
@@ -250,8 +239,7 @@ export async function mostra_calendario_completo(req:Request, res:Response){
                 sedute: await Seduta.find({cliente:req.body.loggedUser._id}).exec(),
                 message: "Client calendar successfully shown!"
             })
-        }
-        if(req.body.loggedUser.ruolo==2){
+        }else if(req.body.loggedUser.ruolo==2){
             res.status(200).json({
                 successful: true,
                 sedute: await Seduta.find({terapeuta:req.body.loggedUser._id}).exec(),
@@ -276,8 +264,7 @@ export async function mostra_calendario_disponibili(req:Request, res:Response){
                 sedute: await Seduta.find({cliente:"", terapeuta:cliente.associato}).exec(),
                 message: "Client calendar successfully shown!"
             })
-        }
-        if(req.body.loggedUser.ruolo==2){
+        }else if(req.body.loggedUser.ruolo==2){
             res.status(200).json({
                 successful: true,
                 sedute: await Seduta.find({terapeuta:req.body.loggedUser._id, cliente:""}).exec(),
@@ -300,8 +287,7 @@ export async function mostra_calendario_prenotate(req:Request, res:Response){
                 sedute: await Seduta.find({cliente:req.body.loggedUser._id}).exec(),
                 message: "Client calendar successfully shown!"
             })
-        }
-        if(req.body.loggedUser.ruolo==2){
+        }else if(req.body.loggedUser.ruolo==2){
             res.status(200).json({
                 successful: true,
                 sedute: await Seduta.find({terapeuta:req.body.loggedUser._id, cliente:{$ne:""}}).exec(),

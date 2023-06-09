@@ -37,22 +37,12 @@ export async function aggiungi_evento(req:Request,res:Response) {
         // controllo evento gia presente
         const presente=await Info.findOne({data:data, titolo: titolo, testo:testo})
         if(!presente){
-            let schema_info;
-            if(!foto){
-                schema_info=new Info<IInfo>({
+            let schema_info = new Info<IInfo>({
                     testo: testo,
                     data: data,
-                    foto: "",
+                    foto: foto?foto:"",
                     titolo: titolo
                 })
-            }else{
-                schema_info=new Info<IInfo>({
-                    testo: testo,
-                    data: data,
-                    foto: foto,
-                    titolo: titolo
-                })
-            }
     
             await Info.create(schema_info)
     

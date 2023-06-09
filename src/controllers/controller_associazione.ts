@@ -81,7 +81,7 @@ export async function associazione(req:Request,res:Response) {
 
         //pulisce l'asssociazione precedente dal terapeuta precedente
         const val=await remove_associazione_precedente(id_cliente)
-        if(val==false){
+        if(!val){
             res.status(500).json({
                 successful: false,
                 message: "Server error in association - failed!"

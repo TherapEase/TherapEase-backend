@@ -73,7 +73,7 @@ export async function modify_profilo(req:Request,res:Response) {
                 nome: req.body.nome?req.body.nome : cliente.nome,
                 cognome: req.body.cognome?req.body.cognome : cliente.nome,
                 email:req.body.email?req.body.email : cliente.email,
-                email_confermata:req.body.email?false:true,
+                mail_confermata:req.body.email?false:cliente.mail_confermata,
                 cf:req.body.cf?req.body.cf : cliente.cf,
                 foto_profilo:req.body.foto_profilo?req.body.foto_profilo : cliente.foto_profilo,
                 data_nascita: req.body.data_nascita?req.body.data_nascita : cliente.data_nascita
@@ -83,7 +83,7 @@ export async function modify_profilo(req:Request,res:Response) {
                 nome:updated_data.nome,
                 cognome:updated_data.cognome,
                 email:updated_data.email,
-                email_confermata:updated_data.email_confermata,
+                mail_confermata:updated_data.mail_confermata,
                 cf:updated_data.cf,
                 foto_profilo:updated_data.foto_profilo,
                 data_nascita:updated_data.data_nascita,
@@ -96,7 +96,7 @@ export async function modify_profilo(req:Request,res:Response) {
                 nome: req.body.nome?req.body.nome : terapeuta.nome,
                 cognome: req.body.cognome?req.body.cognome : terapeuta.nome,
                 email:req.body.email?req.body.email : terapeuta.email,
-                email_confermata:req.body.email?false:true,
+                mail_confermata:req.body.email?false:terapeuta.mail_confermata,
                 cf:req.body.cf?req.body.cf : terapeuta.cf,
                 foto_profilo:req.body.foto_profilo?req.body.foto_profilo : terapeuta.foto_profilo,
                 data_nascita: req.body.data_nascita?req.body.data_nascita : terapeuta.data_nascita,
@@ -109,7 +109,7 @@ export async function modify_profilo(req:Request,res:Response) {
                 nome:updated_data.nome,
                 cognome:updated_data.cognome,
                 email:updated_data.email,
-                email_confermata:updated_data.email_confermata,
+                mail_confermata:updated_data.mail_confermata,
                 cf:updated_data.cf,
                 foto_profilo:updated_data.foto_profilo,
                 data_nascita:updated_data.data_nascita,
@@ -132,14 +132,6 @@ export async function modify_profilo(req:Request,res:Response) {
 
 export async function get_profilo(req:Request, res:Response) {
     try {
-        /**
-         * Restituisce i dati "pubblici" di un profilo
-         * si potrebbe fare un controllo dei permessi tramite token
-         * questo dipende se bisogna essere autenticati per ottenere il profilo
-         * 
-         * l'alternativa è non autenticarsi, utile per recuperare i singoli profili del catalogo
-         * sarebbe meglio autenticato così si possono restituire cose come il diario, ma bisogna determinare i permessi
-         */
         let richiedente:ICliente|ITerapeuta
         if(req.body.loggedUser.ruolo==1)
             richiedente= await Cliente.findById(req.body.loggedUser._id).exec()

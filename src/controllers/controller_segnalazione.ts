@@ -1,11 +1,11 @@
-import { Request,Response } from 'express'
+import { Request, Response } from 'express'
 import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
 import { Segnalazione, ISegnalazione } from '../schemas/segnalazione_schema'
 
-export async function get_all_segnalazioni(req:Request,res:Response) {
+export async function get_all_segnalazioni(req: Request, res: Response) {
     // controllo ruolo
-    if(req.body.loggedUser.ruolo!=4){
+    if (req.body.loggedUser.ruolo != 4) {
         res.status(403).json({
             successful: false,
             message: "Request denied - Invalid role"
@@ -13,46 +13,46 @@ export async function get_all_segnalazioni(req:Request,res:Response) {
     }
 
     try {
-        const catalogo_segnalazioni =await Segnalazione.find({gestita:false}, {}).exec()   //prendo tutte le segnalazioni
-        
+        const catalogo_segnalazioni = await Segnalazione.find({ gestita: false }, {}).exec()   //prendo tutte le segnalazioni
+
         console.log(catalogo_segnalazioni)
         res.status(200).json({
-            successful:true,
-            message:"All reports retrieved successfully",
+            successful: true,
+            message: "All reports retrieved successfully",
             catalogo: catalogo_segnalazioni
         })
     } catch (err) {
         res.status(500).json({
-            successful:false,
-            message:"Server error in report catalog - failed!"
+            successful: false,
+            message: "Server error in report catalog - failed!"
         })
     }
 }
 
-export async function gestisci_segnalazione(req:Request,res:Response) {
+export async function gestisci_segnalazione(req: Request, res: Response) {
     // controllo ruolo
-    if(req.body.loggedUser.ruolo!=4){
+    if (req.body.loggedUser.ruolo != 4) {
         res.status(403).json({
             successful: false,
             message: "Request denied - Invalid role"
         })
     }
-    
-    try{
+
+    try {
         // controllo presenza della segnalazione
-        let segnalazione= await Segnalazione.findOneAndUpdate({_id:req.params.id}, {gestita:true}).exec()
-        if(!segnalazione){
+        let segnalazione = await Segnalazione.findOneAndUpdate({ _id: req.params.id }, { gestita: true }).exec()
+        if (!segnalazione) {
             res.status(409).json({
                 successful: false,
                 message: "Element doesn’t exist!"
             })
-        }else{        
-            res.status(200).json({   
+        } else {
+            res.status(200).json({
                 successful: true,
                 message: "Report successfully managed!"
             })
         }
-    }catch(err){
+    } catch (err) {
         res.status(500).json({
             successful: false,
             message: "Server error in report management - failed!"
@@ -60,70 +60,68 @@ export async function gestisci_segnalazione(req:Request,res:Response) {
     }
 }
 
-export async function segnala(req:Request,res:Response) {
+export async function segnala(req: Request, res: Response) {
     // controllo ruolo
-    if(req.body.loggedUser.ruolo!=1 && req.body.loggedUser.ruolo!=2){
+    if (req.body.loggedUser.ruolo != 1 && req.body.loggedUser.ruolo != 2) {
         res.status(403).json({
             successful: false,
             message: "Request denied!"
         })
     }
+    try {
+        if (req.body.loggedUser.ruolo == 1) {
+            const id_terapeuta = req.params.id
+            let cliente = req.body.loggedUser
+            let terapeuta = await Terapeuta.findById(id_terapeuta).exec()
 
-    if(req.body.loggedUser.ruolo == 1) { 
-        const id_terapeuta=req.params.id
-        let cliente = req.body.loggedUser
-        let terapeuta=await Terapeuta.findById(id_terapeuta).exec()
+            if (!terapeuta) {
+                res.status(404).json({
+                    successful: false,
+                    message: "User not found!"
+                })
+            }
 
-        if(!terapeuta){    
-            res.status(404).json({
-                successful: false,
-                message: "User not found!"
-            })
-        }
+            if (cliente.ruolo != 1 || terapeuta.ruolo != 2) {
+                res.status(403).json({
+                    successful: false,
+                    message: "Invalid role!"
+                })
+            }
 
-        if(cliente.ruolo!=1 || terapeuta.ruolo!=2){ 
-            res.status(403).json({
-                successful: false,
-                message: "Invalid role!"
-            })  
-        }
+            const id_cliente = req.body.loggedUser._id
 
-        const id_cliente = req.body.loggedUser._id
+            // controllo associazione
+            if (!(terapeuta.associati.includes(id_cliente.toString()) || cliente.associato == (id_terapeuta.toString()))) {
+                res.status(409).json({
+                    successful: false,
+                    message: "Client and therapist are not associated!"
+                })
+            }
 
-        // controllo associazione
-        if(!(terapeuta.associati.includes(id_cliente.toString())||cliente.associato==(id_terapeuta.toString()))){       
-            res.status(409).json({
-                successful:false,
-                message: "Client and therapist are not associated!"
-            })
-        }
+            //creazione della segnalazione
+            const segnalato = id_terapeuta
+            const testo = req.body.testo
+            const data = req.body.data
+            const gestita = req.body.gestita
 
-        //creazione della segnalazione
-        const segnalato=id_terapeuta
-        const testo=req.body.testo
-        const data=req.body.data
-        const gestita=req.body.gestita
-
-        if( !testo || !data){
-            res.status(400).json({
-                successful: false,
-                message: "Not enough arguments!"
-            })
-        }
-
-        try{
+            if (!testo || !data) {
+                res.status(400).json({
+                    successful: false,
+                    message: "Not enough arguments!"
+                })
+            }
             // controllo se esiste già
-            let esistente = await Segnalazione.findOne({segnalato:segnalato, testo:testo, data:data}).exec()
-            if(esistente){
+            let esistente = await Segnalazione.findOne({ segnalato: segnalato, testo: testo, data: data }).exec()
+            if (esistente) {
                 res.status(409).json({
                     successful: false,
                     message: "Report already present!"
                 })
-            }else{
-                const schema_segnalazione= new Segnalazione<ISegnalazione>({
-                    segnalato:segnalato,
-                    testo:testo, 
-                    data:data,
+            } else {
+                const schema_segnalazione = new Segnalazione<ISegnalazione>({
+                    segnalato: segnalato,
+                    testo: testo,
+                    data: data,
                     gestita: gestita
                 });
                 await schema_segnalazione.save();
@@ -132,70 +130,61 @@ export async function segnala(req:Request,res:Response) {
                     message: "Report successfully inserted!"
                 })
             }
-    
-        }catch(err){
-            res.status(500).json({
-                successful: false,
-                message: "Server error in report creation - failed!"
-            })
-        }
-    } else if(req.body.loggedUser.ruolo == 2) {
-        const id_cliente=req.params.id
-        let terapeuta = req.body.loggedUser
-        let cliente=await Cliente.findById(id_cliente).exec()
+        } else if (req.body.loggedUser.ruolo == 2) {
+            const id_cliente = req.params.id
+            let terapeuta = req.body.loggedUser
+            let cliente = await Cliente.findById(id_cliente).exec()
 
-        if(!cliente){   
-            res.status(404).json({
-                successful: false,
-                message: "User not found!"
-            })
-        }
+            if (!cliente) {
+                res.status(404).json({
+                    successful: false,
+                    message: "User not found!"
+                })
+            }
 
-        // controllo ruoli
-        if(cliente.ruolo!=1 || terapeuta.ruolo!=2){    
-            res.status(403).json({
-                successful: false,
-                message: "Invalid role!"
-            })
-        }
+            // controllo ruoli
+            if (cliente.ruolo != 1 || terapeuta.ruolo != 2) {
+                res.status(403).json({
+                    successful: false,
+                    message: "Invalid role!"
+                })
+            }
 
-        const id_terapeuta = req.body.loggedUser._id
-        
-        // controllo associazione
-        if(!(cliente.associato==id_terapeuta || terapeuta.associati.includes(id_cliente))) {
-            res.status(409).json({
-                successful:false,
-                message: "Client and therapist are not associated!"
-            })
-        }
+            const id_terapeuta = req.body.loggedUser._id
 
-        //creazione della segnalazione
-        const segnalato=id_cliente
-        const testo=req.body.testo
-        const data=req.body.data
-        const gestita=req.body.gestita
+            // controllo associazione
+            if (!(cliente.associato == id_terapeuta || terapeuta.associati.includes(id_cliente))) {
+                res.status(409).json({
+                    successful: false,
+                    message: "Client and therapist are not associated!"
+                })
+            }
 
-        if(!segnalato || !testo || !data){
-            res.status(400).json({
-                successful: false,
-                message: "Not enough arguments!"
-            })
-        }
+            //creazione della segnalazione
+            const segnalato = id_cliente
+            const testo = req.body.testo
+            const data = req.body.data
+            const gestita = req.body.gestita
 
-        try{
+            if (!segnalato || !testo || !data) {
+                res.status(400).json({
+                    successful: false,
+                    message: "Not enough arguments!"
+                })
+            }
             // controllo se esiste già
-            let esistente = await Segnalazione.findOne({segnalato:segnalato, testo:testo, data:data}).exec()
-            if(esistente){
+            let esistente = await Segnalazione.findOne({ segnalato: segnalato, testo: testo, data: data }).exec()
+            if (esistente) {
                 res.status(409).json({
                     successful: false,
                     message: "Report already present!"
                 })
-            }else{
-                const schema_segnalazione= new Segnalazione<ISegnalazione>({
-                    segnalato:segnalato,
-                    testo:testo, 
-                    data:data,
-                    gestita:gestita
+            } else {
+                const schema_segnalazione = new Segnalazione<ISegnalazione>({
+                    segnalato: segnalato,
+                    testo: testo,
+                    data: data,
+                    gestita: gestita
                 });
                 await schema_segnalazione.save();
                 res.status(200).json({
@@ -203,12 +192,12 @@ export async function segnala(req:Request,res:Response) {
                     message: "Report successfully inserted!"
                 })
             }
-    
-        }catch(err){
-            res.status(500).json({
-                successful: false,
-                message: "Server error in report creation - failed!"
-            }) 
         }
+    }
+    catch (err) {
+        res.status(500).json({
+            successful: false,
+            message: "Server error in report creation - failed!"
+        })
     }
 }

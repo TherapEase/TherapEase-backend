@@ -65,45 +65,46 @@ export async function scrivi_recensione(req:Request,res:Response) {
             message:"Invalid role!"
         })
     }
-    let cliente = await Cliente.findById(req.body.loggedUser._id).exec()    //connessione al db senza try catch, sistemare
-
-    if(cliente.associato==""){
-        res.status(409).json({
-            successful:false,
-            message:"Client is not associated to a therapist!"
-        })
-    }
-
-    let terapeuta=await Terapeuta.findById(cliente.associato).exec()   
-    // controllo esistenza terapeuta
-    if(!terapeuta){  
-        res.status(404).json({
-            successful: false,
-            message: "User not found!"
-        })
-    }
-
-    //controllo presenza campi
-    const voto=req.body.voto
-    const testo=req.body.testo
-    const autore=req.body.loggedUser._id
-    const data=new Date()
-    const recensito=cliente.associato
-    if(!voto || !testo) {
-        res.status(400).json({
-            successful: false,
-            message: "Not enough arguments!"
-        })
-    }
-
-    if(voto<1 || voto>5){
-        res.status(409).json({
-            successful: false,
-            message: "Invalid ''voto'', must be <5 and >1!"
-        })
-    }
-
     try{
+        let cliente = await Cliente.findById(req.body.loggedUser._id).exec()    //connessione al db senza try catch, sistemare
+
+        if(cliente.associato==""){
+            res.status(409).json({
+                successful:false,
+                message:"Client is not associated to a therapist!"
+            })
+        }
+
+        let terapeuta=await Terapeuta.findById(cliente.associato).exec()   
+        // controllo esistenza terapeuta
+        if(!terapeuta){  
+            res.status(404).json({
+                successful: false,
+                message: "User not found!"
+            })
+        }
+
+        //controllo presenza campi
+        const voto=req.body.voto
+        const testo=req.body.testo
+        const autore=req.body.loggedUser._id
+        const data=new Date()
+        const recensito=cliente.associato
+        if(!voto || !testo) {
+            res.status(400).json({
+                successful: false,
+                message: "Not enough arguments!"
+            })
+        }
+
+        if(voto<1 || voto>5){
+            res.status(409).json({
+                successful: false,
+                message: "Invalid ''voto'', must be <5 and >1!"
+            })
+        }
+
+    
         // controllo se esiste già
         let esistente = await Recensione.findOne({voto:voto, testo:testo, autore:autore, data:data}).exec()
         if(esistente){

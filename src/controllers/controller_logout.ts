@@ -2,13 +2,6 @@ import { Request,Response} from "express";
 import jwt, { JwtPayload } from 'jsonwebtoken'
 import { JWTToken } from "../schemas/token_schema";
 
-/**
- * 
- * Nel front bisogna eliminare il token dal client 
- */
-
-
-
 export async function logout(req:Request,res:Response) {
     const token = req.body.token || req.query.token || req.headers['x-access-token']
     try {
