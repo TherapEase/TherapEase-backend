@@ -206,7 +206,7 @@ export async function scrivi_recensione(req:Request,res:Response,next:NextFuncti
                     data:data,
                     recensito:recensito
                 });
-                await schema_recensione.save();
+                await Recensione.create(schema_recensione);
                 res.status(200)
                 req.body={
                     successful: true,

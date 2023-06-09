@@ -9,7 +9,7 @@ import { createToken } from '../controllers/controller_auth'
 import { JWTToken } from '../schemas/token_schema'
 import { Segnalazione } from '../schemas/segnalazione_schema'
 
-describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id', ()=>{
+describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazione/gestisci/:id', ()=>{
     
     let mario_doc:any
     let giovi_doc:any
@@ -49,20 +49,20 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id', ()=>{
             associati:["123"],
             limite_clienti: 25
         }
-        // tommy_doc={
-        //     _id:"444",
-        //     username:"tommy",
-        //     password:"abcABC444$$",
-        //     ruolo:2,
-        //     nome:"Giovanna",
-        //     cognome:"Bianchi",
-        //     email:"giovannabianchi@gmail.com",
-        //     codice_fiscale: "BNCGVN",
-        //     foto_profilo:"",
-        //     data_nascita:"2020",
-        //     associati:[],
-        //     limite_clienti: 25
-        // }
+        tommy_doc={
+            _id:"444",
+            username:"tommy",
+            password:"abcABC444$$",
+            ruolo:2,
+            nome:"Tommaso",
+            cognome:"Bianchi",
+            email:"tommybianchi@gmail.com",
+            codice_fiscale: "BNCGVN",
+            foto_profilo:"",
+            data_nascita:"2020",
+            associati:[],
+            limite_clienti: 25
+        }
         admin_doc={
             _id:"000",
             username:"admin",
@@ -72,7 +72,8 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id', ()=>{
         segnalazione_doc={
             _id: "111",
             testo: "ciao",
-            data: "2023-12-12T12:00"
+            data: "2023-12-12T12:00",
+            gestita: false
         }
 
         mongoose.connect= jest.fn().mockImplementation((conn_string)=>Promise.resolve(true)) //bypass del connect
@@ -116,52 +117,107 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id', ()=>{
     })
 
     //la segnalazione è già presente
-    // it('POST /api/v1/segnalazione/:id', async()=>{
-    //     Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-    //     Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
+     it('POST /api/v1/segnalazione/:id già presente', async()=>{
+         Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
-    //     Segnalazione.findOne = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
-    //     Segnalazione.create = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+         Segnalazione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue({
+            testo: "ciao",
+            data: "2023-12-12T12:00"
+         })}})
+         Segnalazione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
 
-    //     const res = await request(app).post('/api/v1/segnalazione/'+giovi_doc._id).set("x-access-token",token).send(segnalazione_doc)
-    //     expect(res.status).toBe(409)
-    // }, 100000000000000)
+         const res = await request(app).post('/api/v1/segnalazione/'+giovi_doc._id).set("x-access-token",token).send({
+            testo: "ciao",
+            data: "2023-12-12"
+        })
+        expect(res.status).toBe(409)
+     })
 
     //l'utente autenticato non può fare la segnalazione
-    // it('POST /api/v1/segnalazione/:id', async()=>{
-    //     Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
-    //     Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
+     it('POST /api/v1/segnalazione/:id con permessi non validi', async()=>{
+         Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
-    //     Segnalazione.findOne = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(false)}})
-    //     Segnalazione.create = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+         Segnalazione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Segnalazione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
 
-    // //     const res = await request(app).post('/api/v1/segnalazione/'+giovi_doc._id).set("x-access-token",token_ad).send(segnalazione_doc)
-    // //     expect(res.status).toBe(403)
-    // // }, 100000000000000)
+        const res = await request(app).post('/api/v1/segnalazione/'+giovi_doc._id).set("x-access-token",token_ad).send({
+            testo: "ciao",
+            data: "2023-12-12"
+        })
+        expect(res.status).toBe(403)
+     })
 
-    // //non esiste l'utente che si intende segnalare
-    // it('POST /api/v1/segnalazione/:id', async()=>{
-    //     Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-    //     Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
+     //non esiste l'utente che si intende segnalare
+     it('POST /api/v1/segnalazione/:id id inesistente', async()=>{
+         Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
-    //     Segnalazione.findOne = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(false)}})
-    //     Segnalazione.create = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
-    //     const fake_id = "999"
-    //     const res = await request(app).post('/api/v1/segnalazione/'+fake_id).set("x-access-token",token).send(segnalazione_doc)
-    //     expect(res.status).toBe(404)
-    // }, 100000000000000)
+        Segnalazione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Segnalazione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
+        // const fake_id = "999"
+         const res = await request(app).post('/api/v1/segnalazione/').set("x-access-token",token).send({
+            testo: "ciao",
+            data: "2023-12-12"
+        })         
+        expect(res.status).toBe(404)
+     })
 
-    // //cliente e terapeuta non sono associati
-    // it('POST /api/v1/segnalazione/:id', async()=>{
-    //     Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-    //     Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(tommy_doc)}})
+     //cliente e terapeuta non sono associati
+     it('POST /api/v1/segnalazione/:id non associati', async()=>{
+        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(tommy_doc)}})
 
-    //     Segnalazione.findOne = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(false)}})
-    //     Segnalazione.create = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+        Segnalazione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Segnalazione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
 
-    //     const res = await request(app).post('/api/v1/segnalazione/'+tommy_doc._id).set("x-access-token",token).send(segnalazione_doc)
-    //     expect(res.status).toBe(409)
-    // }, 100000000000000)
+        const res = await request(app).post('/api/v1/segnalazione/'+tommy_doc._id).set("x-access-token",token).send({
+            testo: "ciao",
+            data: "2023-12-12"
+        })         
+        expect(res.status).toBe(409)
+    })
+
+    //gestisci segnalazione
+    it('POST /api/v1/segnalazione/gestisci/:id', async()=>{
+        Utente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+
+        const res = await request(app).post('/api/v1/segnalazione/gestisci/'+segnalazione_doc._id).set("x-access-token",token_ad).send({
+            testo: "ciao",
+            data: "2023-12-12",
+            gestita: true
+        })
+        expect(res.status).toBe(200)
+    })
+
+    //gestisci segnalazione ma l'utente autenticato non è un admin
+    it('POST /api/v1/segnalazione/gestisci/:id ma il loggedUser non è admin', async()=>{
+        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+
+        const res = await request(app).post('/api/v1/segnalazione/gestisci/'+segnalazione_doc._id).set("x-access-token",token).send({
+            testo: "ciao",
+            data: "2023-12-12",
+            gestita: true
+        })
+        expect(res.status).toBe(403)
+    })
+
+    //gestisci segnalazione ma l'id della segnalazione non è valido   ---NON RIESCO A FARLA FUNZIONARE
+    it('POST /api/v1/segnalazione/gestisci/:id', async()=>{
+        Utente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+
+        const res = await request(app).post('/api/v1/segnalazione/gestisci/').set("x-access-token",token_ad).send({
+            testo: "ciao",
+            data: "2023-12-12",
+            gestita: true
+        })
+        expect(res.status).toBe(409)
+    })
+
 
 
 
