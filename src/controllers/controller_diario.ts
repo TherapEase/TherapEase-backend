@@ -50,6 +50,8 @@ export async function scrivi_pagina(req: Request, res: Response, next: NextFunct
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         //controllo che non sia già presente una pagina quel giorno
         let pagina_presente = await Pagina.findOne({ data: data, cliente: id_cliente }).exec()
+
+        console.log("pagina presente", pagina_presente)
         if (!pagina_presente) {
             let pagina_schema = new Pagina<IPagina>({
                 cliente: id_cliente,
@@ -77,17 +79,18 @@ export async function scrivi_pagina(req: Request, res: Response, next: NextFunct
                 await Diario.findOneAndUpdate({ cliente: id_cliente }, { $push: { pagine: pagina_schema._id.toString() } }).exec()
             }
             res.status(200)
-            req.body={
-                successful:true,
-                message:"Page successfully created"
+            req.body = {
+                successful: true,
+                message: "Page successfully created"
             }
             next()
             return
-        }
-        res.status(403)
-        req.body={
-            successful:false,
-            message:"Page already present"
+        } else {
+            res.status(403)
+            req.body = {
+                successful: false,
+                message: "Page already present"
+            }
         }
 
     } catch (err) {
@@ -118,6 +121,7 @@ export async function leggi_my_diario(req: Request, res: Response, next: NextFun
 
         res.status(200)
         req.body = {
+            successful:true,
             message: "Pages successfully retrieved!",
             pagine: diario
         }
@@ -167,6 +171,7 @@ export async function leggi_diario_cliente(req: Request, res: Response, next: Ne
 
         res.status(200)
         req.body = {
+            successful: true,
             message: "Pages successfully retrieved!",
             pagine: diario
         }
@@ -204,7 +209,7 @@ export async function modifica_pagina(req: Request, res: Response, next: NextFun
         return
     }
 
-    if (!req.body.testo) {
+    if (!data || !req.body.testo) {
         res.status(400)
         req.body = {
             successful: false,
@@ -279,6 +284,18 @@ export async function elimina_pagina(req: Request, res: Response, next: NextFunc
         return
     }
 
+    if (!data) {
+        res.status(400)
+        req.body = {
+            successful: false,
+            message: "Not enough arguments!"
+        }
+
+        next()
+        return
+    }
+
+
 
     try {
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
@@ -294,9 +311,9 @@ export async function elimina_pagina(req: Request, res: Response, next: NextFunc
             return
 
         }
-        console.log("pagina_id"+ pagina._id )
-        
-        const pagina_diario= await Diario.findOneAndUpdate({cliente: req.body.loggedUser._id}, {$pull: {pagine: pagina._id}},{new:true}).exec()
+        console.log("pagina_id" + pagina._id)
+
+        const pagina_diario = await Diario.findOneAndUpdate({ cliente: req.body.loggedUser._id }, { $pull: { pagine: pagina._id } }, { new: true }).exec()
         console.log(pagina_diario)
         res.status(200)
         req.body = {

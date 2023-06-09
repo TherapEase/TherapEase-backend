@@ -10,7 +10,7 @@ import { JWTToken } from '../schemas/token_schema'
 import { Seduta } from '../schemas/seduta_schema'
 import { prenota_seduta } from '../controllers/controller_sedute'
 
-describe('test definisci_slot', () => {
+describe('test sedute', () => {
     let mario_doc: any
     let giovi_doc: any
     let tommy_doc: any
