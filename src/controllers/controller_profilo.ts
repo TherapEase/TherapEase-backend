@@ -43,13 +43,7 @@ export async function get_my_profilo(req:Request,res:Response,next:NextFunction)
         else if (req.body.loggedUser.ruolo==2)
             utente = await Terapeuta.findById(req.body.loggedUser._id,'username ruolo nome cognome email email_confermata cf foto_profilo data_nascita associati abilitato limite_clienti indirizzo').exec()
         else{
-            res.status(403)
-            req.body={
-                successful:false,
-                message:"Invalid role!"
-            }
-            next()
-            return
+            utente = await Utente.findById(req.body.loggedUser._id,'username ruolo').exec()
         }
         res.status(200)
         req.body={
@@ -230,6 +224,78 @@ export async function get_profilo(req:Request, res:Response, next: NextFunction)
         }
         next()
     }
+}
+
+export async function delete_profilo(req:Request,res:Response,next:NextFunction){
+    /**
+     * DELETE /path --> non ha body
+     */
+    const _id = req.params.id
+    if(!_id){
+        res.status(400)
+        req.body={
+            successful:false,
+            message:"Not enough arguments!"
+        }
+    }
+       //se _id e token corrispondono o se il token è amministrativo allora posso eliminare
+    if(!(req.body.loggedUser._id==_id||req.body.loggedUser.ruolo==4)){
+        res.status(403)
+        req.body={
+            successful:false,
+            message:"Not authorized to delete this profile!"
+        }
+    }
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        let utente = await Utente.findByIdAndDelete(_id).exec()
+        if(!utente){
+            res.status(404)
+            req.body={
+                successful:false,
+                message:"This user doesn't exist!"
+            }
+            next()
+            return
+        }
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"User deleted successfully!"
+        }
+        next()
+        return
+    } catch (error) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Internal server error!"
+        }
+        next()
+        return
+    }
+}
+
+export async function get_all_clienti(req:Request,res:Response,next:NextFunction) {
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION_STRING)
+        // console.log("dbconnesso")
+        const catalogo_clienti=await Cliente.find({ruolo:1}, 'nome cognome foto_profilo')
+        // console.log(catalogo_terapeuti)
+        res.status(200)
+        req.body={
+            successful:true,
+            message:"Client catalog retrieved successfully!",
+            catalogo: catalogo_clienti
+        }
+    } catch (err) {
+        res.status(500)
+        req.body={
+            successful:false,
+            message:"Server error in client catalog - failed!"
+        }
+    }
+    next()
 }
 
 /**

@@ -1,6 +1,6 @@
 import {Router, Request, Response, NextFunction} from 'express'
 
-import { registrazione, login } from '../controllers/controller_auth'
+import { registrazione, login, conferma_mail } from '../controllers/controller_auth'
 import { tokenCheck } from '../controllers/token_checker'
 import { logout } from '../controllers/controller_logout'
 import { recupero_password, cambio_password } from '../controllers/controller_password'
@@ -24,5 +24,9 @@ auth_router.post('/recuperopassword',recupero_password, (req:Request,res:Respons
 })
 
 auth_router.post('/cambio_password',tokenCheck, cambio_password, (req:Request,res:Response)=>{
+    res.json(req.body)
+})
+
+auth_router.get('/conferma_mail/:ver_token',conferma_mail,(req:Request,res:Response)=>{
     res.json(req.body)
 })
