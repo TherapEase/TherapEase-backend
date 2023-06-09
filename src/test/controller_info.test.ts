@@ -5,9 +5,6 @@ import { Utente } from '../schemas/utente_schema'
 import mongoose from 'mongoose'
 import { createToken } from '../controllers/controller_auth'
 import { JWTToken } from '../schemas/token_schema'
-import { Prodotto } from '../schemas/prodotto_schema'
-import { Session } from 'node:inspector'
-import { Sessione } from '../schemas/sessione_stripe_schema'
 import { Info } from '../schemas/info_eventi_schema'
 
 describe('eventi_info tests',()=>{
@@ -65,7 +62,6 @@ describe('eventi_info tests',()=>{
         Info.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true))
         Info.findOneAndDelete = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(evento2_doc)}})
     })
-
     afterEach(()=>{
             jest.restoreAllMocks().clearAllMocks()
     })

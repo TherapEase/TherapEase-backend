@@ -8,11 +8,13 @@ import { JWTToken } from '../schemas/token_schema'
 import { Prodotto } from '../schemas/prodotto_schema'
 import { Session } from 'node:inspector'
 import { Sessione } from '../schemas/sessione_stripe_schema'
+const stripe = require('stripe')(process.env.SK_STRIPE);
 
 describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/catalogo_prodotti',()=>{
     let mario_doc:any
     let admin_doc:any
     let prodotto_doc:any
+    let session_doc:any
     let token = createToken("123","mario_rossi",1)
     let token_a= createToken("777","admin",4)
 
@@ -41,6 +43,11 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
             n_gettoni:3,
             nome: "test1"
         }
+        session_doc={
+            _id:"3000",
+            n_gettoni:3,
+            id_cliente:"123"
+        }
 
         
         mongoose.connect= jest.fn().mockImplementation((conn_string)=>Promise.resolve(true)) //bypass del connect
@@ -54,6 +61,8 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
         Prodotto.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(null)}})
         Prodotto.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
         Prodotto.findOneAndDelete = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(prodotto_doc)}})
+        Sessione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
+        stripe.checkout.sessions.create = jest.fn().mockImplementation((doc)=>{return{exec:jest.fn().mockResolvedValue(null)}}) 
 
     })
     afterEach(()=>{
@@ -128,76 +137,27 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
         const res = await request(app).get('/api/v1/catalogo_prodotti').send()
         expect(res.status).toBe(200)
     })
+
+
+
+    it('POST /api/prodotto/checkout/:id',async()=>{
+        Prodotto.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(prodotto_doc)}})
+        const res = await request(app).post('/api/v1/prodotto/checkout/'+prodotto_doc._id).set("x-access-token", token).send({
+        })
+        expect(res.status).toBe(200)
+    })
+
+    it('POST /api/prodotto/checkout/:id NOT cliente',async()=>{
+        const res = await request(app).post('/api/v1/prodotto/checkout/'+prodotto_doc._id).set("x-access-token", token_a).send({
+        })
+        expect(res.status).toBe(403)
+    })
+
+    // it('POST /api/prodotto/checkout/:id NOT cliente',async()=>{
+    //     Prodotto.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(prodotto_doc)}})
+    //     const res = await request(app).post('/api/v1/prodotto/checkout/'+prodotto_doc._id).set("x-access-token", token_a).send({
+    //     })
+    //     expect(res.status).toBe(403)
+    // })
+
 })
-
-// describe('/api/v1/prodotto/checkout/:id',() => {
-//     let mario_doc:any
-//     let prodotto_doc:any
-//     let giovi_doc:any
-//     let session_doc:any
-//     let token = createToken("123","mario_rossi",1)
-//     let token_t= createToken("321","giovi",2)
-    
-
-//     beforeEach(async()=>{
-//         mario_doc ={
-//             _id:"123",
-//             username:"mario",
-//             password:"abcABC123$$",
-//             ruolo:1,
-//             nome:"mario",
-//             cognome:"rossi",
-//             email:"mariorossi@gmail.com",
-//             codice_fiscale: "RSSMRA",
-//             foto_profilo:"",
-//             data_nascita:"2020"
-//         }
-//         giovi_doc={
-//             _id:"321",
-//             username:"giovi",
-//             password:"abcABC123$$",
-//             ruolo:2,
-//             nome:"Giovanna",
-//             cognome:"Bianchi",
-//             email:"giovannabianchi@gmail.com",
-//             codice_fiscale: "BNCGVN",
-//             foto_profilo:"",
-//             data_nascita:"2020",
-//             associati:["123"]
-//         }
-//         prodotto_doc={
-//             _id:"1000",
-//             prezzo: 150,
-//             n_gettoni:3,
-//             nome: "test1"
-//         }
-//         session_doc={
-//             _id:"3000",
-//             n_gettoni:3,
-//             id_cliente:"123"
-//         }
-//     })
-
-//     mongoose.connect= jest.fn().mockImplementation((conn_string)=>Promise.resolve(true)) //bypass del connect
-//     JWTToken.find = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue([])}})//assumiamo il token non blacklisted
-//     Utente.findById=jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockImplementation(()=>{
-//         if(_id=='123') return Promise.resolve(mario_doc)
-//         if(_id=='777') return Promise.resolve()
-//         return Promise.resolve(null)
-//     })}})
-//     Prodotto.findById=jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockImplementation(()=>{
-//         if(_id=='1000') return Promise.resolve(prodotto_doc)
-//         return Promise.resolve(null)
-//     })}})
-//     Sessione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
-
-
-//     it('POST /api/prodotto/checkout/:id',async()=>{
-
-//         const res = await request(app).post('/api/v1/prodotto/checkout/1000').set("x-access-token", token).send({
-
-//         })
-//         expect(res.status).toBe(200)
-//     })
-
-// })
