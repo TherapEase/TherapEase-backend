@@ -194,7 +194,7 @@ if(req.body.loggedUser.ruolo == 1) {
                     data:data,
                     gestita: gestita
                 });
-                await schema_segnalazione.save();
+                await Segnalazione.create(schema_segnalazione)
                 res.status(200)
                 req.body={
                     successful: true,
@@ -273,7 +273,7 @@ if(req.body.loggedUser.ruolo == 1) {
         const data=req.body.data
         const gestita=req.body.gestita
 
-        if(!segnalato || !testo || !data){
+        if( !testo || !data){
             res.status(400)
             req.body={
                 successful: false,
@@ -302,7 +302,7 @@ if(req.body.loggedUser.ruolo == 1) {
                     data:data,
                     gestita:gestita
                 });
-                await schema_segnalazione.save();
+                await Segnalazione.create(schema_segnalazione)
                 res.status(200)
                 req.body={
                     successful: true,
