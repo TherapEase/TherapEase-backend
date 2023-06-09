@@ -49,20 +49,20 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id', ()=>{
             associati:["123"],
             limite_clienti: 25
         }
-        tommy_doc={
-            _id:"444",
-            username:"tommy",
-            password:"abcABC444$$",
-            ruolo:2,
-            nome:"Giovanna",
-            cognome:"Bianchi",
-            email:"giovannabianchi@gmail.com",
-            codice_fiscale: "BNCGVN",
-            foto_profilo:"",
-            data_nascita:"2020",
-            associati:[],
-            limite_clienti: 25
-        }
+        // tommy_doc={
+        //     _id:"444",
+        //     username:"tommy",
+        //     password:"abcABC444$$",
+        //     ruolo:2,
+        //     nome:"Giovanna",
+        //     cognome:"Bianchi",
+        //     email:"giovannabianchi@gmail.com",
+        //     codice_fiscale: "BNCGVN",
+        //     foto_profilo:"",
+        //     data_nascita:"2020",
+        //     associati:[],
+        //     limite_clienti: 25
+        // }
         admin_doc={
             _id:"000",
             username:"admin",
@@ -72,7 +72,7 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id', ()=>{
         segnalazione_doc={
             _id: "111",
             testo: "ciao",
-            data: 12-12-2023
+            data: "2023-12-12T12:00"
         }
 
         mongoose.connect= jest.fn().mockImplementation((conn_string)=>Promise.resolve(true)) //bypass del connect
@@ -105,15 +105,15 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id', ()=>{
         Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
-        Segnalazione.findOne = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        Segnalazione.create = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+        Segnalazione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Segnalazione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
 
-        const res = await request(app).post('/api/v1/segnalazione/'+giovi_doc._id).set("x-access-token",token).send({
+        const res = await request(app).post('/api/v1/segnalazione/321').set("x-access-token",token).send({
             testo: "ciao",
-            data: 12-12-2023
+            data: "2023-12-12"
         })
         expect(res.status).toBe(200)
-    }, 100000000000000)
+    })
 
     //la segnalazione è già presente
     // it('POST /api/v1/segnalazione/:id', async()=>{
