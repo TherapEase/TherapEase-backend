@@ -33,7 +33,7 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
         next()
         return
     }
-    else if(new Date(data).getTime() <=Date.now()){
+    else if((new Date(data).getTime()<=Date.now())==true){
         res.status(400)
         req.body={
             successful:false,
@@ -42,11 +42,12 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
         next()
         return 
     }
+
+
     try{
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
         //controllo che non sia già presente
         let seduta_presente = await Seduta.findOne({data:data, terapeuta:req.body.loggedUser._id}).exec()
-        console.log(seduta_presente)
         if(!seduta_presente){  
             let seduta_schema
             if(presenza==true){
@@ -69,7 +70,7 @@ export async function crea_slot_seduta(req:Request,res:Response,next:NextFunctio
                     indirizzo:""
                 })
             }
-            await seduta_schema.save();
+            await Seduta.create(seduta_schema);
 
             res.status(200)
             req.body={
