@@ -8,7 +8,7 @@ prodotti_router.post('/prodotto/inserisci' ,tokenCheck, inserisci_prodotto, (req
     res.json(req.body)
 })
 
-prodotti_router.get('/prodotto/rimuovi/:id' ,tokenCheck, rimuovi_prodotto, (req:Request,res:Response)=>{
+prodotti_router.delete('/prodotto/rimuovi/:id' ,tokenCheck, rimuovi_prodotto, (req:Request,res:Response)=>{
     res.json(req.body)
 })
 
@@ -16,7 +16,7 @@ prodotti_router.get('/catalogo_prodotti' ,get_prodotti, (req:Request,res:Respons
     res.json(req.body)
 })
 
-prodotti_router.get('/prodotto/checkout/:id' ,tokenCheck, checkout, (req:Request,res:Response)=>{
+prodotti_router.post('/prodotto/checkout/:id' ,tokenCheck, checkout, (req:Request,res:Response)=>{
     res.json(req.body)
 })
 

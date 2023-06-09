@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 import { IProdotto, Prodotto } from '../schemas/prodotto_schema'
 import { Cliente } from '../schemas/cliente_schema'
 import { ISessione, Sessione } from '../schemas/sessione_stripe_schema'
+import { create } from 'node:domain'
 
 export async function inserisci_prodotto(req:Request,res:Response,next:NextFunction){
     
@@ -49,7 +50,7 @@ export async function inserisci_prodotto(req:Request,res:Response,next:NextFunct
                 prezzo:prezzo,
                 n_gettoni:n_gettoni
             });
-            await schema_prodotto.save();
+            await Prodotto.create(schema_prodotto)
             res.status(200)
             req.body={
                 successful: true,
