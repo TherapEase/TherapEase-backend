@@ -5,6 +5,7 @@ import { Utente, IUtente } from '../schemas/utente_schema'
 import mongoose from 'mongoose'
 import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
+import jwt from 'jsonwebtoken'
         /**
          * 
          * Le query vengono eseguite come Utente.findOne(...).exec() ciò significa che:
@@ -17,7 +18,7 @@ import { Terapeuta } from '../schemas/terapeuta_schema'
          */
 
 
-describe('POST /api/v1/registrazione e api/v1/login',()=>{
+describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
     /**
      * Su <BASE>/registrazione inserisci i dati richiesti, ovvero
      *  {username: "mario_rossi",
@@ -156,5 +157,39 @@ describe('POST /api/v1/registrazione e api/v1/login',()=>{
         })
         expect(res.status).toBe(401)
     })
-    
+    it('POST /conferma_mail/:ver_token con token valido', async()=>{
+        const ver_token= jwt.sign({
+            _id:mario_doc._id,
+            email: mario_doc.email,
+            ruolo: mario_doc.ruolo
+        },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
+        Cliente.findOneAndUpdate = jest.fn().mockImplementation(()=>{return {exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findOneAndUpdate = jest.fn().mockImplementation(()=>{return {exec:jest.fn().mockResolvedValue(giovi_doc)}})
+
+        const res = await request(app).post('/api/v1/conferma_mail/'+ver_token).send()
+        expect(res.status).toBe(200)
+    })
+    it('POST /conferma_mail/:ver_token senza specificare il token', async()=>{
+        const res = await request(app).post('/api/v1/conferma_mail/').send()
+        expect(res.status).toBe(404)
+    })
+    it('POST /conferma_mail/:ver_token con un token non valido',async()=>{
+        const ver_token= jwt.sign({
+            _id: mario_doc._id
+        },"chiavenonvalida")
+
+        const res = await request(app).post('/api/v1/conferma_mail/'+ver_token).send()
+        expect(res.status).toBe(403)
+    })
+    it('POST /conferma_mail/:ver_token con token valido, ma utente non presente', async()=>{
+        const ver_token= jwt.sign({
+            _id:mario_doc._id,
+            email: mario_doc.email,
+            ruolo: mario_doc.ruolo
+        },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
+        Cliente.findOneAndUpdate = jest.fn().mockImplementation(()=>{return {exec:jest.fn().mockResolvedValue(null)}})
+        
+        const res = await request(app).post('/api/v1/conferma_mail/'+ver_token).send()
+        expect(res.status).toBe(404)
+    })
 })

@@ -30,7 +30,7 @@ export async function associazione(req:Request,res:Response) {
     
     const id_cliente=req.body.loggedUser._id
     const id_terapeuta=req.params.id
-   
+
 
     try{
         let terapeuta=await Terapeuta.findById(id_terapeuta).exec()    
