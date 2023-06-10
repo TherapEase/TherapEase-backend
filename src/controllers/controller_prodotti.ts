@@ -67,6 +67,7 @@ export async function rimuovi_prodotto(req:Request,res:Response){
             message: "Request denied!"
         })
         return
+
     }
 
     try{
@@ -77,7 +78,8 @@ export async function rimuovi_prodotto(req:Request,res:Response){
                 successful: false,
                 message: "Element doesn’t exist or can’t be removed!"
             }) 
-            return
+        return
+
         }else{
             res.status(200).json({
                 successful: true,

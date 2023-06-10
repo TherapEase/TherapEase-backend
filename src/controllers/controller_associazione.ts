@@ -30,7 +30,7 @@ export async function associazione(req:Request,res:Response) {
     
     const id_cliente=req.body.loggedUser._id
     const id_terapeuta=req.params.id
-   
+
 
     try{
         let terapeuta=await Terapeuta.findById(id_terapeuta).exec()    
@@ -40,8 +40,8 @@ export async function associazione(req:Request,res:Response) {
             res.status(404).json({
                 successful: false,
                 message: "User not found!"
-            })  
-            return 
+            })   
+            return
         }
         if(cliente.ruolo!=1 || terapeuta.ruolo!=2){
             res.status(403).json({
@@ -55,8 +55,8 @@ export async function associazione(req:Request,res:Response) {
             res.status(409).json({
                 successful: false,
                 message: "Therapist full, impossible association!"
-            }) 
-            return 
+            })  
+            return
         }
 
 
@@ -131,6 +131,7 @@ export async function associazione(req:Request,res:Response) {
                 message: "Server error in association - failed!"
             })
             return
+
         }
         res.status(200).json({
             successful:true,
@@ -143,6 +144,7 @@ export async function associazione(req:Request,res:Response) {
             message:"Server error in association - failed!"
         })
         return
+
     }
 }
 
@@ -167,6 +169,7 @@ export async function rimuovi_associazione (req:Request, res:Response){
             message:"Invalid role!"
         })
         return
+
     }
 
     try {
@@ -179,6 +182,7 @@ export async function rimuovi_associazione (req:Request, res:Response){
                 message:"User not found!"
             })
             return
+
         }
         cliente = await Cliente.findOneAndUpdate({_id:id_cliente, associato:id_terapeuta},{associato:""},{new:true}).exec()
         terapeuta = await Terapeuta.findOneAndUpdate({_id:id_terapeuta, associati:id_cliente},{$pull:{associati:id_cliente}},{new:true}).exec()
@@ -189,12 +193,14 @@ export async function rimuovi_associazione (req:Request, res:Response){
             message:"Association successfully removed!"
         })
         return
+
     } catch (error) {
         res.status(500).json({
             successful:false,
             message:"Server error in association removal - failed!"
         })
         return
+
     }
 }
 
@@ -205,6 +211,7 @@ export async function get_all_associati(req:Request,res:Response) {
             message:"Invalid role!"
         })
         return
+
     }
     
     
@@ -218,11 +225,13 @@ export async function get_all_associati(req:Request,res:Response) {
             catalogo: catalogo_associati
         })
         return
+
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in client catalog - failed!"
         })
         return
+
     }
 }

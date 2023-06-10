@@ -42,12 +42,14 @@ export async function registrazione(req:Request,res:Response) {
         message:"Not enough arguments!"
     })
     return
+    return
    }
    else if (ruolo<1||ruolo>2) {
     res.status(403).json({
         successful:false,
         message:"Invalid role!"
     })
+    return
     return
    }
    
@@ -93,7 +95,7 @@ export async function registrazione(req:Request,res:Response) {
             })
         }
         await Utente.create(utente_schema)
-        await send_confirmation_mail(utente_schema._id.toString(),utente_schema.email.toString())
+        await send_confirmation_mail(utente_schema._id.toString(),utente_schema.email.toString(),utente_schema.ruolo.valueOf())
         //se fallisce non è un problema, verrà fatto un nuovo tentativo al prossimo login, non mi sembra corretto fermare il tutto perché ha fallito l'invio mail  
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
 
@@ -169,7 +171,7 @@ export async function login(req:Request,res:Response) {
             utente_completo = await Terapeuta.findById(utente_trovato._id).exec()
         if (utente_trovato.ruolo!=4  && utente_trovato.ruolo!=3){
             if(!utente_completo.mail_confermata)
-                await send_confirmation_mail(utente_completo._id.toString(),utente_completo.email.toString()) //come sopra
+                await send_confirmation_mail(utente_completo._id.toString(),utente_completo.email.toString(), utente_completo.ruolo.valueOf()) //come sopra
         }
         res.status(200).json({
             successful:true,
@@ -194,11 +196,12 @@ export function createToken(_id:string, username:string, ruolo:Number):string{
     },process.env.TOKEN_SECRET,{expiresIn:"2 days"})
 }
 
-async function send_confirmation_mail(_id:string, email:string){
+async function send_confirmation_mail(_id:string, email:string, ruolo:number){
     try {
         const ver_token = jwt.sign({
             _id:_id,
-            email: email
+            email: email,
+            ruolo: ruolo
         },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
         const testo="Clicca sul link seguente per verificare il tuo indirizzo di posta elettronica: "+process.env.API_URL+'/conferma_mail/'+ver_token //mettere il link a cui si viene ridiretti al front
         await send_mail("Verify your email address",testo,email)
@@ -210,15 +213,10 @@ async function send_confirmation_mail(_id:string, email:string){
 
 export async function conferma_mail(req:Request, res:Response){
     const ver_token = req.params.ver_token
-    if(!ver_token){
-        res.status(400).json({
-            successful:false,
-            message:"No token provided"
-        })
-        return
-    }
-    const decoded = jwt.verify(ver_token,process.env.TOKEN_SECRET) as JwtPayload
-    if(!decoded){
+    let decoded
+    try {
+        decoded = jwt.verify(ver_token,process.env.TOKEN_SECRET) as JwtPayload    
+    } catch (error) {
         res.status(403).json({
             successful:false,
             message:"The provided token isn't valid!"
@@ -227,10 +225,10 @@ export async function conferma_mail(req:Request, res:Response){
     }
     try {
         let utente
-        if(req.body.loggedUser.ruolo==1)
-            utente= Cliente.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
-        else if (req.body.loggedUser.ruolo==2)
-            utente = Terapeuta.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
+        if(decoded.ruolo==1)
+            utente= await Cliente.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
+        else if (decoded.ruolo==2)
+            utente = await Terapeuta.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
         if(!utente){
             res.status(404).json({
                 successful:false,
@@ -244,7 +242,7 @@ export async function conferma_mail(req:Request, res:Response){
         })
         return
     } catch (error) {
-        res.status(500).json({
+            res.status(500).json({
             successful:false,
             message:"Internal server error in mail verification"
         })

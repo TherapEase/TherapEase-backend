@@ -28,6 +28,7 @@ export async function scrivi_pagina(req: Request, res: Response) {
             message: "Not enough arguments!"
         })
         return
+
     }
     //controllo data: la pagina non può essere di un giorno futuro
     else if (new Date(data).getTime() > Date.now()) {
@@ -37,6 +38,7 @@ export async function scrivi_pagina(req: Request, res: Response) {
             message: "Cannot create page in the future!"
         })
         return
+
     }
     try {
         //controllo che non sia già presente una pagina quel giorno
@@ -72,18 +74,21 @@ export async function scrivi_pagina(req: Request, res: Response) {
                 message: "Page successfully created"
             })
             return
+
         }
         res.status(403).json({
             successful: false,
             message: "Page already present"
         })
         return
+
     } catch (err) {
         res.status(500).json({
             successful: false,
             message: "Server error in page creation - failed"
-        }) 
+        })
         return
+
     }
 }
 
@@ -143,6 +148,7 @@ export async function leggi_diario_cliente(req: Request, res: Response) {
             message: "Pages successfully retrieved!",
             pagine: diario
         })
+        return
         return
     }
     catch (err) {

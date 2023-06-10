@@ -16,4 +16,4 @@ auth_router.post('/recuperopassword',recupero_password)
 
 auth_router.post('/cambio_password',tokenCheck, cambio_password)
 
-auth_router.get('/conferma_mail/:ver_token',conferma_mail)
+auth_router.post('/conferma_mail/:ver_token',conferma_mail)
