@@ -89,7 +89,7 @@ export async function registrazione(req:Request,res:Response) {
                 indirizzo:ind
             })
         }
-        await utente_schema.save();
+        await Utente.create(utente_schema)
         await send_confirmation_mail(utente_schema._id.toString(),utente_schema.email.toString())
         //se fallisce non è un problema, verrà fatto un nuovo tentativo al prossimo login, non mi sembra corretto fermare il tutto perché ha fallito l'invio mail  
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
@@ -175,7 +175,7 @@ export async function login(req:Request,res:Response) {
     }
 }
 
-function createToken(_id:string, username:string, ruolo:Number):string{
+export function createToken(_id:string, username:string, ruolo:Number):string{
     return jwt.sign({
         _id:_id,
         username:username,

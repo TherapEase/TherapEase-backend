@@ -152,9 +152,9 @@ export async function get_profilo(req:Request, res:Response) {
             })
         }
         if(utente.ruolo==1)
-            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario')
+            utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario').exec()
         else if(utente.ruolo==2)
-            utente = await Terapeuta.findById(req.params.id,'username ruolo nome cognome email cf foto_profilo data_nascita associati limite_clienti indirizzo recensioni')
+            utente = await Terapeuta.findById(req.params.id,'username ruolo nome cognome email cf foto_profilo data_nascita associati limite_clienti indirizzo recensioni').exec()
         
         /**
          * 
@@ -179,6 +179,45 @@ export async function get_profilo(req:Request, res:Response) {
         res.status(500).json({
             successful:false,
             message:"Server error in retrieving profile - failed!"
+        })
+    }
+}
+
+export async function delete_profilo(req:Request,res:Response){
+    /**
+     * DELETE /path --> non ha body
+     */
+    const _id = req.params.id
+    if(!_id){
+        res.status(400).json({
+            successful:false,
+            message:"Not enough arguments!"
+        })
+    }
+       //se _id e token corrispondono o se il token è amministrativo allora posso eliminare
+    if(!(req.body.loggedUser._id==_id||req.body.loggedUser.ruolo==4)){
+        res.status(403)
+        req.body={
+            successful:false,
+            message:"Not authorized to delete this profile!"
+        }
+    }
+    try {
+        let utente = await Utente.findByIdAndDelete(_id).exec()
+        if(!utente){
+            res.status(404).json({
+                successful:false,
+                message:"This user doesn't exist!"
+            })
+        }
+        res.status(200).json({
+            successful:true,
+            message:"User deleted successfully!"
+        })
+    } catch (error) {
+        res.status(500).json({
+            successful:false,
+            message:"Internal server error!"
         })
     }
 }

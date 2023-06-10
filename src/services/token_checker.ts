@@ -28,7 +28,7 @@ export async function tokenCheck(req:Request,res:Response,next:NextFunction) {
             message: "Verification of token failed!"
         })
         else{
-            let utente=await Utente.findById(decoded._id)
+            let utente=await Utente.findById(decoded._id).exec()
             if(!utente){
                 return res.status(403).json({
                     successful:false,
