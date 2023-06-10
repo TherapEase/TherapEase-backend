@@ -10,6 +10,7 @@ export async function get_all_segnalazioni(req: Request, res: Response) {
             successful: false,
             message: "Request denied - Invalid role"
         })
+        return
     }
 
     try {
@@ -21,11 +22,13 @@ export async function get_all_segnalazioni(req: Request, res: Response) {
             message: "All reports retrieved successfully",
             catalogo: catalogo_segnalazioni
         })
+        return
     } catch (err) {
         res.status(500).json({
             successful: false,
             message: "Server error in report catalog - failed!"
         })
+        return
     }
 }
 
@@ -36,6 +39,7 @@ export async function gestisci_segnalazione(req: Request, res: Response) {
             successful: false,
             message: "Request denied - Invalid role"
         })
+        return
     }
 
     try {
@@ -46,17 +50,20 @@ export async function gestisci_segnalazione(req: Request, res: Response) {
                 successful: false,
                 message: "Element doesn’t exist!"
             })
+            return
         } else {
             res.status(200).json({
                 successful: true,
                 message: "Report successfully managed!"
             })
+            return
         }
     } catch (err) {
         res.status(500).json({
             successful: false,
             message: "Server error in report management - failed!"
         })
+        return
     }
 }
 
@@ -67,6 +74,7 @@ export async function segnala(req: Request, res: Response) {
             successful: false,
             message: "Request denied!"
         })
+        return
     }
     try {
         if (req.body.loggedUser.ruolo == 1) {
@@ -79,6 +87,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: false,
                     message: "User not found!"
                 })
+                return
             }
 
             if (cliente.ruolo != 1 || terapeuta.ruolo != 2) {
@@ -86,6 +95,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: false,
                     message: "Invalid role!"
                 })
+                return
             }
 
             const id_cliente = req.body.loggedUser._id
@@ -96,6 +106,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: false,
                     message: "Client and therapist are not associated!"
                 })
+                return
             }
 
             //creazione della segnalazione
@@ -109,6 +120,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: false,
                     message: "Not enough arguments!"
                 })
+                return
             }
             // controllo se esiste già
             let esistente = await Segnalazione.findOne({ segnalato: segnalato, testo: testo, data: data }).exec()
@@ -117,6 +129,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: false,
                     message: "Report already present!"
                 })
+                return
             } else {
                 const schema_segnalazione = new Segnalazione<ISegnalazione>({
                     segnalato: segnalato,
@@ -129,6 +142,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: true,
                     message: "Report successfully inserted!"
                 })
+                return
             }
         } else if (req.body.loggedUser.ruolo == 2) {
             const id_cliente = req.params.id
@@ -140,6 +154,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: false,
                     message: "User not found!"
                 })
+                return
             }
 
             // controllo ruoli
@@ -148,6 +163,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: false,
                     message: "Invalid role!"
                 })
+                return
             }
 
             const id_terapeuta = req.body.loggedUser._id
@@ -158,6 +174,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: false,
                     message: "Client and therapist are not associated!"
                 })
+                return
             }
 
             //creazione della segnalazione
@@ -171,6 +188,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: false,
                     message: "Not enough arguments!"
                 })
+                return
             }
             // controllo se esiste già
             let esistente = await Segnalazione.findOne({ segnalato: segnalato, testo: testo, data: data }).exec()
@@ -179,6 +197,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: false,
                     message: "Report already present!"
                 })
+                return
             } else {
                 const schema_segnalazione = new Segnalazione<ISegnalazione>({
                     segnalato: segnalato,
@@ -191,6 +210,7 @@ export async function segnala(req: Request, res: Response) {
                     successful: true,
                     message: "Report successfully inserted!"
                 })
+                return
             }
         }
     }
@@ -199,5 +219,6 @@ export async function segnala(req: Request, res: Response) {
             successful: false,
             message: "Server error in report creation - failed!"
         })
+        return
     }
 }

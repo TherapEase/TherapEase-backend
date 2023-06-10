@@ -12,11 +12,13 @@ export async function get_all_terapeuti(req:Request,res:Response) {
             message:"Therapist catalog retrieved successfully!",
             catalogo: catalogo_terapeuti
         })
+        return
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in therapist catalog - failed!"
         })
+        return
     }
 }
 
@@ -42,11 +44,13 @@ export async function get_my_profilo(req:Request,res:Response){
             message:"My_profile obtained successfully!",
             profile:utente
         })
+        return
     } catch (error) {
         res.status(500).json({
             successful:false,
             message:"Server error in retrieving my_profile - failed!"
         })
+        return
     }
 }
 
@@ -122,11 +126,13 @@ export async function modify_profilo(req:Request,res:Response) {
             successful:true,
             message:"My_profile updated successfully!"
         })
+        return
     } catch (error) {
         res.status(500).json({
             successful:false,
             message: "Server error in updating my_profile - failed!"
         })
+        return
     }
 }
 
@@ -142,6 +148,7 @@ export async function get_profilo(req:Request, res:Response) {
                 successful:false,
                 message:"Invalid role!"
             })
+            return
         }
 
         let utente:IUtente|ICliente|ITerapeuta = await Utente.findById(req.params.id).exec()
@@ -150,6 +157,7 @@ export async function get_profilo(req:Request, res:Response) {
                 successful:false,
                 message:"User not found!"
             })
+            return
         }
         if(utente.ruolo==1)
             utente = await Cliente.findById(req.params.id,'username ruolo nome cognome email foto_profilo data_nascita diario').exec()
@@ -169,17 +177,21 @@ export async function get_profilo(req:Request, res:Response) {
                 successful: false,
                 message: "Request denied!"
             })
+            return
+            
         }
         res.status(200).json({
             successful:true,
             message:"Profile obtained successfully!",
             profile:utente
         })
+        return
     } catch (error) {
         res.status(500).json({
             successful:false,
             message:"Server error in retrieving profile - failed!"
         })
+        return
     }
 }
 
@@ -193,6 +205,7 @@ export async function delete_profilo(req:Request,res:Response){
             successful:false,
             message:"Not enough arguments!"
         })
+        return
     }
        //se _id e token corrispondono o se il token è amministrativo allora posso eliminare
     if(!(req.body.loggedUser._id==_id||req.body.loggedUser.ruolo==4)){
@@ -201,6 +214,7 @@ export async function delete_profilo(req:Request,res:Response){
             successful:false,
             message:"Not authorized to delete this profile!"
         }
+        return
     }
     try {
         let utente = await Utente.findByIdAndDelete(_id).exec()
@@ -210,15 +224,18 @@ export async function delete_profilo(req:Request,res:Response){
                 message:"This user doesn't exist!"
             })
         }
+        
         res.status(200).json({
             successful:true,
             message:"User deleted successfully!"
         })
+        return
     } catch (error) {
         res.status(500).json({
             successful:false,
             message:"Internal server error!"
         })
+        return
     }
 }
 
@@ -231,10 +248,12 @@ export async function get_all_clienti(req:Request,res:Response) {
             message:"Client catalog retrieved successfully!",
             catalogo: catalogo_clienti
         })
+        return
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in client catalog - failed!"
         })
+        return
     }
 }
