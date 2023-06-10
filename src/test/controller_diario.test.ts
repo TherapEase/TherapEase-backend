@@ -120,12 +120,12 @@ describe('test diario', () => {
 
 
     it('POST /api/v1/crea_pagina senza specificare tutti gli attributi', async () => {
-        Pagina.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
-        Diario.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        Pagina.create = jest.fn().mockImplementation(() => Promise.resolve(true))
-        Diario.create = jest.fn().mockImplementation(() => Promise.resolve(true))
-        Diario.findOneAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        Cliente.findByIdAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(mario_doc) } })
+        // Pagina.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
+        // Diario.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
+        // Pagina.create = jest.fn().mockImplementation(() => Promise.resolve(true))
+        // Diario.create = jest.fn().mockImplementation(() => Promise.resolve(true))
+        // Diario.findOneAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
+        // Cliente.findByIdAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(mario_doc) } })
 
         const res = await request(app).post('/api/v1/crea_pagina').set("x-access-token", token).send({ data: "2023-05-30" })
         expect(res.status).toBe(400)
@@ -133,13 +133,13 @@ describe('test diario', () => {
     })
 
 
-    it('POST /api/v1/crea_pagina senza specificare tutti gli attributi', async () => {
-        Pagina.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
-        Diario.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        Pagina.create = jest.fn().mockImplementation(() => Promise.resolve(true))
-        Diario.create = jest.fn().mockImplementation(() => Promise.resolve(true))
-        Diario.findOneAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        Cliente.findByIdAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(mario_doc) } })
+    it('POST /api/v1/crea_pagina data nel futuro', async () => {
+        // Pagina.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
+        // Diario.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
+        // Pagina.create = jest.fn().mockImplementation(() => Promise.resolve(true))
+        // Diario.create = jest.fn().mockImplementation(() => Promise.resolve(true))
+        // Diario.findOneAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
+        // Cliente.findByIdAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(mario_doc) } })
 
         const res = await request(app).post('/api/v1/crea_pagina').set("x-access-token", token).send({
             data: "2025-06-30T12:00:00.000+00:00",
@@ -151,7 +151,7 @@ describe('test diario', () => {
         expect(res.body.successful).toBe(false)
     })
 
-    it('GET /api/v1/leggi_pagine ok', async()=>{
+    it('GET /api/v1/leggi_pagine dal profilo', async()=>{
         Pagina.find= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
         
         const res = await request(app).get('/api/v1/leggi_pagine').set("x-access-token", token).send()
@@ -216,6 +216,15 @@ describe('test diario', () => {
         expect(res.body.successful).toBe(false)
     })
 
+    it('POST /api/v1/modifica_pagina che non esiste', async()=>{
+        Pagina.findOne= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(false) } })
+        
+        const res = await request(app).post('/api/v1/modifica_pagina').set("x-access-token", token).send(pagina_doc)
+        expect(res.status).toBe(400)
+        expect(res.body.successful).toBe(false)
+    })
+
+
     it('POST /api/v1/elimina_pagina ok', async()=>{
         Pagina.findOneAndDelete= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
         Diario.findOneAndUpdate= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
@@ -225,15 +234,7 @@ describe('test diario', () => {
         expect(res.body.successful).toBe(true)
     })
 
-    it('POST /api/v1/elimina_pagina dal profilo terapeuta', async()=>{
-        Pagina.findOneAndDelete= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
-        Diario.findOneAndUpdate= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        
-        const res = await request(app).post('/api/v1/elimina_pagina').set("x-access-token", token_g).send(pagina_doc)
-        expect(res.status).toBe(403)
-        expect(res.body.successful).toBe(false)
-    })
-
+   
     it('POST /api/v1/elimina_pagina dal profilo terapeuta', async()=>{
         Pagina.findOneAndDelete= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
         Diario.findOneAndUpdate= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
@@ -245,7 +246,6 @@ describe('test diario', () => {
 
     it('POST /api/v1/elimina_pagina che non esiste ', async()=>{
         Pagina.findOneAndDelete= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
-        Diario.findOneAndUpdate= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
         
         const res = await request(app).post('/api/v1/elimina_pagina').set("x-access-token", token).send(pagina_doc)
         expect(res.status).toBe(400)
@@ -254,7 +254,6 @@ describe('test diario', () => {
 
     it('POST /api/v1/elimina_pagina senza campi', async()=>{
         Pagina.findOneAndDelete= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
-        Diario.findOneAndUpdate= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
         
         const res = await request(app).post('/api/v1/elimina_pagina').set("x-access-token", token).send()
         expect(res.status).toBe(400)
