@@ -8,6 +8,8 @@ import { JWTToken } from '../schemas/token_schema'
 import { Prodotto } from '../schemas/prodotto_schema'
 import { Session } from 'node:inspector'
 import { Sessione } from '../schemas/sessione_stripe_schema'
+import { Cliente } from '../schemas/cliente_schema'
+import { Seduta } from '../schemas/seduta_schema'
 const stripe = require('stripe')(process.env.SK_STRIPE);
 
 describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/catalogo_prodotti',()=>{
@@ -63,6 +65,7 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
         Prodotto.findOneAndDelete = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(prodotto_doc)}})
         Sessione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
         Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(session_doc)}})
+        Sessione.findByIdAndDelete = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
         stripe.checkout.sessions.create = jest.fn().mockImplementation((doc)=>{return{exec:jest.fn().mockResolvedValue(null)}}) 
         
     })
@@ -163,8 +166,30 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
     })
 
     it('GET /api/prodotto/checkout_success/:id token corretto',async() => {
+        Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Cliente.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
         const res = await request(app).get('/api/v1/prodotto/checkout_success/'+session_doc._id).send()
         expect(res.status).toBe(200)
     })
+
+    it('GET /api/prodotto/checkout_success/:id elemento non esistente',async() => {
+        Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        
+        const res = await request(app).get('/api/v1/prodotto/checkout_success/'+"8888").send()
+        expect(res.status).toBe(409)
+    })
+
+    // DA CONTROLLARE CON CODICE REFACTORING
+    // it('GET /api/prodotto/checkout_failed/:id token corretto',async() => {
+    //     const res = await request(app).get('/api/v1/prodotto/checkout_failed/'+session_doc._id).send()
+    //     expect(res.status).toBe(200)
+    // })
+
+    // it('GET /api/prodotto/checkout_failed/:id token errato',async() => {
+    //     Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+
+    //     const res = await request(app).get('/api/v1/prodotto/checkout_failed/'+session_doc._id).send()
+    //     expect(res.status).toBe(409)
+    // })
 
 })

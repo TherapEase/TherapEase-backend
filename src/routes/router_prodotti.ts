@@ -21,11 +21,13 @@ prodotti_router.post('/prodotto/checkout/:id' ,tokenCheck, checkout, (req:Reques
 })
 
 prodotti_router.get('/prodotto/checkout_success/:id' ,checkout_success, (req:Request,res:Response)=>{
-    res.redirect("http://localhost:8080/profilo")
+    res.json("CIAO")
+    //res.redirect("http://localhost:8080/profilo")
 })
 
-prodotti_router.get('/prodotto/checkout_failed', checkout_failed, (req:Request,res:Response)=>{
-    res.redirect("http://localhost:8080/offerta")
+prodotti_router.get('/prodotto/checkout_failed/:id', checkout_failed, (req:Request,res:Response)=>{
+    res.json("CIAO")
+    //res.redirect("http://localhost:8080/offerta")
 })
 
 
