@@ -5,7 +5,6 @@ import { Utente, IUtente } from '../schemas/utente_schema'
 import mongoose from 'mongoose'
 import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
-import { send_mail } from '../controllers/gmail_connector'
         /**
          * 
          * Le query vengono eseguite come Utente.findOne(...).exec() ciò significa che:

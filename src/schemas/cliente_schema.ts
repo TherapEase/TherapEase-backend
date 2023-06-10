@@ -1,8 +1,5 @@
 import {Schema, model} from 'mongoose'
-import bcrypt from 'bcrypt'
-import dotenv from 'dotenv'
-import { check_and_hash } from '../controllers/password_hasher'
-import { isGeneratorFunction } from 'util/types'
+import { check_and_hash } from '../services/password_hasher'
 
 export interface ICliente{
 	username:  String,
