@@ -120,13 +120,7 @@ describe('test diario', () => {
 
 
     it('POST /api/v1/crea_pagina senza specificare tutti gli attributi', async () => {
-        // Pagina.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
-        // Diario.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        // Pagina.create = jest.fn().mockImplementation(() => Promise.resolve(true))
-        // Diario.create = jest.fn().mockImplementation(() => Promise.resolve(true))
-        // Diario.findOneAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        // Cliente.findByIdAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(mario_doc) } })
-
+        
         const res = await request(app).post('/api/v1/crea_pagina').set("x-access-token", token).send({ data: "2023-05-30" })
         expect(res.status).toBe(400)
         expect(res.body.successful).toBe(false)
@@ -134,13 +128,7 @@ describe('test diario', () => {
 
 
     it('POST /api/v1/crea_pagina data nel futuro', async () => {
-        // Pagina.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
-        // Diario.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        // Pagina.create = jest.fn().mockImplementation(() => Promise.resolve(true))
-        // Diario.create = jest.fn().mockImplementation(() => Promise.resolve(true))
-        // Diario.findOneAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        // Cliente.findByIdAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(mario_doc) } })
-
+        
         const res = await request(app).post('/api/v1/crea_pagina').set("x-access-token", token).send({
             data: "2025-06-30T12:00:00.000+00:00",
             testo: "ciao",

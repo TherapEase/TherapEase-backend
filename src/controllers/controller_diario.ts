@@ -51,7 +51,6 @@ export async function scrivi_pagina(req: Request, res: Response, next: NextFunct
         //controllo che non sia già presente una pagina quel giorno
         let pagina_presente = await Pagina.findOne({ data: data, cliente: id_cliente }).exec()
 
-        console.log("pagina presente", pagina_presente)
         if (!pagina_presente) {
             let pagina_schema = new Pagina<IPagina>({
                 cliente: id_cliente,
@@ -61,7 +60,6 @@ export async function scrivi_pagina(req: Request, res: Response, next: NextFunct
 
             await Pagina.create(pagina_schema)
             let diario_presente = await Diario.findOne({ cliente: id_cliente }).exec()
-            console.log(diario_presente)
 
             /*controlla che il diario non sia già presente: 
             1. se non è presente, crea il diario, salva la pagina e inserisci l'id del diario in Utenti.diario
@@ -311,10 +309,8 @@ export async function elimina_pagina(req: Request, res: Response, next: NextFunc
             return
 
         }
-        console.log("pagina_id" + pagina._id)
 
         const pagina_diario = await Diario.findOneAndUpdate({ cliente: req.body.loggedUser._id }, { $pull: { pagine: pagina._id } }, { new: true }).exec()
-        console.log(pagina_diario)
         res.status(200)
         req.body = {
             successful: true,
