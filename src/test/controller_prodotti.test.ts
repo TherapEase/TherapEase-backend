@@ -67,7 +67,6 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
         Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(session_doc)}})
         Sessione.findByIdAndDelete = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
         stripe.checkout.sessions.create = jest.fn().mockImplementation((doc)=>{return{exec:jest.fn().mockResolvedValue(null)}}) 
-        
     })
     afterEach(()=>{
         jest.restoreAllMocks().clearAllMocks()
@@ -166,6 +165,7 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
     })
 
     it('GET /api/prodotto/checkout_success/:id token corretto',async() => {
+        Response.redirect = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
         Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
         Cliente.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
         const res = await request(app).get('/api/v1/prodotto/checkout_success/'+session_doc._id).send()
@@ -174,7 +174,8 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
 
     it('GET /api/prodotto/checkout_success/:id elemento non esistente',async() => {
         Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        
+        Response.redirect = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
+
         const res = await request(app).get('/api/v1/prodotto/checkout_success/'+"8888").send()
         expect(res.status).toBe(409)
     })
