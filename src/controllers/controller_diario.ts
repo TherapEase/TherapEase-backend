@@ -150,6 +150,7 @@ export async function leggi_diario_cliente(req: Request, res: Response) {
             message: "Pages successfully retrieved!",
             pagine: diario
         })
+        return
     }
     catch (err) {
         res.status(500).json({

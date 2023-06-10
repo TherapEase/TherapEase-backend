@@ -223,6 +223,7 @@ export async function delete_profilo(req:Request,res:Response){
                 successful:false,
                 message:"This user doesn't exist!"
             })
+            return
         }
         
         res.status(200).json({

@@ -247,6 +247,7 @@ export async function conferma_mail(req:Request, res:Response){
                 successful:false,
                 message:"User not found"
             })
+            return
         }
         res.status(200).json({
             successful:true,
