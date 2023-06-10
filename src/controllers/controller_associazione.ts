@@ -30,12 +30,7 @@ export async function associazione(req:Request,res:Response) {
     
     const id_cliente=req.body.loggedUser._id
     const id_terapeuta=req.params.id
-    if (!id_cliente || !id_terapeuta){
-        res.status(400).json({
-            successful: false,
-            message: "Not enough arguments!"
-        })
-    } 
+   
 
     try{
         let terapeuta=await Terapeuta.findById(id_terapeuta).exec()    
