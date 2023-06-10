@@ -181,4 +181,15 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
         const res = await request(app).post('/api/v1/conferma_mail/'+ver_token).send()
         expect(res.status).toBe(403)
     })
+    it('POST /conferma_mail/:ver_token con token valido, ma utente non presente', async()=>{
+        const ver_token= jwt.sign({
+            _id:mario_doc._id,
+            email: mario_doc.email,
+            ruolo: mario_doc.ruolo
+        },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
+        Cliente.findOneAndUpdate = jest.fn().mockImplementation(()=>{return {exec:jest.fn().mockResolvedValue(null)}})
+        
+        const res = await request(app).post('/api/v1/conferma_mail/'+ver_token).send()
+        expect(res.status).toBe(404)
+    })
 })

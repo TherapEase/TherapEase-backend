@@ -213,23 +213,26 @@ export async function conferma_mail(req:Request, res:Response){
     try {
         let utente
         if(decoded.ruolo==1)
-            utente= Cliente.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
+            utente= await Cliente.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
         else if (decoded.ruolo==2)
-            utente = Terapeuta.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
+            utente = await Terapeuta.findOneAndUpdate({_id:decoded._id,email:decoded.email,mail_confermata:false},{mail_confermata:true}).exec()
         if(!utente){
             res.status(404).json({
                 successful:false,
                 message:"User not found"
             })
+            return
         }
         res.status(200).json({
             successful:true,
             message:"Email verified"
         })
+        return
     } catch (error) {
             res.status(500).json({
             successful:false,
             message:"Internal server error in mail verification"
         })
+        return
     }
 }
