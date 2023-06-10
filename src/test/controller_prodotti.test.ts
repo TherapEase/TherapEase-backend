@@ -62,8 +62,9 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
         Prodotto.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
         Prodotto.findOneAndDelete = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(prodotto_doc)}})
         Sessione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
+        Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(session_doc)}})
         stripe.checkout.sessions.create = jest.fn().mockImplementation((doc)=>{return{exec:jest.fn().mockResolvedValue(null)}}) 
-
+        
     })
     afterEach(()=>{
         jest.restoreAllMocks().clearAllMocks()
@@ -148,16 +149,22 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
     })
 
     it('POST /api/prodotto/checkout/:id NOT cliente',async()=>{
+        Prodotto.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(prodotto_doc)}})
         const res = await request(app).post('/api/v1/prodotto/checkout/'+prodotto_doc._id).set("x-access-token", token_a).send({
         })
         expect(res.status).toBe(403)
     })
 
-    // it('POST /api/prodotto/checkout/:id NOT cliente',async()=>{
-    //     Prodotto.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(prodotto_doc)}})
-    //     const res = await request(app).post('/api/v1/prodotto/checkout/'+prodotto_doc._id).set("x-access-token", token_a).send({
-    //     })
-    //     expect(res.status).toBe(403)
-    // })
+    it('POST /api/prodotto/checkout/:id already present',async()=>{
+        Prodotto.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        const res = await request(app).post('/api/v1/prodotto/checkout/'+prodotto_doc._id).set("x-access-token", token).send({
+        })
+        expect(res.status).toBe(409)
+    })
+
+    it('GET /api/prodotto/checkout_success/:id token corretto',async() => {
+        const res = await request(app).get('/api/v1/prodotto/checkout_success/'+session_doc._id).send()
+        expect(res.status).toBe(200)
+    })
 
 })
