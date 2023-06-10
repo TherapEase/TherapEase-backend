@@ -10,7 +10,7 @@ auth_router.post('/registrazione',registrazione)
 
 auth_router.post('/login', login)
 
-auth_router.post('/logout',tokenCheck,logout)
+auth_router.delete('/logout',tokenCheck,logout)
 
 auth_router.post('/recuperopassword',recupero_password)
 
