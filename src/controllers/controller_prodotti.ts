@@ -148,8 +148,8 @@ export async function checkout(req:Request,res:Response){
                 },
                 quantity: 1,
             }],
-            success_url: "http://localhost:3001/api/v1/prodotto/checkout_success/"+sessione_to_save._id, // to change
-            cancel_url: "http://localhost:3001/api/v1/prodotto/checkout_failed", // to change con una pagina con un messaggio di errore
+            success_url: process.env.DEPLOY_BACK+"prodotto/checkout_success/"+sessione_to_save._id,
+            cancel_url: process.env.DEPLOY_BACK+"prodotto/checkout_failed/"+sessione_to_save._id,
         })
 
         res.status(200).json({
@@ -195,9 +195,27 @@ export async function checkout_success(req:Request,res:Response){
 
 
 export async function checkout_failed(req:Request,res:Response){
-    console.log("Checkout failed!")
-    res.status(200).json({
-        successful:true,
-        message:"Successful redirecting after payment failure!"
-    }).redirect(process.env.DEPLOY_FRONT+"/offerta")//da cambiare
+    try {
+        // controllo presenza prodotto
+        let presente= await Sessione.findById(req.params.id).exec()
+        if(!presente){
+            res.status(409).json({
+                successful: false,
+                message: "Element doesn’t exist!"
+            }).redirect(process.env.DEPLOY_FRONT+"/profilo")
+        }
+        await Sessione.findByIdAndDelete(req.params.id)
+
+        res.status(200).json({
+            successful:true,
+            message:"Successful redirecting after payment failure!"
+        }).redirect(process.env.DEPLOY_FRONT+"/offerta")
+    } catch (err) {
+        res.status(500).json({
+            successful:false,
+            message:"Server error checkout success - failed!"
+        })
+    }
+
+
 }
