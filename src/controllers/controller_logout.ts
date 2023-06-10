@@ -12,7 +12,7 @@ export async function logout(req:Request,res:Response) {
             token:token,
             expiration: (decoded as JwtPayload).exp
         })
-        await blacklisted.save()
+        await  JWTToken.create(blacklisted)
 
         res.status(200).json({
             successful:true,
