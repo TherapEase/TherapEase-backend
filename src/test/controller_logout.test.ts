@@ -62,13 +62,6 @@ describe('logout tests', () => {
                 })
             }
         })
-
-
-
-        // Seduta.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
-        // Terapeuta.findById = jest.fn().mockImplementation((_id, filter) => { return { exec: jest.fn().mockResolvedValue(giovi_doc) } })
-
-
     })
     afterEach(() => {
         jest.restoreAllMocks().clearAllMocks()

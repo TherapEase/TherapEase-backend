@@ -148,17 +148,15 @@ describe('test /api/v1/il_mio_profilo /api/v1/il_mio_profilo/modifica /api/v1/pr
         expect(res.status).toBe(200)
     })  
 
-    // DA TESTARE CON MAIN AGGIORNATO
     it('GET /api/v1/catalogo_clienti by admin',async () => {
         const res = await request(app).get('/api/v1/catalogo_clienti').set("x-access-token",token_a).send()
         expect(res.status).toBe(200)
     })
     
-    // DA TESTARE CON MAIN AGGIORNATO
-    // it('GET /api/v1/catalogo_clienti by NOT admin',async () => {
-    //     const res = await request(app).get('/api/v1/catalogo_clienti').set("x-access-token",token).send()
-    //     expect(res.status).toBe(403)
-    // })  
+    it('GET /api/v1/catalogo_clienti by NOT admin',async () => {
+        const res = await request(app).get('/api/v1/catalogo_clienti').set("x-access-token",token).send()
+        expect(res.status).toBe(403)
+    })  
 
     it('DELETE /api/v1/profilo/:id/elimina by admin',async () => {
         Utente.findByIdAndDelete = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})

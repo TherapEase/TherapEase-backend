@@ -239,6 +239,15 @@ export async function delete_profilo(req:Request,res:Response){
 }
 
 export async function get_all_clienti(req:Request,res:Response) {
+    // controllo ruolo
+    if(req.body.loggedUser.ruolo!=4){
+        res.status(403).json({
+            successful: false,
+            message: "Request denied!"
+        })
+        return
+    }
+    
     try {
         const catalogo_clienti=await Cliente.find({ruolo:1}, 'nome cognome foto_profilo')
         
