@@ -139,8 +139,8 @@ describe('GET /api/v1/recensioni_associato/:id /api/v1/le_mie_recensioni /recens
         expect(res.status).toBe(200)
     })
 
-    //l'id non esiste
-    it('POST /api/v1/recensioni/:id not existent id', async()=>{
+    //non trova la ruote
+    it('POST /api/v1/recensioni/:id -> non trova la ruote', async()=>{
         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
         Recensione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
@@ -174,7 +174,7 @@ describe('GET /api/v1/recensioni_associato/:id /api/v1/le_mie_recensioni /recens
         expect(res.status).toBe(409)
     })
 
-    //non ci sono abbastanza argomenti
+    // non ci sono abbastanza argomenti
     it('POST /api/v1/recensioni/:id not enough arguments', async()=>{
         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
@@ -188,17 +188,4 @@ describe('GET /api/v1/recensioni_associato/:id /api/v1/le_mie_recensioni /recens
         })
         expect(res.status).toBe(400)
     })
-
-
-    
-
-
-
-
-
-
-
-
-
-    
 })

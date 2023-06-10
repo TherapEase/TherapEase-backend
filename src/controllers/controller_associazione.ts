@@ -38,14 +38,14 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
     
     const id_cliente=req.body.loggedUser._id
     const id_terapeuta=req.params.id
-    if (!id_cliente || !id_terapeuta){
-        res.status(400)
-        req.body={
-            successful: false,
-            message: "Not enough arguments!"
-        }
-        next()
-    } 
+    // if (!id_cliente || !id_terapeuta){
+    //     res.status(400)
+    //     req.body={
+    //         successful: false,
+    //         message: "Not enough arguments!"
+    //     }
+    //     next()
+    // } 
 
     try{
         await mongoose.connect(process.env.DB_CONNECTION_STRING)
@@ -95,7 +95,7 @@ export async function associazione(req:Request,res:Response,next:NextFunction) {
          */
 
         if(terapeuta.associati.includes(cliente._id.toString())&&cliente.associato==terapeuta._id.toString()){       
-            res.status(409)
+            res.status(410)
             req.body={
                 successful:false,
                 message: "Client and therapist already associated!"
@@ -209,6 +209,8 @@ export async function rimuovi_associazione (req:Request, res:Response,next:NextF
                 successful:false,
                 message:"User not found!"
             }
+            next()
+            return
         }
         cliente = await Cliente.findOneAndUpdate({_id:id_cliente, associato:id_terapeuta},{associato:""},{new:true}).exec()
         terapeuta = await Terapeuta.findOneAndUpdate({_id:id_terapeuta, associati:id_cliente},{$pull:{associati:id_cliente}},{new:true}).exec()
