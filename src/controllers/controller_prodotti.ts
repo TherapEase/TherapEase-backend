@@ -41,7 +41,7 @@ export async function inserisci_prodotto(req:Request,res:Response){
                 prezzo:prezzo,
                 n_gettoni:n_gettoni
             });
-            await schema_prodotto.save();
+            await Prodotto.create(schema_prodotto)
             res.status(200).json({
                 successful: true,
                 message: "Product successfully inserted!"

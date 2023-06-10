@@ -26,13 +26,15 @@ export async function crea_slot_seduta(req:Request,res:Response) {
         })
         return
     }
-    else if(new Date(data).getTime() <=Date.now()){
+    else if((new Date(data).getTime()<=Date.now())==true){
         res.status(400).json({
             successful:false,
             message:"Cannot create a seduta in the past!"
         })
         return
     }
+
+
     try{
         //controllo che non sia già presente
         let seduta_presente = await Seduta.findOne({data:data, terapeuta:req.body.loggedUser._id}).exec()

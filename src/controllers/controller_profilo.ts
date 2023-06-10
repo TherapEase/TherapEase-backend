@@ -207,13 +207,12 @@ export async function delete_profilo(req:Request,res:Response){
         })
         return
     }
-       //se _id e token corrispondono o se il token è amministrativo allora posso eliminare
-    if(!(req.body.loggedUser._id==_id||req.body.loggedUser.ruolo==4)){
-        res.status(403)
-        req.body={
+    //se _id e token corrispondono o se il token è amministrativo allora posso eliminare
+    if(!(req.body.loggedUser._id==_id) && !(req.body.loggedUser.ruolo==4)){
+        res.status(403).json({
             successful:false,
             message:"Not authorized to delete this profile!"
-        }
+        })
         return
     }
     try {

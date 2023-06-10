@@ -43,6 +43,7 @@ export async function scrivi_pagina(req: Request, res: Response) {
     try {
         //controllo che non sia già presente una pagina quel giorno
         let pagina_presente = await Pagina.findOne({ data: data, cliente: id_cliente }).exec()
+
         if (!pagina_presente) {
             let pagina_schema = new Pagina<IPagina>({
                 cliente: id_cliente,
@@ -107,6 +108,7 @@ export async function leggi_my_diario(req: Request, res: Response) {
         let diario = await Pagina.find({ cliente: req.body.loggedUser._id }, 'data testo').exec()
 
         res.status(200).json({
+            successful:true,
             message: "Pages successfully retrieved!",
             pagine: diario
         })
@@ -147,6 +149,7 @@ export async function leggi_diario_cliente(req: Request, res: Response) {
         let diario = await Pagina.find({ cliente: id_cliente_associato }, 'data testo').exec()
 
         res.status(200).json({
+            successful: true,
             message: "Pages successfully retrieved!",
             pagine: diario
         })
@@ -176,7 +179,7 @@ export async function modifica_pagina(req: Request, res: Response) {
 
     }
 
-    if (!req.body.testo) {
+    if (!data || !req.body.testo) {
         res.status(400).json({
             successful: false,
             message: "Not enough arguments!"
@@ -231,6 +234,15 @@ export async function elimina_pagina(req: Request, res: Response) {
         return
 
     }
+
+    if (!data) {
+        res.status(400).json({
+            successful: false,
+            message: "Not enough arguments!"
+        })
+    }
+
+
 
     try {
         const pagina = await Pagina.findOneAndDelete({ data: data, cliente: req.body.loggedUser._id }).exec()
