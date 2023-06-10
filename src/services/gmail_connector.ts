@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer'
-import dotenv from 'dotenv'
 import SMTPTransport from 'nodemailer/lib/smtp-transport'
 
 /**
@@ -19,6 +18,7 @@ async function setup_transporter() {
 
     return node_transporter
 }
+
 export async function send_mail(oggetto:string, testo:string, destinatario: string) {
     let gmailTransporter = await setup_transporter()
     gmailTransporter.sendMail({
