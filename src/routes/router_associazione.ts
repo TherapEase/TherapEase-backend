@@ -11,5 +11,5 @@ associazione_router.get('/catalogo_associati', tokenCheck, get_all_associati)
 associazione_router.post('/associazione/:id',tokenCheck, associazione)
 
 
-associazione_router.post('/associazione/rimuovi/:id', tokenCheck, rimuovi_associazione)
+associazione_router.delete('/associazione/rimuovi/:id', tokenCheck, rimuovi_associazione)
 

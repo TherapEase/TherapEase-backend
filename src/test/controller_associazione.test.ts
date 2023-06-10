@@ -171,7 +171,7 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
     // RIMUOVI ASSOCIAZIONE
 
     // Un utente fa la dissociazione da un altro utente esistente al quale è associato
-    it('POST /api/v1/associazione/rimuovi/id',async ()=>{
+    it('DELETE /api/v1/associazione/rimuovi/id',async ()=>{
         Cliente.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(mario_up_doc)}})
         Terapeuta.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(giovi_up_doc)}})
         
@@ -179,16 +179,16 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
         Terapeuta.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
         Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
 
-        const res = await request(app).post('/api/v1/associazione/rimuovi/'+giovi_doc._id).set("x-access-token",token).send()
+        const res = await request(app).delete('/api/v1/associazione/rimuovi/'+giovi_doc._id).set("x-access-token",token).send()
         expect(res.status).toBe(200)
     })
 
     // //Un utente fa la dissociazione da un altro utente, che però non esiste
-    it('POST /api/v1/associazione/rimuovi/id terapeuta non esistente',async ()=>{
+    it('DELETE /api/v1/associazione/rimuovi/id terapeuta non esistente',async ()=>{
         Cliente.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(mario_up_doc)}})
         Terapeuta.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(null)}})
         
-        const res = await request(app).post('/api/v1/associazione/rimuovi/1111').set("x-access-token",token).send()
+        const res = await request(app).delete('/api/v1/associazione/rimuovi/1111').set("x-access-token",token).send()
         expect(res.status).toBe(404)
     })
 
