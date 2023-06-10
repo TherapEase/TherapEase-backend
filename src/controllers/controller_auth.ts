@@ -41,12 +41,14 @@ export async function registrazione(req:Request,res:Response) {
         successful:false,
         message:"Not enough arguments!"
     })
+    return
    }
    else if (ruolo<1||ruolo>2) {
     res.status(403).json({
         successful:false,
         message:"Invalid role!"
     })
+    return
    }
    
 
@@ -73,6 +75,8 @@ export async function registrazione(req:Request,res:Response) {
                     successful:false,
                     message:"Not enough arguments!"
                 })
+            return
+
             }
             utente_schema= new Terapeuta({
                 username:username,
@@ -99,17 +103,23 @@ export async function registrazione(req:Request,res:Response) {
             message:"User registered correctly!",
             token : token
         })
+        return
+
     }else {
         res.status(409).json({
             successful:false,
             message:"User already exists!"
         })
+        return
+
     }
    }catch(err){
         res.status(500).json({
             successful: false,
             message:"Server error in registration - failed!"
         })
+        return
+
    }
 }   
 
@@ -124,6 +134,8 @@ export async function login(req:Request,res:Response) {
             successful: false,
             message: "Not enough arguments!"
         })
+        return
+
     } 
 
     try {
@@ -136,6 +148,8 @@ export async function login(req:Request,res:Response) {
                 successful: false,
                 message: "User not found!"
             })
+            return
+
         };
 
         // controllo la password
@@ -147,6 +161,8 @@ export async function login(req:Request,res:Response) {
                 successful:false,
                 message:"Incorrect password!"
             })
+            return
+
         };
     
         //creo il token aggiungendo i vari campi utili
@@ -167,11 +183,15 @@ export async function login(req:Request,res:Response) {
             message:"User authenticated!",
             token: token 
         })
+        return
+
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in login - failed!"
         })
+        return
+
     }
 }
 
