@@ -11,6 +11,7 @@ export async function inserisci_prodotto(req:Request,res:Response){
             successful: false,
             message: "Request denied!"
         })
+        return
     }
 
     // controllo presenza campi
@@ -22,6 +23,7 @@ export async function inserisci_prodotto(req:Request,res:Response){
             successful: false,
             message: "Not enough arguments!"
         })
+        return
     }
 
     try{
@@ -32,6 +34,7 @@ export async function inserisci_prodotto(req:Request,res:Response){
                 successful: false,
                 message: "Product already present!"
             })
+            return
         }else{
             const schema_prodotto= new Prodotto<IProdotto>({
                 nome:nome,
@@ -43,6 +46,7 @@ export async function inserisci_prodotto(req:Request,res:Response){
                 successful: true,
                 message: "Product successfully inserted!"
             })
+            return
         }
 
     }catch(err){
@@ -50,6 +54,7 @@ export async function inserisci_prodotto(req:Request,res:Response){
             successful: false,
             message: "Server error in product creation - failed!"
         })
+        return
     }
 };
 
@@ -61,6 +66,7 @@ export async function rimuovi_prodotto(req:Request,res:Response){
             successful: false,
             message: "Request denied!"
         })
+        return
     }
 
     try{
@@ -71,17 +77,20 @@ export async function rimuovi_prodotto(req:Request,res:Response){
                 successful: false,
                 message: "Element doesn’t exist or can’t be removed!"
             }) 
+            return
         }else{
             res.status(200).json({
                 successful: true,
                 message: "Product successfully deleted!"
             })
+            return
         }
     }catch(err){
         res.status(500).json({
             successful: false,
             message: "Server error in product removal - failed!"
         })
+        return
     }
 };
 
@@ -93,11 +102,13 @@ export async function get_prodotti(req:Request,res:Response){
             message:"Product catalog retrieved successfully!",
             catalogo: catalogo_prodotti
         })
+        return
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in product catalog - failed!"
         })
+        return
     }
 };
 
@@ -115,6 +126,7 @@ export async function checkout(req:Request,res:Response){
             successful: false,
             message: "Request denied!"
         })
+        return
     }
     
     try {
@@ -125,6 +137,7 @@ export async function checkout(req:Request,res:Response){
                 successful: false,
                 message: "Element doesn’t exist!"
             })
+            return
         }
 
         const sessione_to_save= new Sessione<ISessione> ({
@@ -156,11 +169,13 @@ export async function checkout(req:Request,res:Response){
             url: session.url,
             message:"Successful redirect to checkout!"
         })
+        return
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in redirect - failed!"
         })
+        return
     }
 }
 
@@ -174,7 +189,8 @@ export async function checkout_success(req:Request,res:Response){
             res.status(409).json({
                 successful: false,
                 message: "Element doesn’t exist!"
-            }).redirect(process.env.DEPLOY_FRONT+"/profilo")//da cambiare
+            }).redirect(process.env.DEPLOY_FRONT+"/profilo")
+            return
         }
 
         aggiungi_gettoni(presente.id_cliente, presente.n_gettoni)
@@ -183,12 +199,14 @@ export async function checkout_success(req:Request,res:Response){
         res.status(200).json({
             successful:true,
             message:"Gettoni aggiunti!"
-        }).redirect(process.env.DEPLOY_FRONT+"/profilo")//da cambiare
+        }).redirect(process.env.DEPLOY_FRONT+"/profilo")
+        return
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error checkout success - failed!"
         })
+        return
     }
 }
 
@@ -202,6 +220,7 @@ export async function checkout_failed(req:Request,res:Response){
                 successful: false,
                 message: "Element doesn’t exist!"
             }).redirect(process.env.DEPLOY_FRONT+"/profilo")
+            return
         }
         await Sessione.findByIdAndDelete(req.params.id)
 
@@ -209,11 +228,13 @@ export async function checkout_failed(req:Request,res:Response){
             successful:true,
             message:"Successful redirecting after payment failure!"
         }).redirect(process.env.DEPLOY_FRONT+"/offerta")
+        return
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error checkout success - failed!"
         })
+        return
     }
 
 

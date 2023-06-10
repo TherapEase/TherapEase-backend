@@ -10,6 +10,7 @@ export async function aggiungi_evento(req:Request,res:Response) {
             successful: false,
             message: "Request denied!"
         })
+        return
     }
 
     // controllo presenza campi
@@ -22,6 +23,7 @@ export async function aggiungi_evento(req:Request,res:Response) {
             successful: false,
             message: "Not enough arguments!"
         })
+        return
     }
 
     // controllo che la data sia nel futuro
@@ -30,6 +32,7 @@ export async function aggiungi_evento(req:Request,res:Response) {
             successful:false,
             message:"Cannot add an event in the past!"
         }) 
+        return
     }
 
     try {
@@ -50,17 +53,20 @@ export async function aggiungi_evento(req:Request,res:Response) {
                 successful:true,
                 message:"Event successfully added!"
             })
+            return
         }else{
             res.status(409).json({
                 successful:false,
                 message:"Event already present!"
             })
+            return
         }
     } catch (error) {
         res.status(500).json({
             successful:false,
             message:"Server error in adding event - failed! "+ error
         })
+        return
     }
 }
 
@@ -72,6 +78,7 @@ export async function rimuovi_evento(req:Request,res:Response) {
             successful: false,
             message: "Request denied!"
         })
+        return
     }
 
     try {
@@ -81,11 +88,13 @@ export async function rimuovi_evento(req:Request,res:Response) {
             successful:true,
             message:"Event successfully deleted or not present!"
         })
+        return
     } catch (error) {
         res.status(500).json({
             successful:false,
             message:"Server error in event elimination - failed!"
         })
+        return
     }
 }
 
@@ -98,10 +107,12 @@ export async function get_all_eventi(req:Request,res:Response) {
             eventi:eventi,
             message:"Event successfully deleted or not present!"
         })
+        return
     } catch (error) {
         res.status(500).json({
             successful:false,
             message:"Server error in showing events - failed!"
         })
+        return
     }
 }

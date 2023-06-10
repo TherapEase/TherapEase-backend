@@ -40,20 +40,23 @@ export async function associazione(req:Request,res:Response) {
             res.status(404).json({
                 successful: false,
                 message: "User not found!"
-            })   
+            })  
+            return 
         }
         if(cliente.ruolo!=1 || terapeuta.ruolo!=2){
             res.status(403).json({
                 successful: false,
                 message: "Invalid role!"
             })
+            return
         }
 
         if(terapeuta.associati.length>=(terapeuta.limite_clienti as number)){
             res.status(409).json({
                 successful: false,
                 message: "Therapist full, impossible association!"
-            })  
+            }) 
+            return 
         }
 
 
@@ -72,6 +75,7 @@ export async function associazione(req:Request,res:Response) {
                 successful:false,
                 message: "Client and therapist already associated!"
             })
+            return
         }
 
         //pulisce l'asssociazione precedente dal terapeuta precedente
@@ -81,6 +85,7 @@ export async function associazione(req:Request,res:Response) {
                 successful: false,
                 message: "Server error in association - failed!"
             })
+            return
         }
         
         /**
@@ -98,6 +103,7 @@ export async function associazione(req:Request,res:Response) {
                 successful: false,
                 message: "Server error in association - failed!"
             })
+            return
         }
 
         /**
@@ -124,16 +130,19 @@ export async function associazione(req:Request,res:Response) {
                 successful: false,
                 message: "Server error in association - failed!"
             })
+            return
         }
         res.status(200).json({
             successful:true,
             message:"Association successfully done!" 
         })
+        return
     } catch (err) {
         res.status(500).json({
             successfull:false,
             message:"Server error in association - failed!"
         })
+        return
     }
 }
 
@@ -157,6 +166,7 @@ export async function rimuovi_associazione (req:Request, res:Response){
             successful:false,
             message:"Invalid role!"
         })
+        return
     }
 
     try {
@@ -168,6 +178,7 @@ export async function rimuovi_associazione (req:Request, res:Response){
                 successful:false,
                 message:"User not found!"
             })
+            return
         }
         cliente = await Cliente.findOneAndUpdate({_id:id_cliente, associato:id_terapeuta},{associato:""},{new:true}).exec()
         terapeuta = await Terapeuta.findOneAndUpdate({_id:id_terapeuta, associati:id_cliente},{$pull:{associati:id_cliente}},{new:true}).exec()
@@ -177,11 +188,13 @@ export async function rimuovi_associazione (req:Request, res:Response){
             successful:true,
             message:"Association successfully removed!"
         })
+        return
     } catch (error) {
         res.status(500).json({
             successful:false,
             message:"Server error in association removal - failed!"
         })
+        return
     }
 }
 
@@ -191,6 +204,7 @@ export async function get_all_associati(req:Request,res:Response) {
             successful:false,
             message:"Invalid role!"
         })
+        return
     }
     
     
@@ -203,10 +217,12 @@ export async function get_all_associati(req:Request,res:Response) {
             message:"Therapist's client catalog retrieved successfully!",
             catalogo: catalogo_associati
         })
+        return
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in client catalog - failed!"
         })
+        return
     }
 }

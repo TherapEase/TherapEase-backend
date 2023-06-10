@@ -13,6 +13,7 @@ export async function crea_slot_seduta(req:Request,res:Response) {
             successful: false,
             message: "Request denied!"
         })
+        return
     }
 
     // controllo presenza campi
@@ -23,12 +24,14 @@ export async function crea_slot_seduta(req:Request,res:Response) {
             successful: false,
             message: "Not enough arguments!"
         })
+        return
     }
     else if((new Date(data).getTime()<=Date.now())==true){
         res.status(400).json({
             successful:false,
             message:"Cannot create a seduta in the past!"
         })
+        return
     }
 
 
@@ -53,17 +56,20 @@ export async function crea_slot_seduta(req:Request,res:Response) {
                 successful: true,
                 message: "Slot successfully created!"
             })
+            return
         }else{
             res.status(409).json({
                 successful: false,
                 message: "Slot already present!"
             })
+            return
         }
     }catch(err){
         res.status(500).json({
             successful: false,
             message: "Server error in slot creation - failed!"
         })
+        return
     }
 }
 
@@ -74,6 +80,7 @@ export async function elimina_slot_seduta(req:Request,res:Response) {
             successful: false,
             message: "Request denied!"
         })
+        return
     }
 
     // controllo presenza campi
@@ -83,6 +90,7 @@ export async function elimina_slot_seduta(req:Request,res:Response) {
             successful: false,
             message: "Not enough arguments!"
         })
+        return
     }
 
     try{
@@ -92,6 +100,7 @@ export async function elimina_slot_seduta(req:Request,res:Response) {
                 successful: false,
                 message: "Element doesn’t exist or can’t be removed!"
             })
+            return
         }else{
             if(seduta_presente.cliente!=""){
                 let cliente = await Cliente.findById(seduta_presente.cliente).exec()
@@ -102,12 +111,14 @@ export async function elimina_slot_seduta(req:Request,res:Response) {
                 successful: true,
                 message: "Slot successfully deleted!"
             })
+            return
         }
     }catch(err){
         res.status(500).json({
             successful: false,
             message: "Server error in slot removal - failed!"
         })
+        return
     }
 }
 
@@ -118,6 +129,7 @@ export async function prenota_seduta(req:Request,res:Response) {
             successful: false,
             message: "Request denied!"
         })
+        return
     }
 
     // controllo presenza campi
@@ -127,6 +139,7 @@ export async function prenota_seduta(req:Request,res:Response) {
             successful: false,
             message: "Not enough arguments!"
         })
+        return
     }
     try{
         //nessun terapeuta associato
@@ -136,6 +149,7 @@ export async function prenota_seduta(req:Request,res:Response) {
                 successful: false,
                 message: "No therapist associated!"
             })
+            return
         }
     
         let seduta = await Seduta.findOneAndUpdate({terapeuta:cliente.associato, data:data, cliente:""},{cliente:req.body.loggedUser._id},{new:true})
@@ -144,6 +158,7 @@ export async function prenota_seduta(req:Request,res:Response) {
                 successful: false,
                 message: "Element doesn’t exist or can’t be booked or unbooked!"
             })
+            return
         }else{
             // email conferma prenotazione
             let promemoria_prenotazione = new Date(seduta.data)
@@ -163,12 +178,14 @@ export async function prenota_seduta(req:Request,res:Response) {
                 successful: true,
                 message: "Booking successful!"
             })
+            return
         }
     }catch(err){
         res.status(500).json({
             successful: false,
             message: "Server error in booking - failed!"
         })
+        return
     }
 }
 
@@ -192,6 +209,7 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
             successful: false,
             message: "Request denied!"
         })
+        return
     }
 
     // controllo presenza campi
@@ -201,6 +219,7 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
             successful: false,
             message: "Not enough arguments!"
         })
+        return
     }
 
     try{
@@ -211,6 +230,7 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
                 successful: false,
                 message: "Element doesn’t exist or can’t be booked or unbooked!"
             })
+            return
         }else{
             if(seduta.abilitato==true){
                 // riaccredita gettoni al cliente
@@ -224,12 +244,14 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
                 successful: true,
                 message: "Booking deleted!"
             })
+            return
         }
     }catch(err){
         res.status(500).json({
             successful: false,
             message: "Server error in deleting booked seat - failed!"
         })
+        return
     }
 }
 
@@ -241,18 +263,21 @@ export async function mostra_calendario_completo(req:Request, res:Response){
                 sedute: await Seduta.find({cliente:req.body.loggedUser._id}).exec(),
                 message: "Client calendar successfully shown!"
             })
+            return
         }else if(req.body.loggedUser.ruolo==2){
             res.status(200).json({
                 successful: true,
                 sedute: await Seduta.find({terapeuta:req.body.loggedUser._id}).exec(),
                 message: "Therapist calendar successfully shown!"
             })
+            return
         }
     }catch(err){
         res.status(500).json({
             successful: false,
             message: "Server error in calendar showing- failed!"
         })
+        return
     }
 }
 
@@ -266,18 +291,21 @@ export async function mostra_calendario_disponibili(req:Request, res:Response){
                 sedute: await Seduta.find({cliente:"", terapeuta:cliente.associato}).exec(),
                 message: "Client calendar successfully shown!"
             })
+            return
         }else if(req.body.loggedUser.ruolo==2){
             res.status(200).json({
                 successful: true,
                 sedute: await Seduta.find({terapeuta:req.body.loggedUser._id, cliente:""}).exec(),
                 message: "Therapist calendar successfully shown!"
             })
+            return
         }
     }catch(err){
         res.status(500).json({
             successful: false,
             message: "Server error in calendar showing- failed!"
         })
+        return
     }
 }
 
@@ -289,17 +317,20 @@ export async function mostra_calendario_prenotate(req:Request, res:Response){
                 sedute: await Seduta.find({cliente:req.body.loggedUser._id}).exec(),
                 message: "Client calendar successfully shown!"
             })
+            return
         }else if(req.body.loggedUser.ruolo==2){
             res.status(200).json({
                 successful: true,
                 sedute: await Seduta.find({terapeuta:req.body.loggedUser._id, cliente:{$ne:""}}).exec(),
                 message: "Therapist calendar successfully shown!"
             })
+            return
         }
     }catch(err){
         res.status(500).json({
             successful: false,
             message: "Server error in calendar showing- failed!"
         })
+        return
     }
 }

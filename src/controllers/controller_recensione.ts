@@ -12,6 +12,7 @@ export async function read_recensioni(req:Request,res:Response) {
             successful:false,
             message:"Invalid role!"
         })
+        return
     }
 
     try {
@@ -22,11 +23,13 @@ export async function read_recensioni(req:Request,res:Response) {
             message:"All reviews retrieved successfully",
             catalogo: catalogo_recensioni
         })
+        return
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in review catalog - failed!"+err
         })
+        return
     }
 }
 
@@ -39,6 +42,7 @@ export async function read_my_recensioni(req:Request,res:Response) {
             successful:false,
             message:"Invalid role!"
         })
+        return
     }
     try {
         const catalogo_recensioni =await Recensione.find({recensito:req.body.loggedUser._id}, {}).exec()
@@ -48,11 +52,13 @@ export async function read_my_recensioni(req:Request,res:Response) {
             message:"All reviews retrieved successfully",
             catalogo: catalogo_recensioni
         })
+        return
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in review catalog - failed!"
         })
+        return
     }
 }
 
@@ -64,6 +70,7 @@ export async function scrivi_recensione(req:Request,res:Response) {
             successful:false,
             message:"Invalid role!"
         })
+        return
     }
     try{
         let cliente = await Cliente.findById(req.body.loggedUser._id).exec()    //connessione al db senza try catch, sistemare
@@ -73,6 +80,7 @@ export async function scrivi_recensione(req:Request,res:Response) {
                 successful:false,
                 message:"Client is not associated to a therapist!"
             })
+            return
         }
 
         let terapeuta=await Terapeuta.findById(cliente.associato).exec()   
@@ -82,6 +90,7 @@ export async function scrivi_recensione(req:Request,res:Response) {
                 successful: false,
                 message: "User not found!"
             })
+            return
         }
 
         //controllo presenza campi
@@ -95,6 +104,7 @@ export async function scrivi_recensione(req:Request,res:Response) {
                 successful: false,
                 message: "Not enough arguments!"
             })
+            return
         }
 
         if(voto<1 || voto>5){
@@ -102,6 +112,7 @@ export async function scrivi_recensione(req:Request,res:Response) {
                 successful: false,
                 message: "Invalid ''voto'', must be <5 and >1!"
             })
+            return
         }
 
     
@@ -112,6 +123,7 @@ export async function scrivi_recensione(req:Request,res:Response) {
                 successful: false,
                 message: "Review already present!"
             })
+            return
         }else{
             const schema_recensione= new Recensione<IRecensione>({
                 voto:voto,
@@ -128,11 +140,13 @@ export async function scrivi_recensione(req:Request,res:Response) {
                 successful: true,
                 message: "Review successfully inserted!"
             })
+            return
         }
     }catch(err){
         res.status(500).json({
             successful: false,
             message: "Server error in review creation - failed! "
         })
+        return
     }
 }
