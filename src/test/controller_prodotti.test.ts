@@ -66,7 +66,7 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
         Sessione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
         Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(session_doc)}})
         Sessione.findByIdAndDelete = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        stripe.checkout.sessions.create = jest.fn().mockImplementation((doc)=>{return{exec:jest.fn().mockResolvedValue(null)}}) 
+        stripe.checkout.sessions.create = jest.fn().mockResolvedValue(true) 
     })
     afterEach(()=>{
         jest.restoreAllMocks().clearAllMocks()
