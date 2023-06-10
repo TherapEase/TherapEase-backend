@@ -124,7 +124,8 @@ export async function segnala(req: Request, res: Response) {
                     data: data,
                     gestita: gestita
                 });
-                await schema_segnalazione.save();
+
+                await Segnalazione.create(schema_segnalazione)
                 res.status(200).json({
                     successful: true,
                     message: "Report successfully inserted!"
@@ -166,11 +167,13 @@ export async function segnala(req: Request, res: Response) {
             const data = req.body.data
             const gestita = req.body.gestita
 
+
             if (!segnalato || !testo || !data) {
                 res.status(400).json({
                     successful: false,
                     message: "Not enough arguments!"
                 })
+
             }
             // controllo se esiste già
             let esistente = await Segnalazione.findOne({ segnalato: segnalato, testo: testo, data: data }).exec()
@@ -186,7 +189,9 @@ export async function segnala(req: Request, res: Response) {
                     data: data,
                     gestita: gestita
                 });
-                await schema_segnalazione.save();
+
+                await Segnalazione.create(schema_segnalazione)
+ 
                 res.status(200).json({
                     successful: true,
                     message: "Report successfully inserted!"
