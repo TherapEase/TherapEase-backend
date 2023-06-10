@@ -200,18 +200,15 @@ async function send_confirmation_mail(_id:string, email:string, ruolo:number){
 
 export async function conferma_mail(req:Request, res:Response){
     const ver_token = req.params.ver_token
-    if(!ver_token){
-        res.status(400).json({
-            successful:false,
-            message:"No token provided"
-        })
-    }
-    const decoded = jwt.verify(ver_token,process.env.TOKEN_SECRET) as JwtPayload
-    if(!decoded){
+    let decoded
+    try {
+        decoded = jwt.verify(ver_token,process.env.TOKEN_SECRET) as JwtPayload    
+    } catch (error) {
         res.status(403).json({
             successful:false,
             message:"The provided token isn't valid!"
         })
+        return
     }
     try {
         let utente

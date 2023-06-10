@@ -169,4 +169,16 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
         const res = await request(app).post('/api/v1/conferma_mail/'+ver_token).send()
         expect(res.status).toBe(200)
     })
+    it('POST /conferma_mail/:ver_token senza specificare il token', async()=>{
+        const res = await request(app).post('/api/v1/conferma_mail/').send()
+        expect(res.status).toBe(404)
+    })
+    it('POST /conferma_mail/:ver_token con un token non valido',async()=>{
+        const ver_token= jwt.sign({
+            _id: mario_doc._id
+        },"chiavenonvalida")
+
+        const res = await request(app).post('/api/v1/conferma_mail/'+ver_token).send()
+        expect(res.status).toBe(403)
+    })
 })
