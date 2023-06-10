@@ -1,11 +1,12 @@
 // Importing module
-import express from 'express';
+import express, {Request, Response,NextFunction} from 'express';
 import dotenv from 'dotenv'
 import {defaultRoute} from './routes/routes'
 import bodyParser from 'body-parser';
 import cors from 'cors'
 import { blacklist_cleaner } from './controllers/controller_logout';
 import scheduler from 'node-schedule'
+import db_connect from './services/mongo_connector';
 
   
 export const app = express();
@@ -21,9 +22,8 @@ app.use(express.urlencoded({extended:true}))
 //bodyparser
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded())
-  
-// Handling GET / Request
 
+// Handling GET / Request
 app.use('/api/'+process.env.API_VER,defaultRoute);
 
 const clean_tokens = new scheduler.RecurrenceRule()
@@ -36,7 +36,8 @@ const job = scheduler.scheduleJob(clean_tokens,async function(){
 })
 
 // Server setup
-app.listen(process.env.SERVER_PORT,() => {
+app.listen(process.env.SERVER_PORT,async() => {
+    await db_connect()  //connect to MongoDB
     console.log('The application is listening on port http://localhost:'+process.env.SERVER_PORT);
 })
 
