@@ -102,7 +102,6 @@ export async function leggi_my_diario(req: Request, res: Response) {
             message: "Request denied!"
         })
         return
-
     }
     try {
         let diario = await Pagina.find({ cliente: req.body.loggedUser._id }, 'data testo').exec()
@@ -113,7 +112,6 @@ export async function leggi_my_diario(req: Request, res: Response) {
             pagine: diario
         })
         return
-
     }
     catch (err) {
         res.status(500).json({
@@ -121,7 +119,6 @@ export async function leggi_my_diario(req: Request, res: Response) {
             message: "Server error in page reading - failed"
         })
         return
-
     }
 }
 
@@ -134,7 +131,6 @@ export async function leggi_diario_cliente(req: Request, res: Response) {
             message: "Request denied!"
         })
         return
-
     }
     try {
         const terapeuta = await Terapeuta.findOne({ _id: req.body.loggedUser._id }).exec()
@@ -144,7 +140,6 @@ export async function leggi_diario_cliente(req: Request, res: Response) {
                 message: "Request denied!"
             })
             return
-
         }
         let diario = await Pagina.find({ cliente: id_cliente_associato }, 'data testo').exec()
 
@@ -154,6 +149,7 @@ export async function leggi_diario_cliente(req: Request, res: Response) {
             pagine: diario
         })
         return
+        return
     }
     catch (err) {
         res.status(500).json({
@@ -161,7 +157,6 @@ export async function leggi_diario_cliente(req: Request, res: Response) {
             message: "Server error in page reading - failed"
         })
         return
-
     }
 }
 
@@ -176,7 +171,6 @@ export async function modifica_pagina(req: Request, res: Response) {
             message: "Request denied!"
         })
         return
-
     }
 
     if (!data || !req.body.testo) {
@@ -185,7 +179,6 @@ export async function modifica_pagina(req: Request, res: Response) {
             message: "Not enough arguments!"
         })
         return
-
     }
 
     try {
@@ -197,7 +190,6 @@ export async function modifica_pagina(req: Request, res: Response) {
                 message: "Page does not exist!"
             })
             return
-
         }
 
         let updated_data = {
@@ -209,14 +201,12 @@ export async function modifica_pagina(req: Request, res: Response) {
             message: "Page updated successfully!"
         })
         return
-
     } catch (err) {
         res.status(500).json({
             successful: false,
             message: "Server error in updating page - failed!"
         })
         return
-
     }
 }
 
@@ -232,7 +222,6 @@ export async function elimina_pagina(req: Request, res: Response) {
             message: "Request denied!"
         })
         return
-
     }
 
     if (!data) {
@@ -240,6 +229,7 @@ export async function elimina_pagina(req: Request, res: Response) {
             successful: false,
             message: "Not enough arguments!"
         })
+        return
     }
 
 
@@ -252,7 +242,6 @@ export async function elimina_pagina(req: Request, res: Response) {
                 message: "Page does not exist!"
             })
             return
-
         }
         const pagina_diario = await Diario.findOneAndUpdate({ cliente: req.body.loggedUser._id }, { $pull: { pagine: pagina._id } }, { new: true }).exec()
         console.log(pagina_diario)
@@ -261,13 +250,11 @@ export async function elimina_pagina(req: Request, res: Response) {
             message: "Page deleted successfully!"
         })
         return
-
     } catch (err) {
         res.status(500).json({
             successful: false,
             message: "Server error in deleting page - failed!"
         })
         return
-
     }
 }

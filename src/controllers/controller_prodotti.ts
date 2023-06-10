@@ -55,7 +55,6 @@ export async function inserisci_prodotto(req:Request,res:Response){
             message: "Server error in product creation - failed!"
         })
         return
-
     }
 };
 
@@ -86,8 +85,7 @@ export async function rimuovi_prodotto(req:Request,res:Response){
                 successful: true,
                 message: "Product successfully deleted!"
             })
-        return
-
+            return
         }
     }catch(err){
         res.status(500).json({
@@ -106,13 +104,13 @@ export async function get_prodotti(req:Request,res:Response){
             message:"Product catalog retrieved successfully!",
             catalogo: catalogo_prodotti
         })
+        return
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in product catalog - failed!"
         })
         return
-        
     }
 };
 
@@ -131,7 +129,6 @@ export async function checkout(req:Request,res:Response){
             message: "Request denied!"
         })
         return
-
     }
     
     try {
@@ -143,7 +140,6 @@ export async function checkout(req:Request,res:Response){
                 message: "Element doesn’t exist!"
             })
             return
-
         }
 
         const sessione_to_save= new Sessione<ISessione> ({
@@ -176,14 +172,12 @@ export async function checkout(req:Request,res:Response){
             message:"Successful redirect to checkout!"
         })
         return
-
     } catch (err) {
         res.status(500).json({
             successful:false,
             message:"Server error in redirect - failed!"
         })
         return
-
     }
 }
 
@@ -197,9 +191,8 @@ export async function checkout_success(req:Request,res:Response){
             res.status(409).json({
                 successful: false,
                 message: "Element doesn’t exist!"
-            }).redirect(process.env.DEPLOY_FRONT+"/profilo")//da cambiare
+            }).redirect(process.env.DEPLOY_FRONT+"/profilo")
             return
-
         }
 
         aggiungi_gettoni(presente.id_cliente, presente.n_gettoni)
@@ -208,7 +201,7 @@ export async function checkout_success(req:Request,res:Response){
         res.status(200).json({
             successful:true,
             message:"Gettoni aggiunti!"
-        }).redirect(process.env.DEPLOY_FRONT+"/profilo")//da cambiare
+        }).redirect(process.env.DEPLOY_FRONT+"/profilo")
         return
     } catch (err) {
         res.status(500).json({

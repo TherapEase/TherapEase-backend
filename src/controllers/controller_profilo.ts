@@ -178,7 +178,6 @@ export async function get_profilo(req:Request, res:Response) {
                 message: "Request denied!"
             })
             return
-            
         }
         res.status(200).json({
             successful:true,

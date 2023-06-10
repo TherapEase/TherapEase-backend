@@ -19,14 +19,12 @@ export async function logout(req:Request,res:Response) {
             message:"Logout successfully executed!"
         })
         return
-
     } catch (error) {
         res.status(500).json({
             successful:false,
             message:"Server error in logout - failed!"
         })
         return
-
     }
 }
 

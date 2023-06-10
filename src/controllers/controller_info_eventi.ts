@@ -29,11 +29,10 @@ export async function aggiungi_evento(req: Request, res: Response) {
     // controllo che la data sia nel futuro
     if (new Date(data).getTime() <= Date.now()) {
         res.status(409).json({
-            successful: false,
-            message: "Cannot add an event in the past!"
-        })
+            successful:false,
+            message:"Cannot add an event in the past!"
+        }) 
         return
-
     }
 
     try {
@@ -55,14 +54,12 @@ export async function aggiungi_evento(req: Request, res: Response) {
                 message: "Event successfully added!"
             })
             return
-
-        } else {
+        }else{
             res.status(409).json({
                 successful: false,
                 message: "Event already present!"
             })
             return
-
         }
     } catch (error) {
         res.status(500).json({
@@ -70,7 +67,6 @@ export async function aggiungi_evento(req: Request, res: Response) {
             message: "Server error in adding event - failed! " + error
         })
         return
-
     }
 }
 
@@ -83,7 +79,6 @@ export async function rimuovi_evento(req: Request, res: Response) {
             message: "Request denied!"
         })
         return
-
     }
 
     try {
@@ -94,14 +89,12 @@ export async function rimuovi_evento(req: Request, res: Response) {
             message: "Event successfully deleted or not present!"
         })
         return
-
     } catch (error) {
         res.status(500).json({
             successful: false,
             message: "Server error in event elimination - failed!"
         })
         return
-
     }
 }
 
@@ -115,13 +108,11 @@ export async function get_all_eventi(req: Request, res: Response) {
             message: "Event successfully deleted or not present!"
         })
         return
-
     } catch (error) {
         res.status(500).json({
             successful: false,
             message: "Server error in showing events - failed!"
         })
         return
-
     }
 }

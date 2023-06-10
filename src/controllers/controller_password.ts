@@ -22,7 +22,6 @@ export async function recupero_password(req: Request, res: Response) {
             message: "Please specify all fields"
         })
         return
-
     }
 
     try {
@@ -33,7 +32,6 @@ export async function recupero_password(req: Request, res: Response) {
                 message: "User not found!"
             })
             return
-
         }
 
         const new_password = generator.generate({
@@ -57,7 +55,6 @@ export async function recupero_password(req: Request, res: Response) {
                 message: "User not found!"
             })
             return
-
         }
 
         send_mail("CAMBIO PASSWORD", "La tua nuova password è " + new_password, utente_completo.email.toString())
@@ -73,7 +70,6 @@ export async function recupero_password(req: Request, res: Response) {
             message: "Server error in password recovery - failed!"
         })
         return
-
     }
 }
 
@@ -87,7 +83,6 @@ export async function cambio_password(req: Request, res: Response) {
                 message: "Password not specified!"
             })
             return
-
         }
         let utente = await Utente.findById(req.body.loggedUser._id).exec()
         if (await bcrypt.compare(password, utente.password.toString())) {
@@ -96,7 +91,6 @@ export async function cambio_password(req: Request, res: Response) {
                 message: "The password provided is the same as the old one"
             })
             return
-
         }
         let hashed_password = await check_and_hash(password)
         //ricerco l'utente ed inserisco la password hashata
@@ -107,13 +101,11 @@ export async function cambio_password(req: Request, res: Response) {
             message: "Password successfully changed!"
         })
         return
-
     } catch (error) {
         res.status(500).json({
             successful: false,
             message: "Server error in password change - failed!"
         })
         return
-
     }
 }
