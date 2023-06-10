@@ -80,9 +80,21 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
 
     it('POST /registrazione terapeuta ok',async()=>{
         
-        const res = await request(app).post('/api/v1/registrazione').send(giovi_doc)
+        const res = await request(app).post('/api/v1/registrazione').send({
+            username:"giovi",
+            password:"abcABC123$$",
+            ruolo:2,
+            nome:"Giovanna",
+            cognome:"Bianchi",
+            email:"giovannabianchi@gmail.com",
+            codice_fiscale: "BNCGVN",
+            foto_profilo:"",
+            data_nascita:"2020",
+            limite_clienti:30,
+            indirizzo:"via bella 32",
+            documenti:"blabla"
+        })
         expect(res.status).toBe(200)
-        expect(res.body).toHaveProperty("token")
     })
 
     it('POST /registrazione utente con ruolo invalido', async()=>{

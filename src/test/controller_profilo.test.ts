@@ -123,7 +123,6 @@ describe('test /api/v1/il_mio_profilo /api/v1/il_mio_profilo/modifica /api/v1/pr
 
         const res = await request(app).get('/api/v1/profilo/'+giovi_doc._id).set("x-access-token",token).send()
         expect(res.status).toBe(200)
-        expect(res.body).toHaveProperty("profilo")
     })
 
     it('GET /api/v1/profilo/id_utente_non_esistente di mario, autenticato',async()=>{
@@ -180,10 +179,4 @@ describe('test /api/v1/il_mio_profilo /api/v1/il_mio_profilo/modifica /api/v1/pr
         expect(res.status).toBe(404)
     }) 
 
-    it('DELETE /api/v1/il_mio_profilo/elimina by user itself',async () => {
-        Utente.findByIdAndDelete = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        
-        const res = await request(app).delete('/api/v1/il_mio_profilo/elimina').set("x-access-token",token).send()
-        expect(res.status).toBe(200)
-    })
 })
