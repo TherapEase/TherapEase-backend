@@ -121,7 +121,7 @@ export async function scrivi_recensione(req:Request,res:Response) {
                 recensito:recensito
             });
             // salva nel db e aggiungi recensione al terapeuta
-            await schema_recensione.save();
+            await Recensione.create(schema_recensione)
             await Terapeuta.findByIdAndUpdate({_id:terapeuta._id}, {$push:{recensioni:schema_recensione._id.toString()}}) 
             
             res.status(200).json({

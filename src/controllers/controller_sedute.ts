@@ -1,5 +1,5 @@
 import { Request,Response } from 'express'
-import {Cliente} from '../schemas/cliente_schema'
+import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
 import { Seduta, ISeduta } from '../schemas/seduta_schema'
 import scheduler from 'node-schedule'
@@ -45,7 +45,7 @@ export async function crea_slot_seduta(req:Request,res:Response) {
                 indirizzo: presenza?terapeuta.indirizzo:""
             })
             
-            await seduta_schema.save();
+            await Seduta.create(seduta_schema)
 
             res.status(200).json({
                 successful: true,
@@ -155,7 +155,7 @@ export async function prenota_seduta(req:Request,res:Response) {
             }.bind(null,seduta))
 
             // togli gettone
-            aggiungi_gettoni(req.body.loggedUser._id, -1)
+            await aggiungi_gettoni(req.body.loggedUser._id, -1)
 
             res.status(200).json({
                 successful: true,
@@ -175,7 +175,7 @@ export async function remove_prenotazioni_if_disassociato(id_cliente:string, id_
         let sedute_modificate=await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta, abilitato:true},{cliente:""}).exec()
         
         // riaccredita gettoni pari al numero di sedute annullate, ancora annullabili
-        aggiungi_gettoni(id_cliente, sedute_modificate.modifiedCount)
+        await aggiungi_gettoni(id_cliente, sedute_modificate.modifiedCount)
         await Seduta.updateMany({cliente:id_cliente, terapeuta:id_terapeuta},{cliente:""}).exec()
     }catch(err){
         return false
@@ -212,7 +212,7 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
         }else{
             if(seduta.abilitato==true){
                 // riaccredita gettoni al cliente
-                aggiungi_gettoni(req.body.loggedUser._id, 1)
+                await aggiungi_gettoni(req.body.loggedUser._id, 1)
             }
             // email di conferma annullamento
             let cliente = await Cliente.findById(seduta.cliente).exec() 

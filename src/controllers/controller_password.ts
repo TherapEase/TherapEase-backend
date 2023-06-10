@@ -2,9 +2,9 @@ import {Request,Response} from 'express'
 import bcrypt from 'bcrypt'
 import generator from 'generate-password'
 
-import {Utente,IUtente} from '../schemas/utente_schema'
-import {Cliente, ICliente} from '../schemas/cliente_schema'
-import { Terapeuta,ITerapeuta } from '../schemas/terapeuta_schema'
+import { Utente } from '../schemas/utente_schema'
+import { Cliente } from '../schemas/cliente_schema'
+import { Terapeuta } from '../schemas/terapeuta_schema'
 
 import { check_and_hash } from '../services/password_hasher'
 import { send_mail } from '../services/gmail_connector'

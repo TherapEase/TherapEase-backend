@@ -134,7 +134,6 @@ export async function checkout(req:Request,res:Response){
         await Sessione.create(sessione_to_save)
 
         const stripe = require('stripe')(process.env.SK_STRIPE);
-        console.log("stripe begin")
         const session=await stripe.checkout.sessions.create({
             payment_method_types:['card'],
             mode: 'payment', //one time payment

@@ -186,7 +186,7 @@ export async function get_profilo(req:Request, res:Response) {
 export async function get_all_clienti(req:Request,res:Response) {
     try {
         const catalogo_clienti=await Cliente.find({ruolo:1}, 'nome cognome foto_profilo')
-        // console.log(catalogo_terapeuti)
+        
         res.status(200).json({
             successful:true,
             message:"Client catalog retrieved successfully!",
