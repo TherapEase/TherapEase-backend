@@ -1,9 +1,8 @@
 import {Request,Response,NextFunction} from 'express'
 import jwt, { JwtPayload } from 'jsonwebtoken'
-import dotenv from 'dotenv'
-import { isBlacklisted } from './controller_logout'
+import { isBlacklisted } from '../controllers/controller_logout'
 import mongoose from 'mongoose'
-import {Utente,IUtente} from '../schemas/utente_schema'
+import {Utente} from '../schemas/utente_schema'
 
 export async function tokenCheck(req:Request,res:Response,next:NextFunction) {
     //controllare esistenza utente e che ruolo sia valido
