@@ -7,11 +7,8 @@ import { Terapeuta } from '../schemas/terapeuta_schema'
 import { Utente } from '../schemas/utente_schema'
 import { createToken } from '../controllers/controller_auth'
 import { JWTToken } from '../schemas/token_schema'
-import { Seduta } from '../schemas/seduta_schema'
-import { prenota_seduta } from '../controllers/controller_sedute'
 import { Pagina } from '../schemas/pagina_schema'
 import { Diario } from '../schemas/diario_schema'
-import { diario_router } from '../routes/router_diario'
 
 describe('test diario', () => {
     let mario_doc: any

@@ -7,7 +7,6 @@ import { Terapeuta } from '../schemas/terapeuta_schema'
 import { Utente } from '../schemas/utente_schema'
 import { createToken } from '../controllers/controller_auth'
 import { JWTToken } from '../schemas/token_schema'
-import { Segnalazione } from '../schemas/segnalazione_schema'
 import { Recensione } from '../schemas/recensione_schema'
 
 describe('GET /api/v1/recensioni_associato/:id /api/v1/le_mie_recensioni /recensioni/:id', ()=>{

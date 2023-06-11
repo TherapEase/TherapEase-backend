@@ -7,21 +7,6 @@ import { Terapeuta } from '../schemas/terapeuta_schema'
 import { send_mail } from '../services/gmail_connector'
 
 export async function registrazione(req:Request,res:Response) {
-    /* STRUTTURA RICHIESTA: utente base
-    *  username: string
-    *  password :string
-    *  ruolo: num
-    *  nome: string
-    *  cognome: string
-    *  email: string
-    *  codice_fiscale: string
-    *  foto_profilo: Image
-    *  data_nascita: Date
-    *               SOLO PER IL TERAPEUTA
-    *  documenti: string[]
-    *  limite_clienti: num
-    *  indirizzo:string
-    */
 
    const username=req.body.username
    const password=req.body.password

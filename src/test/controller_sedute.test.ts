@@ -8,7 +8,6 @@ import { Utente } from '../schemas/utente_schema'
 import { createToken } from '../controllers/controller_auth'
 import { JWTToken } from '../schemas/token_schema'
 import { Seduta } from '../schemas/seduta_schema'
-import { prenota_seduta } from '../controllers/controller_sedute'
 
 describe('test sedute', () => {
     let mario_doc: any

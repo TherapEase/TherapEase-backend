@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose"
 
 export interface IProdotto{
     nome:string;
-    prezzo: number; //accetta anche numeri decimali
+    prezzo: number; 
     n_gettoni: number
 };
 

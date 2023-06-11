@@ -1,37 +1,14 @@
 import request from 'supertest'
 import { app } from '../server'
 import { describe } from 'node:test'
-import { Utente, IUtente } from '../schemas/utente_schema'
+import { Utente } from '../schemas/utente_schema'
 import mongoose from 'mongoose'
 import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
-        /**
-         * 
-         * Le query vengono eseguite come Utente.findOne(...).exec() ciò significa che:
-         *  findOne deve avere un campo exec
-         *  il campo exec corrisponde ad exec() e ritorna una promise con i valori
-         * 
-         *  quindi bisogna dare una finta implementazione a findOne in cui viene restituito exec
-         *  exec a sua volta viene fintamente implementato restituendo la promise
-         * 
-         */
-
 
 describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
-    /**
-     * Su <BASE>/registrazione inserisci i dati richiesti, ovvero
-     *  {username: "mario_rossi",
-     *  password:"abcABC123$",
-     *  email:"mario.rossi@gmail.com",
-     *  nome:"mario", cognome:"rossi",
-     *  cf:"RSSMRA70A01H501S", data_nascita:"01/01/1970",
-     *  ruolo:"1"}
-     * 
-     *  mario rossi non deve essere registrato
-     * 
-     *  il provesso termina HTTP 200 OK e viene restituito un token
-     */
+
     let mario_doc:any
     let giovi_doc:any
     beforeEach(async()=>{

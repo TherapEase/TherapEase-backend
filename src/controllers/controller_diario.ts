@@ -244,7 +244,6 @@ export async function elimina_pagina(req: Request, res: Response) {
             return
         }
         const pagina_diario = await Diario.findOneAndUpdate({ cliente: req.body.loggedUser._id }, { $pull: { pagine: pagina._id } }, { new: true }).exec()
-        console.log(pagina_diario)
         res.status(200).json({
             successful: true,
             message: "Page deleted successfully!"

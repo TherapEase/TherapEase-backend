@@ -6,10 +6,10 @@ import mongoose from 'mongoose'
 import { createToken } from '../controllers/controller_auth'
 import { JWTToken } from '../schemas/token_schema'
 import { Prodotto } from '../schemas/prodotto_schema'
-import { Session } from 'node:inspector'
+
 import { Sessione } from '../schemas/sessione_stripe_schema'
 import { Cliente } from '../schemas/cliente_schema'
-import { Seduta } from '../schemas/seduta_schema'
+
 const stripe = require('stripe')(process.env.SK_STRIPE);
 
 describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/catalogo_prodotti',()=>{

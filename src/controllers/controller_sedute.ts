@@ -38,7 +38,6 @@ export async function crea_slot_seduta(req:Request,res:Response) {
     try{
         //controllo che non sia già presente
         let seduta_presente = await Seduta.findOne({data:data, terapeuta:req.body.loggedUser._id}).exec()
-        console.log(seduta_presente)
         if(!seduta_presente){
             let terapeuta= await Terapeuta.findById(req.body.loggedUser._id).exec()
             //inserisco
