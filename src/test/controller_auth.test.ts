@@ -99,6 +99,7 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
             documenti:"a"
         })
         expect(res.status).toBe(200)
+        expect(res.body).toHaveProperty("token")
     })
 
     it('POST /registrazione utente con ruolo invalido', async()=>{
