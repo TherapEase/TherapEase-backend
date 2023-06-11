@@ -162,8 +162,8 @@ export async function checkout(req:Request,res:Response){
                 },
                 quantity: 1,
             }],
-            success_url: process.env.DEPLOY_FRONT+"checkout_succ?id="+sessione_to_save._id,
-            cancel_url: process.env.DEPLOY_FRONT+"checkout_fail?id="+sessione_to_save._id,
+            success_url: process.env.DEPLOY_FRONT+"/checkout_succ?id="+sessione_to_save._id,
+            cancel_url: process.env.DEPLOY_FRONT+"/checkout_fail?id="+sessione_to_save._id,
         })
 
         res.status(200).json({
@@ -175,8 +175,9 @@ export async function checkout(req:Request,res:Response){
     } catch (err) {
         res.status(500).json({
             successful:false,
-            message:"Server error in redirect - failed!"
+            message:"Server error in redirect - failed!" 
         })
+        console.log(err)
         return
     }
 }
