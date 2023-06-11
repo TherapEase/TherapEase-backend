@@ -171,7 +171,16 @@ export async function prenota_seduta(req:Request,res:Response) {
             }.bind(null,seduta))
 
             // togli gettone
-            await aggiungi_gettoni(req.body.loggedUser._id, -1)
+            if(cliente.n_gettoni as number>0){
+                await aggiungi_gettoni(req.body.loggedUser._id, -1)
+            }else{
+                res.status(409).json({
+                    successful: false,
+                    message: "Not enought gettoni"
+                })
+                return
+            }
+            
 
             res.status(200).json({
                 successful: true,
