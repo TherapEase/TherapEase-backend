@@ -29,7 +29,8 @@ describe('test sedute', () => {
             codice_fiscale: "RSSMRA",
             foto_profilo: "",
             data_nascita: "2020",
-            associato: "321"
+            associato: "321",
+            n_gettoni:1
         }
         giovi_doc = {
             _id: "321",

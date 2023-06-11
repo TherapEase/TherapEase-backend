@@ -150,44 +150,47 @@ export async function prenota_seduta(req:Request,res:Response) {
             })
             return
         }
-    
-        let seduta = await Seduta.findOneAndUpdate({terapeuta:cliente.associato, data:data, cliente:""},{cliente:req.body.loggedUser._id},{new:true})
-        if(!seduta){
-            res.status(409).json({
-                successful: false,
-                message: "Element doesn’t exist or can’t be booked or unbooked!"
-            })
-            return
-        }else{
-            // email conferma prenotazione
-            let promemoria_prenotazione = new Date(seduta.data)
-            promemoria_prenotazione.setDate(promemoria_prenotazione.getDate()-1)
-        
-            const job = scheduler.scheduleJob(promemoria_prenotazione,async function(seduta:ISeduta) {
-                //mail di promemoria
-                await send_mail("Promemoria Prenotazione","Le ricordiamo la sua prenotazione in data: "+seduta.data,cliente.email.toString())
-                //set annullabile a false
-                await Seduta.findOneAndUpdate({data:seduta.data,terapeuta:seduta.terapeuta},{abilitato:false}).exec()
-            }.bind(null,seduta))
-
-            // togli gettone
-            if(cliente.n_gettoni as number>0){
-                await aggiungi_gettoni(req.body.loggedUser._id, -1)
-            }else{
+        if(cliente.n_gettoni as number>0){
+            let seduta = await Seduta.findOneAndUpdate({terapeuta:cliente.associato, data:data, cliente:""},{cliente:req.body.loggedUser._id},{new:true})
+            if(!seduta){
                 res.status(409).json({
                     successful: false,
-                    message: "Not enought gettoni"
+                    message: "Element doesn’t exist or can’t be booked or unbooked!"
+                })
+                return
+            }else{
+                // email conferma prenotazione
+                let promemoria_prenotazione = new Date(seduta.data)
+                promemoria_prenotazione.setDate(promemoria_prenotazione.getDate()-1)
+            
+                const job = scheduler.scheduleJob(promemoria_prenotazione,async function(seduta:ISeduta) {
+                    //mail di promemoria
+                    await send_mail("Promemoria Prenotazione","Le ricordiamo la sua prenotazione in data: "+seduta.data,cliente.email.toString())
+                    //set annullabile a false
+                    await Seduta.findOneAndUpdate({data:seduta.data,terapeuta:seduta.terapeuta},{abilitato:false}).exec()
+                }.bind(null,seduta))
+    
+                // togli gettone
+               
+                await aggiungi_gettoni(req.body.loggedUser._id, -1)
+        
+                
+    
+                res.status(200).json({
+                    successful: true,
+                    message: "Booking successful!"
                 })
                 return
             }
-            
-
-            res.status(200).json({
-                successful: true,
-                message: "Booking successful!"
+        }else{
+            res.status(409).json({
+                successful: false,
+                message: "Mot enought gettoni"
             })
             return
         }
+    
+        
     }catch(err){
         res.status(500).json({
             successful: false,
