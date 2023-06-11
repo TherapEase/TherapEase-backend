@@ -1,6 +1,6 @@
 import request from 'supertest'
 import { app } from '../server'
-import { describe } from 'node:test'
+// import { describe } from 'node:test'
 import { Utente } from '../schemas/utente_schema'
 import mongoose from 'mongoose'
 import { createToken } from '../controllers/controller_auth'
@@ -75,7 +75,7 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
  
 
     it('POST /api/v1/prodotto/inserisci da parte di un admin autenticato', async()=>{
-        Utente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+        Utente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
 
         const res = await request(app).post('/api/v1/prodotto/inserisci').set("x-access-token", token_a).send({
             nome:"test1",
@@ -86,7 +86,7 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
     })
 
     it('POST /api/v1/prodotto/inserisci da parte di un utente autenticato NON admin', async()=>{
-        Utente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+        Utente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
 
         const res = await request(app).post('/api/v1/prodotto/inserisci').set("x-access-token", token).send({
             nome:"test1",
@@ -97,7 +97,7 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
     })
 
     it('POST /api/v1/prodotto/inserisci da parte di un admin autenticato + richiesta non completa', async()=>{
-        Utente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+        Utente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
 
         const res = await request(app).post('/api/v1/prodotto/inserisci').set("x-access-token", token_a).send({
             nome:"test1",
@@ -107,7 +107,7 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
     })
 
     it('POST /api/v1/prodotto/inserisci da parte di un admin + prodotto gia esistente', async()=>{
-        Utente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+        Utente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
         Prodotto.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(prodotto_doc)}})
         
         const res = await request(app).post('/api/v1/prodotto/inserisci').set("x-access-token", token_a).send({
@@ -166,14 +166,13 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
 
     it('POST /api/prodotto/checkout_success/:id token corretto',async() => {
         Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        Cliente.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Cliente.findOneAndUpdate = jest.fn().mockImplementation((criteria,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
         const res = await request(app).post('/api/v1/prodotto/checkout_success/'+session_doc._id).send()
         expect(res.status).toBe(200)
     })
 
     it('POST /api/prodotto/checkout_success/:id elemento non esistente',async() => {
         Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        Response.redirect = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
 
         const res = await request(app).post('/api/v1/prodotto/checkout_success/'+"8888").send()
         expect(res.status).toBe(409)

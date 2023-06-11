@@ -36,7 +36,7 @@ describe("test /api/v1/cambio_password",()=>{
     })
 
     it('POST /api/v1/cambio_password di un utente autenticato con nuova password',async()=>{
-        Utente.findByIdAndUpdate=jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Utente.findByIdAndUpdate=jest.fn().mockImplementation((_id, update)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
 
         const res = await request(app).post('/api/v1/cambio_password/').set("x-access-token",token).send({
             password:"AAA1b3CCC$"
