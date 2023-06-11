@@ -13,12 +13,9 @@ import { JWTToken } from '../schemas/token_schema'
 
 
 
-describe('test diario', () => {
+describe('logout tests', () => {
     let mario_doc: any
     let giovi_doc: any
-    // let diario_doc: any
-    // let seduta_doc: any
-    // let pagina_doc: any
 
     let token = createToken("123", "mario_rossi", 1)
     let token_g = createToken("321", "giovi", 2)
@@ -52,30 +49,6 @@ describe('test diario', () => {
             associati: ["123"]
         }
 
-        // seduta_doc = {
-        //     data: "2023-06-30T12:00:00.000+00:00",
-        //     presenza: true
-        // }
-
-
-
-        // pagina_doc = {
-        //     _id: "11",
-        //     data: "2023-05-30T12:00:00.000+00:00",
-        //     testo: "ciao",
-
-        // }
-
-        // diario_doc = {
-        //     _id: "1",
-        //     pagine: ["11", "22"],
-        //     cliente: "123"
-        // }
-
-
-
-
-
         mongoose.connect = jest.fn().mockImplementation((conn_string) => Promise.resolve(true)) //bypass del connect
         JWTToken.create = jest.fn().mockImplementation(() => Promise.resolve(true))
         
@@ -89,33 +62,23 @@ describe('test diario', () => {
                 })
             }
         })
-
-
-
-        // Seduta.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
-        // Terapeuta.findById = jest.fn().mockImplementation((_id, filter) => { return { exec: jest.fn().mockResolvedValue(giovi_doc) } })
-
-
     })
-
-
-
     afterEach(() => {
         jest.restoreAllMocks().clearAllMocks()
     })
 
 
 
-    it('POST /api/v1/logout con profilo cliente', async () => {
+    it('DELETE /api/v1/logout con profilo cliente', async () => {
         
-        const res = await request(app).post('/api/v1/logout').set("x-access-token", token).send()
+        const res = await request(app).delete('/api/v1/logout').set("x-access-token", token).send()
         expect(res.status).toBe(200)
         expect(res.body.successful).toBe(true)
     })
 
-    it('POST /api/v1/logout senza essere loggati', async () => {
+    it('DELETE /api/v1/logout senza essere loggati', async () => {
         
-        const res = await request(app).post('/api/v1/logout').send()
+        const res = await request(app).delete('/api/v1/logout').send()
         expect(res.status).toBe(400)
         expect(res.body.successful).toBe(false)
     })

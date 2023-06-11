@@ -80,14 +80,7 @@ describe('test sedute', () => {
                 })
             }
         })
-        Seduta.create = jest.fn().mockImplementation((doc) => Promise.resolve(true)) //bypass della create
-
-
-
-        // Seduta.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
-        // Terapeuta.findById = jest.fn().mockImplementation((_id, filter) => { return { exec: jest.fn().mockResolvedValue(giovi_doc) } })
-
-
+        Seduta.create = jest.fn().mockImplementation((doc) => Promise.resolve(true))
     })
 
 

@@ -162,8 +162,8 @@ export async function checkout(req:Request,res:Response){
                 },
                 quantity: 1,
             }],
-            success_url: process.env.DEPLOY_BACK+"prodotto/checkout_success/"+sessione_to_save._id,
-            cancel_url: process.env.DEPLOY_BACK+"prodotto/checkout_failed/"+sessione_to_save._id,
+            success_url: process.env.DEPLOY_FRONT+"/checkout_succ?id="+sessione_to_save._id,
+            cancel_url: process.env.DEPLOY_FRONT+"/checkout_fail?id="+sessione_to_save._id,
         })
 
         res.status(200).json({
@@ -191,7 +191,7 @@ export async function checkout_success(req:Request,res:Response){
             res.status(409).json({
                 successful: false,
                 message: "Element doesn’t exist!"
-            }).redirect(process.env.DEPLOY_FRONT+"/profilo")
+            })
             return
         }
 
@@ -201,7 +201,7 @@ export async function checkout_success(req:Request,res:Response){
         res.status(200).json({
             successful:true,
             message:"Gettoni aggiunti!"
-        }).redirect(process.env.DEPLOY_FRONT+"/profilo")
+        })
         return
     } catch (err) {
         res.status(500).json({
@@ -221,7 +221,7 @@ export async function checkout_failed(req:Request,res:Response){
             res.status(409).json({
                 successful: false,
                 message: "Element doesn’t exist!"
-            }).redirect(process.env.DEPLOY_FRONT+"/profilo")
+            })
             return
         }
         await Sessione.findByIdAndDelete(req.params.id)
@@ -229,7 +229,7 @@ export async function checkout_failed(req:Request,res:Response){
         res.status(200).json({
             successful:true,
             message:"Successful redirecting after payment failure!"
-        }).redirect(process.env.DEPLOY_FRONT+"/offerta")
+        })
         return
     } catch (err) {
         res.status(500).json({

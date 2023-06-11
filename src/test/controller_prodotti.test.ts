@@ -66,8 +66,7 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
         Sessione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
         Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(session_doc)}})
         Sessione.findByIdAndDelete = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        stripe.checkout.sessions.create = jest.fn().mockImplementation((doc)=>{return{exec:jest.fn().mockResolvedValue(null)}}) 
-        
+        stripe.checkout.sessions.create = jest.fn().mockResolvedValue(true) 
     })
     afterEach(()=>{
         jest.restoreAllMocks().clearAllMocks()
@@ -165,31 +164,31 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
         expect(res.status).toBe(409)
     })
 
-    it('GET /api/prodotto/checkout_success/:id token corretto',async() => {
+    it('POST /api/prodotto/checkout_success/:id token corretto',async() => {
         Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
         Cliente.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        const res = await request(app).get('/api/v1/prodotto/checkout_success/'+session_doc._id).send()
+        const res = await request(app).post('/api/v1/prodotto/checkout_success/'+session_doc._id).send()
         expect(res.status).toBe(200)
     })
 
-    it('GET /api/prodotto/checkout_success/:id elemento non esistente',async() => {
+    it('POST /api/prodotto/checkout_success/:id elemento non esistente',async() => {
         Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        
-        const res = await request(app).get('/api/v1/prodotto/checkout_success/'+"8888").send()
+        Response.redirect = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
+
+        const res = await request(app).post('/api/v1/prodotto/checkout_success/'+"8888").send()
         expect(res.status).toBe(409)
     })
 
-    // DA CONTROLLARE CON CODICE REFACTORING
-    // it('GET /api/prodotto/checkout_failed/:id token corretto',async() => {
-    //     const res = await request(app).get('/api/v1/prodotto/checkout_failed/'+session_doc._id).send()
-    //     expect(res.status).toBe(200)
-    // })
+    it('POST /api/prodotto/checkout_failed/:id token corretto',async() => {
+        const res = await request(app).post('/api/v1/prodotto/checkout_failed/'+session_doc._id).send()
+        expect(res.status).toBe(200)
+    })
 
-    // it('GET /api/prodotto/checkout_failed/:id token errato',async() => {
-    //     Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+    it('POST /api/prodotto/checkout_failed/:id token errato',async() => {
+        Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
 
-    //     const res = await request(app).get('/api/v1/prodotto/checkout_failed/'+session_doc._id).send()
-    //     expect(res.status).toBe(409)
-    // })
+        const res = await request(app).post('/api/v1/prodotto/checkout_failed/'+session_doc._id).send()
+        expect(res.status).toBe(409)
+    })
 
 })

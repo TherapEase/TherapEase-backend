@@ -124,23 +124,8 @@ describe('GET /api/v1/recensioni_associato/:id /api/v1/le_mie_recensioni /recens
     })
 
     //Un utente correttamente autenticato come cliente vuole scrivere una recensione a favore del suo terapeuta associato. Specificando tutte le informazioni richieste
-    it('POST /api/v1/recensioni/:id', async()=>{
-        Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
-
-        Recensione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        Recensione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
-
-        Terapeuta.findByIdAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
-
-        const res = await request(app).post('/api/v1/recensioni/'+giovi_doc._id).set("x-access-token",token).send({
-            testo: "molto bello",
-            voto: 3
-        })
-        expect(res.status).toBe(200)
-    })
-
-    //non trova la ruote
-    it('POST /api/v1/recensioni/:id -> non trova la ruote', async()=>{
+    it('POST /api/v1/recensioni/', async()=>{
+        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
         Recensione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
@@ -152,11 +137,12 @@ describe('GET /api/v1/recensioni_associato/:id /api/v1/le_mie_recensioni /recens
             testo: "molto bello",
             voto: 3
         })
-        expect(res.status).toBe(404)
+        expect(res.status).toBe(200)
     })
 
-    //la recensione esiste già
+    // //la recensione esiste già
     it('POST /api/v1/recensioni/:id review already present', async()=>{
+        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
         Recensione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue({
@@ -167,15 +153,16 @@ describe('GET /api/v1/recensioni_associato/:id /api/v1/le_mie_recensioni /recens
 
         Terapeuta.findByIdAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
-        const res = await request(app).post('/api/v1/recensioni/'+giovi_doc._id).set("x-access-token",token).send({
+        const res = await request(app).post('/api/v1/recensioni/').set("x-access-token",token).send({
             testo: "molto bello",
             voto: 3
         })
         expect(res.status).toBe(409)
     })
 
-    // non ci sono abbastanza argomenti
+    // // non ci sono abbastanza argomenti
     it('POST /api/v1/recensioni/:id not enough arguments', async()=>{
+        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
         Recensione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
@@ -183,7 +170,7 @@ describe('GET /api/v1/recensioni_associato/:id /api/v1/le_mie_recensioni /recens
 
         Terapeuta.findByIdAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
-        const res = await request(app).post('/api/v1/recensioni/'+giovi_doc._id).set("x-access-token",token).send({
+        const res = await request(app).post('/api/v1/recensioni/').set("x-access-token",token).send({
             testo: "molto bello"
         })
         expect(res.status).toBe(400)

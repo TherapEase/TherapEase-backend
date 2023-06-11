@@ -195,17 +195,8 @@ export async function get_profilo(req:Request, res:Response) {
 }
 
 export async function delete_profilo(req:Request,res:Response){
-    /**
-     * DELETE /path --> non ha body
-     */
+
     const _id = req.params.id
-    if(!_id){
-        res.status(400).json({
-            successful:false,
-            message:"Not enough arguments!"
-        })
-        return
-    }
     //se _id e token corrispondono o se il token è amministrativo allora posso eliminare
     if(!(req.body.loggedUser._id==_id) && !(req.body.loggedUser.ruolo==4)){
         res.status(403).json({
@@ -239,6 +230,15 @@ export async function delete_profilo(req:Request,res:Response){
 }
 
 export async function get_all_clienti(req:Request,res:Response) {
+    // controllo ruolo
+    if(req.body.loggedUser.ruolo!=4){
+        res.status(403).json({
+            successful: false,
+            message: "Request denied!"
+        })
+        return
+    }
+    
     try {
         const catalogo_clienti=await Cliente.find({ruolo:1}, 'nome cognome foto_profilo')
         

@@ -14,4 +14,4 @@ profilo_router.get('/profilo/:id',tokenCheck,get_profilo)
 
 profilo_router.delete('/profilo/:id/elimina',tokenCheck, delete_profilo)
 
-profilo_router.get('/catalogo_clienti', get_all_clienti)
+profilo_router.get('/catalogo_clienti',tokenCheck,get_all_clienti)

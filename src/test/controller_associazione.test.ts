@@ -8,7 +8,6 @@ import { Utente } from '../schemas/utente_schema'
 import { createToken } from '../controllers/controller_auth'
 import { JWTToken } from '../schemas/token_schema'
 import { Seduta } from '../schemas/seduta_schema'
-import { Sessione } from '../schemas/sessione_stripe_schema'
 
 describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
     
@@ -18,8 +17,10 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
     let giovi_up_doc:any
     let tommy_doc:any
     let marco_doc:any
+    let admin_doc:any
     let seduta_doc: any
     let token = createToken("123","mario",1)
+    let token_ad = createToken("777", "admin",4)
     let token_marco = createToken( "456", "marco", 1)
     let token_t= createToken("111","tommy",2)
     let token_g = createToken("321", "giovi", 2)
@@ -112,6 +113,12 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
             cliente:"",
             terapeuta: "321",
             indirizzo:""
+        },
+        admin_doc ={
+            _id:"777",
+            usernmane: "admin",
+            password: "abcABC123$?",
+            ruolo:4
         }
         
 
@@ -121,6 +128,7 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
             if(_id=='123') return Promise.resolve(mario_doc)
             if(_id=='321') return Promise.resolve(giovi_doc)
             if(_id=='111') return Promise.resolve(tommy_doc)
+            if(_id=='777') return Promise.resolve(admin_doc)
             return Promise.resolve(null)
         })}}) //per il tokenCheck, ritorna mario o giovi in base all'id
         Seduta.updateMany = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue([seduta_doc])}})
@@ -171,7 +179,7 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
     // RIMUOVI ASSOCIAZIONE
 
     // Un utente fa la dissociazione da un altro utente esistente al quale è associato
-    it('DELETE /api/v1/associazione/rimuovi/id',async ()=>{
+    it('DELETE /api/v1/associazione/rimuovi/:id',async ()=>{
         Cliente.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(mario_up_doc)}})
         Terapeuta.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(giovi_up_doc)}})
         
@@ -184,12 +192,28 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
     })
 
     // //Un utente fa la dissociazione da un altro utente, che però non esiste
-    it('DELETE /api/v1/associazione/rimuovi/id terapeuta non esistente',async ()=>{
+    it('DELETE /api/v1/associazione/rimuovi/:id terapeuta non esistente',async ()=>{
         Cliente.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(mario_up_doc)}})
         Terapeuta.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(null)}})
         
         const res = await request(app).delete('/api/v1/associazione/rimuovi/1111').set("x-access-token",token).send()
         expect(res.status).toBe(404)
+    })
+
+    it('DELETE /api/v1/associazione/rimuovi/:id ruolo non valido',async ()=>{
+       const res = await request(app).delete('/api/v1/associazione/rimuovi/'+giovi_doc._id).set("x-access-token",token_ad).send()
+        expect(res.status).toBe(403)
+    })
+
+    it('GET /api/v1/catalogo_associati corretto',async() => {
+        Cliente.find = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue([mario_up_doc])}})
+        const res = await request(app).get('/api/v1/catalogo_associati').set("x-access-token",token_t).send()
+        expect(res.status).toBe(200)
+    })
+
+    it('GET /api/v1/catalogo_associati corretto',async() => {
+        const res = await request(app).get('/api/v1/catalogo_associati').set("x-access-token",token).send()
+        expect(res.status).toBe(403)
     })
 
 })
