@@ -74,7 +74,7 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
             data_nascita:"2020-12-12",
             limite_clienti:30,
             indirizzo:"via bella 32",
-            documenti:"a"
+            documenti:["a"]
         })
         expect(res.status).toBe(200)
         expect(res.body).toHaveProperty("token")
