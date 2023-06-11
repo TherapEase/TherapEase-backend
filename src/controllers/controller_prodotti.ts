@@ -177,7 +177,6 @@ export async function checkout(req:Request,res:Response){
             successful:false,
             message:"Server error in redirect - failed!" 
         })
-        console.log(err)
         return
     }
 }
