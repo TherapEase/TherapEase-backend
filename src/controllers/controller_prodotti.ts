@@ -175,7 +175,7 @@ export async function checkout(req:Request,res:Response){
     } catch (err) {
         res.status(500).json({
             successful:false,
-            message:"Server error in redirect - failed!"
+            message:"Server error in redirect - failed!" 
         })
         return
     }
