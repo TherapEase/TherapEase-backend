@@ -45,7 +45,7 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
             email:"mariorossi@gmail.com",
             mail_confermata:false,
             codice_fiscale: "RSSMRA",
-            foto_profilo:"",
+            foto_profilo:"img",
             data_nascita:"2020"
         }
 
@@ -59,13 +59,17 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
             email:"giovannabianchi@gmail.com",
             mail_confermata:false,
             codice_fiscale: "BNCGVN",
-            foto_profilo:"",
-            data_nascita:"2020"
+            foto_profilo:"img",
+            data_nascita:"2020",
+            documenti:["a","b"],
+            limite_clienti:10,
+            indirizzo:"Trento"
         }
 
         mongoose.connect= jest.fn().mockImplementation((conn_string)=>Promise.resolve(true)) //bypass del connect
         Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        Utente.create= jest.fn().mockImplementation((doc)=>Promise.resolve(true)) //bypass della create
+        Cliente.create= jest.fn().mockImplementation((doc)=>Promise.resolve(true)) //bypass della create
+        Terapeuta.create= jest.fn().mockImplementation((doc)=>Promise.resolve(true))
     })
     afterEach(()=>{
         jest.restoreAllMocks().clearAllMocks()
