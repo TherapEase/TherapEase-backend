@@ -15,12 +15,13 @@ consumes:
 produces:
 - application/json
 paths:
+
   /registrazione:
     x-summary: Registrazione
     post:
-      description: >-
-        Usando questo metodo è possibile effettuare la registrazione alla piattaforma di un utente
       summary: Registrazione
+      description: >-
+        In questo modo un utente può registrarsi sulla piattaforma
       parameters:
         - name: registrazione
           in: body
@@ -50,7 +51,7 @@ paths:
             $ref: '#/definitions/Bad_response'
   /login: 
     x-summary: Login
-    get:
+    post:
       summary: Login
       description: >-
         In questo modo un utente può autenticarsi sulla piattaforma
@@ -76,16 +77,16 @@ paths:
             
   /logout:
     x-summary: Logout
-    get:
+    post:
       summary: Logout
       description: >-
         In questo modo un utente può effettuare il logout dal suo profilo
       parameters: 
-        - name: logout
-          in: body
+        - in: header
+          name: x-access-token
+          type: string
           required: true
-          schema: 
-            $ref: '#/definitions/Logout'
+          description: token
       responses:
         200:
           description: 'Logout successful'
@@ -112,18 +113,28 @@ paths:
           schema: 
             $ref: '#/definitions/Bad_response'
             
-  /associazione/:id:
+  /associazione/{:id}:
     x-summary: Associazione
-    get: 
+    post: 
       summary: Associazione
       description: >-
         In questo modo un cliente può associarsi ad un terapeuta
       parameters:
-        - name: associazione
-          in: body
+        - in: path
+          name: ":id"
+          type: string
+          required: true
+          description: id
+        - in: body
+          name: 'associazione'
           required: true
           schema:
             $ref: '#/definitions/Associazione'
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+          description: token
       responses:
         200:
           description: 'Operation successful'
@@ -134,18 +145,28 @@ paths:
           schema: 
             $ref: '#/definitions/Bad_response'
             
-  /associazione/rimuovi/:id:
+  /associazione/rimuovi/{:id}:
     x-summary: Rimuovi associazione
-    get:
+    post:
       summary: Rimuovi associazione
       description: >-
         In questo modo è possibile rimuovere l'associazione
       parameters:
-        - name: rimuovi_associazione
-          in: body
+        - in: path
+          name: ":id"
+          type: string
+          required: true
+          description: id
+        - in: body
+          name: 'associazione'
           required: true
           schema:
             $ref: '#/definitions/Rimuovi_Associazione'
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+          description: token
       responses: 
         200:
           description: 'Operation successful'
@@ -158,7 +179,7 @@ paths:
 
   /prenotazione:
     x-summary: Prenotazione
-    get:
+    post:
       summary: Prenotazione
       description: >-
         In questo modo è possibile prenotare una seduta
@@ -168,6 +189,11 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Prenota_seduta'
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+          description: token
       responses: 
         200:
           description: 'Operation successful'
@@ -197,11 +223,11 @@ paths:
       description: >-
         In questo modo è possibile visualizzare il calendario completo delle sedute
       parameters:
-        - name: calendario
-          in: body
+        - in: header
+          name: x-access-token
+          type: string
           required: true
-          schema:
-            $ref: '#/definitions/Calendario'
+          description: token
       responses: 
         200:
           description: 'Client calendar successfully shown! OR Therapist calendar successfully shown!'
@@ -219,11 +245,11 @@ paths:
       description: >-
         In questo modo è possibile visualizzare il calendario completo delle sedute disponibili
       parameters:
-        - name: calendario_disponibili
-          in: body
+        - in: header
+          name: x-access-token
+          type: string
           required: true
-          schema:
-            $ref: '#/definitions/Calendario_disponibili'
+          description: token
       responses: 
         200:
           description: 'Client calendar successfully shown! OR Therapist calendar successfully shown!'
@@ -242,11 +268,11 @@ paths:
       description: >-
         In questo modo è possibile visualizzare il calendario completo delle sedute prenotate
       parameters:
-        - name: calendario_prenotate
-          in: body
+        - in: header
+          name: x-access-token
+          type: string
           required: true
-          schema:
-            $ref: '#/definitions/Calendario_prenotate'
+          description: token
       responses: 
         200:
           description: 'Client calendar successfully shown! OR Therapist calendar successfully shown!'
@@ -264,11 +290,11 @@ paths:
       description: >-
         In questo modo l'utente riesce a recuperare la password associata al suo account
       parameters:
-        - name: recupero_password
-          in: body
+        - in: header
+          name: x-access-token
+          type: string
           required: true
-          schema:
-            $ref: '#/definitions/Recupero_password'
+          description: token
       responses: 
         200:
           description: 'Password restored correctly!'
@@ -292,11 +318,11 @@ paths:
       description: >-
         In questo modo l'utente riesce a cambiare la propria password
       parameters:
-        - name: cambio_password
-          in: body
+        - in: header
+          name: x-access-token
+          type: string
           required: true
-          schema:
-            $ref: '#/definitions/Cambio_password'
+          description: token
       responses: 
         200:
           description: 'Password successfully changed!'
@@ -373,20 +399,26 @@ paths:
             schema:
               $ref: '#/definitions/Bad_response'
 
-  /visualizza_profilo:
+  /profilo/{:id}:
     x-summary: Visualizza profilo utenti
     get:
       description: >-
         Questo metodo permette di visualizzare le informazioni riguardanti i profili degli utenti
-      summary: Il mio profilo
+      summary: profilo
       produces:
       - application/json
       parameters:
+      - in: path
+        name: ":id"
+        type: string
+        required: true
+        description: id
       - in: header
         name: x-acccess-token
         type: string
         required: true
         description: token
+        
       responses:
         200:
           description: "Profile obtained successfully!"
@@ -494,7 +526,1077 @@ paths:
             schema:
               $ref: '#/definitions/Bad_response' 
 
+  /catalogo_associati:
+    x-summary: Mostra Catalogo Associati
+    get:
+        description: >-
+         Questo metodo permette ai terapeuti di visualizzare il catalogo completo di tutti i clienti a lui associati
+        summary: Mostra Catalogo Associati
+        parameters:
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+          description: token
+        responses: 
+          200:
+            description: 'Therapists client catalog retrieved successfully!'
+            schema:
+              $ref: '#/definitions/Get_all_associati_successful'
+          500:
+            description: 'Server error in client catalog - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: 'Invalid Role'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+  
+  /segnalazione/{:id}:
+    x-summary: Segnalazione
+    post:
+      description: >-
+         Questo metodo permette agli utenti di effettuare segnalazioni
+      summary: Segnalazioni
+      parameters:
+          - name: segnalazione
+            in: body
+            required: true
+            schema:
+              $ref: '#/definitions/Segnalazione'
+          - in: path
+            name: ":id"
+            type: string
+            required: true
+            description: id
+      responses: 
+            200:
+              description: 'Report successfully inserted!'
+              schema:
+                $ref: '#/definitions/Segnalazione_successful'
+            500:
+              description: 'Server error in report creation - failed!'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+            403:
+              description: 'Request denied - Invalid role'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+            409:
+              description: 'Client and therapist are not associated! OR Report altready present!'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+            400:
+              description: 'Not enough arguments!'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+              
+  /segnalazioni/catalogo:
+    x-summary: Mostra Catalogo Segnalazioni
+    get:
+        description: >-
+         Questo metodo permette all'amministratore di vedere tutte le segnalazioni presenti
+        summary: Visualizza catalogo segnalazioni
+        parameters:
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+          description: token
+        responses: 
+          200:
+            description: 'All reports retrieved successfully'
+            schema:
+              $ref: '#/definitions/Get_all_segnalazioni_successful'
+          500:
+            description: 'Server error in report catalog - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: 'Invalid Role'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+  
+  /segnalazioni/gestisci/{:id}:
+    x-summary: Gestisci segnalazione
+    post:
+      description: >-
+           Questo metodo permette all'amministratore di gestire una delle segnalazioni presenti nel catalogo
+      summary: Gestisci segnalazione
+      parameters:
+      - name: segnalazione
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Gestisci_segnalazione'
+      - in: path
+        name: ":id"
+        type: string
+        required: true
+        description: id
+      - in: header
+        name: x-access-token
+        type: string
+        required: true
+        description: token
+      responses: 
+        200:
+          description: 'Report successfully deleted!'
+          schema:
+            $ref: '#/definitions/Gestisci_segnalazione_successful'
+        500:
+          description: 'Server error in report removal - failed!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        403:
+          description: 'Request denied - Invalid role'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /prodotto/inserisci:
+    x-summary: Inserisci prodotto
+    post:
+      description: >-
+           Questo metodo permette all'amministratore di inserire un nuovo prodotto
+      summary: Inserisci prodotto
+      parameters:
+      - name: inserisci_prodotto
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Inserisci_prodotto'
+      - in: header
+        name: x-access-token
+        type: string
+        required: true
+        description: token
+      responses: 
+        200:
+          description: 'Product successfully inserted!'
+          schema:
+            $ref: '#/definitions/Inserisci_prodotto_successful'
+        500:
+          description: 'Server error in product creation - failed!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        403:
+          description: 'Request denied - Invalid role'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        400:
+          description: 'Not enough arguments'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        409:
+          description: 'Product already present!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /prodotto/rimuovi/{:id}:
+    x-summary: Rimuovi prodotto
+    delete:
+      description: >-
+           Questo metodo permette all'amministratore di rimuovere un prodotto presente nel catalogo
+      summary: Rimuovi prodotto
+      parameters:
+        - in: path
+          name: ":id"
+          type: string
+          required: true
+          description: id
+            
+      responses: 
+        200:
+          description: 'Product successfully deleted!'
+          schema:
+            $ref: '#/definitions/Rimuovi_prodotto_successful'
+        500:
+          description: 'Server error in report removal - failed!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        403:
+          description: 'Request denied - Invalid role'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        409:
+          description: 'Element doesn’t exist or can’t be removed!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /catalogo_prodotti:
+    x-summary: Mostra Catalogo Prodotti
+    get:
+        description: >-
+         Questo metodo permette all'amministratore di vedere tutte i prodotti presenti
+        summary: Visualizza catalogo prodotti
+        responses: 
+          200:
+            description: 'All reports retrieved successfully'
+            schema:
+              $ref: '#/definitions/Get_prodotti_successful'
+          500:
+            description: 'Server error in report catalog - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: 'Invalid Role'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+              
+  /conferma_mail/{:ver_token}:
+    x-summary: Conferma mail
+    get:
+        description: >-
+         Questo metodo permette all'uente di verificare la mail associata al proprio profilo
+        summary: Conferma mail
+        parameters:
+        - in: path
+          name: ":ver_token"
+          type: string
+          required: true
+          description: token
+        responses: 
+          200:
+            description: 'Email verified'
+            schema:
+              $ref: '#/definitions/conferma_mail_successful'
+          500:
+            description: 'Internal server error in mail verification'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: 'The provided token isnt valid!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          404:
+            description: 'User not found'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+              
+  /catalogo_clienti:
+    x-summary: Catalogo clienti
+    get:
+        description: >-
+         Questo metodo permette di visualizzare tutti i clienti presenti sull'applicazione
+        summary: Catalogo clienti
+        responses: 
+          200:
+            description: 'Client catalog retrieved successfully'
+            schema:
+              $ref: '#/definitions/get_all_clienti_successful'
+          500:
+            description: 'Server error in client catalog - failed'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+              
+  /annullaprenotazione:
+    x-summary: Annulla prenotazione
+    post:
+      description: >-
+           Questo metodo permette ad un cliente di annullare una seduta precedentemente prenotata
+      summary: Annulla prenotazione
+      parameters:
+        - in: body
+          name: annulla_prenotazione
+          required: true
+          schema:
+            $ref: '#/definitions/annulla_prenotazione_seduta'
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+          description: token
+      responses: 
+        200:
+          description: 'Booking deleted!'
+          schema:
+            $ref: '#/definitions/annulla_prenotazione_seduta_successful'
+        500:
+          description: 'Server error in deleting booked seat - failed!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        403:
+          description: 'Request denied'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        400:
+          description: 'Not enough arguments'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        409:
+          description: 'Element doesn’t exist or can’t be booked or unbooked!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /recensione:
+    x-summary: Recensione
+    post:
+        description: >-
+         Questo metodo permette all'uente di recensire il proprio terapeuta associato
+        summary: Recensione
+        parameters:
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+          description: token
+        - in: body
+          name: recensione
+          required: true
+          schema:
+            $ref: '#/definitions/scrivi_recensione'
+        responses: 
+          200:
+            description: 'Review successfully inserted!'
+            schema:
+              $ref: '#/definitions/scrivi_recensione_successful'
+          500:
+            description: 'Server error in review creation - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: 'Invalid role!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          400:
+            description: 'Not enough arguments!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          409:
+            description: 'Client and therapist are not associated! OR Review already present!'
+            schema:
+              $ref: '#/definitions/Bad_response'
+              
+  /le_mie_recensioni:
+    x-summary: le mie recensioni
+    get:
+        description: >-
+         Questo metodo permette al terapeuta di visualizzare le sue recensioni
+        summary: le mie recensioni
+        parameters:
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+          description: token
+        responses: 
+          200:
+            description: 'All reviews retrieved successfully'
+            schema:
+              $ref: '#/definitions/read_my_recensioni'
+          500:
+            description: 'Server error in review catalog - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: 'Invalid Role'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+              
+  /recensioni_associato/{:id}:
+    x-summary: recensioni terapeuta
+    get:
+        description: >-
+         Questo metodo permette al cliente di visualizzare le recensioni del terapeuta
+        summary: recensioni terapeuta
+        parameters:
+        - in: path
+          name: ":id"
+          type: string
+          required: true
+          description: id
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+          description: token
+        responses: 
+          200:
+            description: 'All reviews retrieved successfully'
+            schema:
+              $ref: '#/definitions/read_recensioni_associato'
+          500:
+            description: 'Server error in review catalog - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: 'Invalid Role'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+              
+  /prodotto/checkout/{:id}:
+    x-summary: prodotto checkout
+    post:
+        description: >-
+         Questo metodo permette al cliente di comprare un prodotto
+        summary: prodotto checkout
+        parameters:
+        - in: path
+          name: ":id"
+          type: string
+          required: true
+          description: id
+        - in: body
+          required: true
+          name: prodotto_checkout
+          schema:
+            $ref: '#/definitions/checkout'
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+          description: token
+        responses: 
+          200:
+            description: 'Successful redirect to checkout!'
+            schema:
+              $ref: '#/definitions/checkout'
+          500:
+            description: 'Server error in redirect - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: 'Request denied'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          409:
+            description: 'Element doesn’t exist or can’t be removed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+              
+  /prodotto/checkout_success/{:id}:
+    x-summary: prodotto checkout success
+    get:
+        description: >-
+         Questo metodo consente effettivamente di aggiungere i gettoni al profilo
+        summary: prodotto checkout
+        parameters:
+        - in: path
+          name: ":id"
+          type: string
+          required: true
+          description: id
+        responses: 
+          200:
+            description: 'Gettoni aggiunti!'
+            schema:
+              $ref: '#/definitions/checkout_success'
+          500:
+            description: 'Server error checkout success - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          409:
+            description: 'Element doesn’t exist'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+              
+  /prodotto/checkout_failed/{:id}:
+    x-summary: prodotto checkout failed
+    get:
+        description: >-
+         Questo metodo illustra lo scenario in cui il checkout non vada a buon fine
+        summary: prodotto checkout failed
+        parameters:
+        - in: path
+          name: ":id"
+          type: string
+          required: true
+          description: id
+        responses: 
+          200:
+            description: 'Successful redirecting after payment failure!'
+            schema:
+              $ref: '#/definitions/checkout_failed'
+          500:
+            description: 'Server error checkout success - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          409:
+            description: 'Element doesn’t exist'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+
+
+  /crea_pagina:
+    x-summary: Crea pagina del diario
+    post:
+      description: >-
+         Questo metodo permette agli utenti di creare una nuova pagina del diario
+      summary: Crea pagina del diario
+      parameters:
+          - name: crea pagina
+            in: body
+            required: true
+            schema:
+              $ref: '#/definitions/Pagina'
+          - in: header
+            name: x-acccess-token
+            type: string
+            required: true
+            description: token
+      responses: 
+            200:
+              description: 'Page successfully created'
+              schema:
+                $ref: '#/definitions/Positive_response'
+            500:
+              description: 'Server error in page creation - failed!'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+            403:
+              description: 'Request denied! OR Page already present'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+            400:
+              description: 'Not enough arguments! OR Cannot create page in the future!'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+                
+  /leggi_pagine:
+    x-summary: Leggi il tuo diario
+    get:
+        description: >-
+         Questo metodo permette al cliente di visualizzare il proprio diario
+        summary: Leggi il tuo diario
+        parameters:
+        - in: header
+          name: x-acccess-token
+          type: string
+          required: true
+          description: token
+        responses: 
+          200:
+            description: 'Pages successfully retrieved!'
+            schema:
+              $ref: '#/definitions/Diario_successful'
+          500:
+            description: 'Server error in page reading - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: 'Request denied!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+    
+  /leggi_pagine/{id}:
+    x-summary: Leggi il diario del tuo cliente
+    get:
+        description: >-
+         Questo metodo permette al terapeuta di visualizzare il diario del proprio cliente
+        summary: Leggi il diario del tuo cliente
+        parameters:
+        - in: header
+          name: x-acccess-token
+          type: string
+          required: true
+          description: token
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: ID del cliente associato per visualizzare il suo diario
+        responses: 
+          200:
+            description: 'Pages successfully retrieved!'
+            schema:
+              $ref: '#/definitions/Diario_successful'
+          500:
+            description: 'Server error in page reading - failed!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403:
+            description: 'Request denied!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+  
+  /modifica_pagina:
+    x-summary: Modifica pagina del diario
+    post:
+      description: >-
+         Questo metodo permette ai clienti di modificare una pagina del diario
+      summary: Modifica pagina del diario
+      parameters:
+          - name: modifica pagina
+            in: body
+            required: true
+            schema:
+              $ref: '#/definitions/Pagina'
+          - in: header
+            name: x-acccess-token
+            type: string
+            required: true
+            description: token
+      responses: 
+            200:
+              description: 'Page updated successfully!'
+              schema:
+                $ref: '#/definitions/Positive_response'
+            500:
+              description: 'Server error in updating page - failed!'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+            403:
+              description: 'Request denied!'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+            400:
+              description: 'Not enough arguments! OR Page does not exist!'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+            
+  
+  /elimina_pagina:
+    x-summary: Elimina pagina del diario
+    post:
+      description: >-
+         Questo metodo permette ai clienti di eliminare una pagina del diario
+      summary: Modifica pagina del diario
+      parameters:
+          - name: data
+            in: body
+            required: true
+            schema: 
+              type: object
+              properties:
+                data: 
+                  type: string
+              
+            description: data
+          - in: header
+            name: x-acccess-token
+            type: string
+            required: true
+            description: token
+      responses: 
+            200:
+              description: 'Page deleted successfully!'
+              schema:
+                $ref: '#/definitions/Positive_response'
+            500:
+              description: 'Server error in updating page - failed!'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+            403:
+              description: 'Request denied!'
+              schema: 
+                $ref: '#/definitions/Bad_response'
+            400:
+              description: 'Not enough arguments! OR Page does not exist!'
+              schema: 
+                $ref: '#/definitions/Bad_response'         
+                
+  /il_mio_profilo/elimina:
+    x-summary: Eliminazione profilo personale
+    delete:
+        description: >-
+         Questo metodo consente ad un utente di eliminare il proprio profilo personale
+        summary: Eliminazione profilo personale
+        parameters:
+        - in: header
+          name: x-acccess-token
+          type: string
+          required: true
+          description: token
+        responses: 
+          200:
+            description: 'User deleted successfully!'
+            schema:
+              $ref: '#/definitions/delete_profilo'
+          500:
+            description: 'Internal server error!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          404:
+            description: 'This user doesnt exist!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          400:
+            description: 'Not enough arguments!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+          403: 
+            description: 'Not authorized to delete this profile!'
+            schema: 
+              $ref: '#/definitions/Bad_response'
+              
+  /profilo/{:id}/elimina:
+    x-summary: Eliminazione profilo utente
+    delete:
+      description: >-
+       Questo metodo consente ad un utente di eliminare il proprio profilo personale
+      summary: Eliminazione profilo personale
+      parameters:
+      - in: header
+        name: x-acccess-token
+        type: string
+        required: true
+        description: token
+      - name: :id
+        in: path
+        type: string
+        required: true
+        description: ID dell'utente 
+      responses: 
+        200:
+          description: 'User deleted successfully!'
+          schema:
+            $ref: '#/definitions/delete_profilo'
+        500:
+          description: 'Internal server error!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        404:
+          description: 'This user doesnt exist!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        400:
+          description: 'Not enough arguments!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        403: 
+          description: 'Not authorized to delete this profile!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+            
+  /aggiungi_evento:
+    x-summary: Aggiunta di un evento
+    post:
+      description: >-
+       Questo metodo consente all'admin di rimuovere un evento presente sul sito
+      summary: Aggiunta di un evento
+      parameters:
+      - name: aggiungi evento
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/aggiungi_evento'
+      - in: header
+        name: x-acccess-token
+        type: string
+        required: true
+        description: token
+      responses: 
+        200:
+          description: 'Event successfully added!'
+          schema:
+            $ref: '#/definitions/aggiungi_evento_successful'
+        500:
+          description: 'Server error in adding event - failed!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        400: 
+          description: 'Not enough arguments!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        403: 
+          description: 'Request denied!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        409: 
+          description: 'Event already present! OR Cannot add an event in the past!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+    
+    
+    
+  /rimuovi_evento/{:id}:
+    x-summary: Rimozione di un evento
+    delete:
+      description: >-
+       Questo metodo consente all'admin di rimuovere un evento presente sul sito
+      summary: Rimozione di un evento
+      parameters:
+      - in: header
+        name: x-acccess-token
+        type: string
+        required: true
+        description: token
+      - name: :id
+        in: path
+        type: string
+        required: true
+        description: ID dell'evento da rimuovere
+      responses: 
+        200:
+          description: 'Event successfully deleted or not present!'
+          schema:
+            $ref: '#/definitions/rimuovi_evento'
+        500:
+          description: 'Server error in event elimination - failed!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+        403: 
+          description: 'Request denied!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+
+
+
+  /eventi:
+    x-summary: Visualizzazione di tutti gli eventi
+    get:
+      description: >-
+       Questo metodo consente ad un utente di visualizzare gli eventi e le informazioni che sono disponibili sul sito
+      summary: Visualizzazione di tutti gli eventi
+      responses:
+        200:
+          description: 'Event catalogue successfully shown!'
+          schema:
+            $ref: '#/definitions/rimuovi_evento'
+        500:
+          description: 'Server error in showing events - failed!'
+          schema: 
+            $ref: '#/definitions/Bad_response'
+
 definitions:
+
+  checkout_failed:
+    title: 'checkout failed'
+    type: object
+    properties:
+      message:
+        type: string
+      successful:
+        type: boolean
+
+  get_all_eventi:
+    title: 'get all eventi'
+    type: object
+    properties:
+      message:
+        type: string
+      successful:
+        type: boolean
+    
+
+  aggiungi_evento_successful:
+    title: 'aggiungi evento'
+    type: object
+    properties:
+      message:
+        type: string
+      successful:
+        type: boolean
+  
+  aggiungi_evento:
+    title: 'aggiungi evento'
+    type: object
+    properties:
+      message:
+        type: string
+      successful:
+        type: boolean
+      testo:
+        type: string
+      data:
+        type: string
+      foto:
+        type: string
+      titolo:
+        type: string
+
+  rimuovi_evento:
+    title: 'rimuovi evento'
+    type: object
+    properties:
+      message:
+        type: string
+      successful:
+        type: boolean
+
+  delete_profilo:
+    title: 'elimina profilo'
+    type: object
+    properties:
+      message:
+        type: string
+      successful:
+        type: boolean
+
+
+  Diario_successful: 
+    title: Diario
+    type: object
+    properties:
+      message: 
+        type: string
+      pagine:
+        $ref: '#/definitions/Pagina'
+      
+
+  Pagina:
+    title: Crea nuova pagina
+    type: object
+    properties:
+      data: 
+        type: string
+      testo: 
+        type: string
+
+  checkout_success:
+    title: 'checkout success'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+
+  checkout:
+    title: 'checkout'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+
+  read_recensioni_associato:
+    title: 'recensioni associato'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      catalogo_recensioni:
+        type: array
+
+  read_my_recensioni:
+    title: 'le mie recensioni'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      catalogo_recensioni:
+        type: array
+
+  scrivi_recensione_successful:
+    title: 'scrivi_recensione'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+        
+  scrivi_recensione: 
+    title: 'scrivi recensione'
+    type: object
+    properties:
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      voto:
+        type: number
+      testo:
+        type: string
+        
+
+
+  annulla_prenotazione_seduta_successful:
+    title: ''
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+
+  annulla_prenotazione_seduta:
+    title: 'annulla prenotazione seduta'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      token:
+        type: string
+
+  get_all_clienti:
+    title: 'get all clienti'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+        
+  get_all_clienti_successful:
+    title: ''
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      catalogo:
+        type: array
+
+  
+        
+  conferma_mail_successful:
+    title: 'conferma'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+    
+
+        
+  Get_prodotti_successful:
+    title: ''
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      prodotti:  
+        type: string
+
+  
+  Rimuovi_prodotto_successful:
+    title: Rimuovi Prodotto
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message: 
+        type: string
+
+  Inserisci_prodotto:
+    title: Inserisci Prodotto
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message: 
+        type: string
+      token:
+        type: string
+      nome:
+        type: string
+      prezzo:
+        type: number
+      n_gettoni:
+        type: number
+        
+  Inserisci_prodotto_successful:
+    title: Inserisci Prodotto
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message: 
+        type: string
+
   Registrazione:
     title: Registrazione
     type: object
@@ -574,16 +1676,6 @@ definitions:
       token:
         type: string
         
-  Logout: 
-    title: Logout
-    type: object
-    properties:
-      successful:
-        type: boolean
-      message:
-        type: string
-      token:
-        type: string
         
   Logout_successful:
     title: 'Logout'
@@ -596,14 +1688,6 @@ definitions:
       token:
         type: string
         
-  Catalogo_terapeuti:
-    title: 'Catalogo Terapeuti'
-    type: object
-    properties: 
-      successful: 
-        type: boolean
-      message: 
-        type: string
         
   Catalogo_terapeuti_successful:
     title: ''
@@ -615,18 +1699,14 @@ definitions:
         type: string
       terapeuti:
         type: array
-  
+        
   Associazione:
-    title: 'Associazione'
+    title: 'associazione'
     type: object
     properties:
       successful: 
         type: boolean
       message: 
-        type: string
-      id: 
-        type: string
-      token:
         type: string
       
         
@@ -683,16 +1763,6 @@ definitions:
       message: 
         type: string
         
-  Calendario: 
-    title: ''
-    type: object
-    properties: 
-      successful: 
-        type: boolean
-      message: 
-        type: string
-      token:
-        type: string
 
         
   Calendario_successful: 
@@ -706,16 +1776,7 @@ definitions:
       sedute: 
         type: array
 
-  Calendario_disponibili: 
-    title: 'Calendario sedute disponibili'
-    type: object
-    properties: 
-      successful: 
-        type: boolean
-      message: 
-        type: string
-      token:
-        type: string
+  
           
   Calendario_disponibili_successful: 
     title: ''
@@ -728,16 +1789,6 @@ definitions:
       sedute: 
         type: array
 
-  Calendario_prenotate: 
-    title: 'Calendario sedute prenotate'
-    type: object
-    properties: 
-      successful: 
-        type: boolean
-      message: 
-        type: string
-      token:
-        type: string
           
   Calendario_prenotate_successful: 
     title: ''
@@ -793,6 +1844,80 @@ definitions:
         type: boolean
       message:
         type: string
+        
+  Get_all_associati_successful:
+    title: ''
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      associati:  
+        type: array
+  
+
+        
+  Segnalazione:
+    title: 'segnalazione'
+    type: object
+    properties:
+      successful:
+        type: boolean
+      message:
+        type: string
+      token:
+        type: string
+      segnalato:
+        type: string
+      testo: 
+        type: string
+      data: 
+        type: string
+        
+  Segnalazione_successful:  
+    title: ''
+    type: object
+    properties: 
+      successful:
+        type: boolean
+      message:
+        type: string
+        
+
+  Get_all_segnalazioni_successful:
+    title: ''
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      segnalazioni:  
+        type: array
+        
+  Gestisci_segnalazione:
+    title: 'Rimuovi_segnalazione'
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+      token:  
+        type: string
+        
+  Gestisci_segnalazione_successful:
+    title: ''
+    type: object
+    properties: 
+      successful: 
+        type: boolean
+      message: 
+        type: string
+        
+ 
+
         
   ProfiloSuccessful:
     title: ""
