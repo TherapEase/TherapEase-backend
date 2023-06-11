@@ -87,16 +87,16 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
         const res = await request(app).post('/api/v1/registrazione').send({
             username:"giovi",
             password:"abcABC123$$",
-            ruolo:2,
+            ruolo:"2",
             nome:"Giovanna",
             cognome:"Bianchi",
             email:"giovannabianchi@gmail.com",
             codice_fiscale: "BNCGVN",
-            foto_profilo:"",
-            data_nascita:"2020",
+            foto_profilo:"img",
+            data_nascita:"2020-12-12",
             limite_clienti:30,
             indirizzo:"via bella 32",
-            documenti:"blabla"
+            documenti:"a"
         })
         expect(res.status).toBe(200)
     })

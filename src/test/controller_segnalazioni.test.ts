@@ -179,8 +179,8 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
     //gestisci segnalazione
     it('POST /api/v1/segnalazione/gestisci/:id', async()=>{
-        Utente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
-        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+        Utente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((criteria, change)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
 
         const res = await request(app).post('/api/v1/segnalazione/gestisci/'+segnalazione_doc._id).set("x-access-token",token_ad).send({
             testo: "ciao",
@@ -192,8 +192,8 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
     //gestisci segnalazione ma l'utente autenticato non è un admin
     it('POST /api/v1/segnalazione/gestisci/:id ma il loggedUser non è admin', async()=>{
-        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+        Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((criteria, change)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
 
         const res = await request(app).post('/api/v1/segnalazione/gestisci/'+segnalazione_doc._id).set("x-access-token",token).send({
             testo: "ciao",

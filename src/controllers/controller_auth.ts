@@ -73,7 +73,7 @@ export async function registrazione(req:Request,res:Response) {
         }
         else if (ruolo==2){
             if(!doc||!lim){
-                res.status(400).json({
+                res.status(401).json({
                     successful:false,
                     message:"Not enough arguments!"
                 })
