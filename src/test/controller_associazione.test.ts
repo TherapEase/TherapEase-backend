@@ -131,7 +131,7 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
             if(_id=='777') return Promise.resolve(admin_doc)
             return Promise.resolve(null)
         })}}) //per il tokenCheck, ritorna mario o giovi in base all'id
-        Seduta.updateMany = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue([seduta_doc])}})
+        Seduta.updateMany = jest.fn().mockImplementation((criteria, update)=>{return{exec:jest.fn().mockResolvedValue([seduta_doc])}})
     })
     afterEach(()=>{
         jest.restoreAllMocks().clearAllMocks()
@@ -139,11 +139,11 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
 
     //Un cliente si associa ad un terapeuta. Il terapeuta esiste, il suo limite di clienti non è stato superato e il cliente non è associato a quel terapeuta
     it('POST /api/v1/associazione/id_giovi correttamente',async ()=>{
-        Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
-        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
+        Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
 
-        Cliente.findByIdAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_up_doc)}})
-        Terapeuta.findByIdAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_up_doc)}})
+        Cliente.findByIdAndUpdate = jest.fn().mockImplementation((_id,update)=>{return{exec:jest.fn().mockResolvedValue(mario_up_doc)}})
+        Terapeuta.findByIdAndUpdate = jest.fn().mockImplementation((_id,update)=>{return{exec:jest.fn().mockResolvedValue(giovi_up_doc)}})
 
         const res = await request(app).post('/api/v1/associazione/'+giovi_doc._id).set("x-access-token",token).send()
         expect(res.status).toBe(200)
@@ -151,7 +151,7 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
 
     //Un cliente si vuole associare a un terapeuta ma non lo specifica nella richiesta   
     it('POST /api/v1/associazione/  senza specificare id-> non trova la route',async ()=>{
-        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
 
         const res = await request(app).post('/api/v1/associazione').set("x-access-token",token).send()
         expect(res.status).toBe(404)
@@ -159,8 +159,8 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
 
     //Un cliente si associa ad un terapeuta. Il terapeuta esiste e il suo limite di clienti non è stato superato. Il cliente però è gia associato a quel terapeuta
     it('POST /api/v1/associazione/:id limite clienti superato, cliente gia associato',async ()=>{
-        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(marco_doc)}})
-        Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(tommy_doc)}})
+        Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(marco_doc)}})
+        Terapeuta.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(tommy_doc)}})
 
         const res = await request(app).post('/api/v1/associazione/'+tommy_doc._id).set("x-access-token",token).send()
         expect(res.status).toBe(409)
@@ -168,8 +168,8 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
 
     //Un cliente si associa ad un terapeuta. Il terapeuta esiste ma il suo limite di clienti è stato superato
     it('POST /api/v1/associazione/id_tommy limite clienti superato',async ()=>{
-        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(tommy_doc)}})
+        Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(tommy_doc)}})
 
         const res = await request(app).post('/api/v1/associazione/'+tommy_doc._id).set("x-access-token",token_t).send()
         expect(res.status).toBe(409)
@@ -183,8 +183,8 @@ describe('test /api/v1/associazione/:id  api/v1/associazione/rimuovi/:id',()=>{
         Cliente.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(mario_up_doc)}})
         Terapeuta.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(giovi_up_doc)}})
         
-        Cliente.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        Terapeuta.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
+        Cliente.findOneAndUpdate = jest.fn().mockImplementation((criteria, update)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findOneAndUpdate = jest.fn().mockImplementation((criteria, update)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
         Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
 
         const res = await request(app).delete('/api/v1/associazione/rimuovi/'+giovi_doc._id).set("x-access-token",token).send()
