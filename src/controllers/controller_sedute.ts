@@ -237,7 +237,7 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
             })
             return
         }else{
-            if(seduta.abilitato==true){
+            if((new Date(seduta.data).getTime()+86400<=Date.now())==true){
                 // riaccredita gettoni al cliente
                 await aggiungi_gettoni(req.body.loggedUser._id, 1)
             }
