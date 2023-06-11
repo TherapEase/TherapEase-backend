@@ -14,9 +14,7 @@ export async function get_all_segnalazioni(req: Request, res: Response) {
     }
 
     try {
-        const catalogo_segnalazioni = await Segnalazione.find({ gestita: false }, {}).exec()
-
-        console.log(catalogo_segnalazioni)
+        const catalogo_segnalazioni = await Segnalazione.find({gestita:false}).exec()
         res.status(200).json({
             successful: true,
             message: "All reports retrieved successfully",
