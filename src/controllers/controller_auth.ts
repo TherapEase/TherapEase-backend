@@ -58,7 +58,7 @@ export async function registrazione(req:Request,res:Response) {
         }
         else if (ruolo==2){
             if(!doc||!lim){
-                res.status(400).json({
+                res.status(401).json({
                     successful:false,
                     message:"Not enough arguments!"
                 })
@@ -188,7 +188,7 @@ async function send_confirmation_mail(_id:string, email:string, ruolo:number){
             email: email,
             ruolo: ruolo
         },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
-        const testo="Clicca sul link seguente per verificare il tuo indirizzo di posta elettronica: "+process.env.DEPLOY_BACK+'conferma_mail/'+ver_token //mettere il link a cui si viene ridiretti al front
+        const testo="Clicca sul link seguente per verificare il tuo indirizzo di posta elettronica: "+process.env.DEPLOY_BACK+'/conferma_mail/'+ver_token //mettere il link a cui si viene ridiretti al front
         if(!await send_mail("Verify your email address",testo,email)) return false
         return true
     } catch (error) {

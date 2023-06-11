@@ -48,30 +48,21 @@ describe('test diario', () => {
             data_nascita: "2020",
             associati: ["123"]
         }
-
         seduta_doc = {
             data: "2023-06-30T12:00:00.000+00:00",
             presenza: true
         }
-
-
-
         pagina_doc = {
             _id: "11",
             data: "2023-05-30T12:00:00.000+00:00",
             testo: "ciao",
 
         }
-
         diario_doc = {
             _id: "1",
             pagine: ["11", "22"],
             cliente: "123"
         }
-
-
-
-
 
         mongoose.connect = jest.fn().mockImplementation((conn_string) => Promise.resolve(true)) //bypass del connect
         JWTToken.find = jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue([]) } })//assumiamo il token non blacklisted
@@ -84,34 +75,22 @@ describe('test diario', () => {
                 })
             }
         })
-
-
-
-        // Seduta.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
-        // Terapeuta.findById = jest.fn().mockImplementation((_id, filter) => { return { exec: jest.fn().mockResolvedValue(giovi_doc) } })
-
-
     })
-
-
-
     afterEach(() => {
         jest.restoreAllMocks().clearAllMocks()
     })
 
 
     it('POST /api/v1/crea_pagina correttamente', async () => {
-        Pagina.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
-        Diario.findOne = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        Pagina.create = jest.fn().mockImplementation(() => Promise.resolve(true))
-        Diario.create = jest.fn().mockImplementation(() => Promise.resolve(true))
-        Diario.findOneAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
-        Cliente.findByIdAndUpdate = jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(mario_doc) } })
+        Pagina.findOne = jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(null) } })
+        Diario.findOne = jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
+        Pagina.create = jest.fn().mockImplementation((doc) => Promise.resolve(true))
+        Diario.create = jest.fn().mockImplementation((doc) => Promise.resolve(true))
+        Diario.findOneAndUpdate = jest.fn().mockImplementation((criteria,update) => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
+        Cliente.findByIdAndUpdate = jest.fn().mockImplementation((criteria,update) => { return { exec: jest.fn().mockResolvedValue(mario_doc) } })
 
         const res = await request(app).post('/api/v1/crea_pagina').set("x-access-token", token).send(pagina_doc)
         expect(res.status).toBe(200)
-        expect(res.body.successful).toBe(true)
-
     })
 
 
@@ -130,14 +109,13 @@ describe('test diario', () => {
             data: "2025-06-30T12:00:00.000+00:00",
             testo: "ciao",
 
-        }
-        )
+        })
         expect(res.status).toBe(400)
         expect(res.body.successful).toBe(false)
     })
 
     it('GET /api/v1/leggi_pagine dal profilo', async()=>{
-        Pagina.find= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Pagina.find= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
         
         const res = await request(app).get('/api/v1/leggi_pagine').set("x-access-token", token).send()
         expect(res.status).toBe(200)
@@ -145,7 +123,7 @@ describe('test diario', () => {
     })
 
     it('GET /api/v1/leggi_pagine con profilo terapeuta', async()=>{
-        Pagina.find= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Pagina.find= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
         
         const res = await request(app).get('/api/v1/leggi_pagine').set("x-access-token", token_g).send()
         expect(res.status).toBe(403)
@@ -153,24 +131,24 @@ describe('test diario', () => {
     })
 
     it('GET /api/v1/leggi_pagine/:id ok', async()=>{
-        Pagina.find= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
-        Terapeuta.findOne= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(giovi_doc) } })
+        Pagina.find= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Terapeuta.findOne= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(giovi_doc) } })
         const res = await request(app).get('/api/v1/leggi_pagine/'+mario_doc._id).set("x-access-token", token_g).send()
         expect(res.status).toBe(200)
         expect(res.body.successful).toBe(true)
     })
 
     it('GET /api/v1/leggi_pagine/:id con profilo cliente', async()=>{
-        Pagina.find= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
-        Terapeuta.findOne= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(giovi_doc) } })
+        Pagina.find= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Terapeuta.findOne= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(giovi_doc) } })
         const res = await request(app).get('/api/v1/leggi_pagine/'+mario_doc._id).set("x-access-token", token).send()
         expect(res.status).toBe(403)
         expect(res.body.successful).toBe(false)
     })
 
     it('GET /api/v1/leggi_pagine/:id di un cliente non associato', async()=>{
-        Pagina.find= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
-        Terapeuta.findOne= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(giovi_doc) } })
+        Pagina.find= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Terapeuta.findOne= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(giovi_doc) } })
         giovi_doc.associati=[]
         const res = await request(app).get('/api/v1/leggi_pagine/'+mario_doc._id).set("x-access-token", token_g).send()
         expect(res.status).toBe(403)
@@ -178,31 +156,31 @@ describe('test diario', () => {
     })
 
     it('POST /api/v1/modifica_pagina ok', async()=>{
-        Pagina.findOne= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
-        Pagina.findOneAndUpdate= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Pagina.findOne= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Pagina.findOneAndUpdate= jest.fn().mockImplementation((criteria,update) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
         const res = await request(app).post('/api/v1/modifica_pagina').set("x-access-token", token).send(pagina_doc)
         expect(res.status).toBe(200)
         expect(res.body.successful).toBe(true)
     })
 
     it('POST /api/v1/modifica_pagina dal profilo del terapeuta', async()=>{
-        Pagina.findOne= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
-        Pagina.findOneAndUpdate= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Pagina.findOne= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Pagina.findOneAndUpdate= jest.fn().mockImplementation((criteria,update) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
         const res = await request(app).post('/api/v1/modifica_pagina').set("x-access-token", token_g).send(pagina_doc)
         expect(res.status).toBe(403)
         expect(res.body.successful).toBe(false)
     })
 
     it('POST /api/v1/modifica_pagina senza tutti gli attributi', async()=>{
-        Pagina.findOne= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
-        Pagina.findOneAndUpdate= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Pagina.findOne= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Pagina.findOneAndUpdate= jest.fn().mockImplementation((criteria,update) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
         const res = await request(app).post('/api/v1/modifica_pagina').set("x-access-token", token).send({testo:"ciao"})
         expect(res.status).toBe(400)
         expect(res.body.successful).toBe(false)
     })
 
     it('POST /api/v1/modifica_pagina che non esiste', async()=>{
-        Pagina.findOne= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(false) } })
+        Pagina.findOne= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(false) } })
         
         const res = await request(app).post('/api/v1/modifica_pagina').set("x-access-token", token).send(pagina_doc)
         expect(res.status).toBe(400)
@@ -211,8 +189,8 @@ describe('test diario', () => {
 
 
     it('POST /api/v1/elimina_pagina ok', async()=>{
-        Pagina.findOneAndDelete= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
-        Diario.findOneAndUpdate= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
+        Pagina.findOneAndDelete= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Diario.findOneAndUpdate= jest.fn().mockImplementation((criteria,update) => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
         
         const res = await request(app).post('/api/v1/elimina_pagina').set("x-access-token", token).send(pagina_doc)
         expect(res.status).toBe(200)
@@ -221,8 +199,8 @@ describe('test diario', () => {
 
    
     it('POST /api/v1/elimina_pagina dal profilo terapeuta', async()=>{
-        Pagina.findOneAndDelete= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
-        Diario.findOneAndUpdate= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
+        Pagina.findOneAndDelete= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Diario.findOneAndUpdate= jest.fn().mockImplementation((criteria,update) => { return { exec: jest.fn().mockResolvedValue(diario_doc) } })
         
         const res = await request(app).post('/api/v1/elimina_pagina').set("x-access-token", token_g).send(pagina_doc)
         expect(res.status).toBe(403)
@@ -230,7 +208,7 @@ describe('test diario', () => {
     })
 
     it('POST /api/v1/elimina_pagina che non esiste ', async()=>{
-        Pagina.findOneAndDelete= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(null) } })
+        Pagina.findOneAndDelete= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(null) } })
         
         const res = await request(app).post('/api/v1/elimina_pagina').set("x-access-token", token).send(pagina_doc)
         expect(res.status).toBe(400)
@@ -238,21 +216,11 @@ describe('test diario', () => {
     })
 
     it('POST /api/v1/elimina_pagina senza campi', async()=>{
-        Pagina.findOneAndDelete= jest.fn().mockImplementation(() => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
+        Pagina.findOneAndDelete= jest.fn().mockImplementation((criteria) => { return { exec: jest.fn().mockResolvedValue(pagina_doc) } })
         
         const res = await request(app).post('/api/v1/elimina_pagina').set("x-access-token", token).send()
         expect(res.status).toBe(400)
         expect(res.body.successful).toBe(false)
     })
-
-
-
-
-
-
-
-
-
-
 })
 

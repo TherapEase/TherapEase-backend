@@ -101,11 +101,11 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
     //scrittura di una segnalazione
     it('POST /api/v1/segnalazione/:id', async()=>{
-        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
+        Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
-        Segnalazione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        Segnalazione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
+        Segnalazione.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Segnalazione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true))
 
         const res = await request(app).post('/api/v1/segnalazione/321').set("x-access-token",token).send({
             testo: "ciao",
@@ -116,14 +116,14 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
     //la segnalazione è già presente
      it('POST /api/v1/segnalazione/:id già presente', async()=>{
-         Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
+         Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+         Terapeuta.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
-         Segnalazione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue({
+         Segnalazione.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue({
             testo: "ciao",
             data: "2023-12-12T12:00"
          })}})
-         Segnalazione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
+         Segnalazione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true))
 
          const res = await request(app).post('/api/v1/segnalazione/'+giovi_doc._id).set("x-access-token",token).send({
             testo: "ciao",
@@ -134,11 +134,11 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
     //l'utente autenticato non può fare la segnalazione
      it('POST /api/v1/segnalazione/:id con permessi non validi', async()=>{
-         Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
-         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
+        Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+        Terapeuta.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
-         Segnalazione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        Segnalazione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
+        Segnalazione.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Segnalazione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true))
 
         const res = await request(app).post('/api/v1/segnalazione/'+giovi_doc._id).set("x-access-token",token_ad).send({
             testo: "ciao",
@@ -149,11 +149,11 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
      // non trova la ruote
      it('POST /api/v1/segnalazione/:id non trova la ruote', async()=>{
-         Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-         Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
+         Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+         Terapeuta.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
-        Segnalazione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        Segnalazione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
+        Segnalazione.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Segnalazione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true))
         // const fake_id = "999"
          const res = await request(app).post('/api/v1/segnalazione/').set("x-access-token",token).send({
             testo: "ciao",
@@ -164,11 +164,11 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
      //cliente e terapeuta non sono associati
      it('POST /api/v1/segnalazione/:id non associati', async()=>{
-        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        Terapeuta.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(tommy_doc)}})
+        Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(tommy_doc)}})
 
-        Segnalazione.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        Segnalazione.create = jest.fn().mockImplementation(()=>Promise.resolve(true))
+        Segnalazione.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Segnalazione.create = jest.fn().mockImplementation((doc)=>Promise.resolve(true))
 
         const res = await request(app).post('/api/v1/segnalazione/'+tommy_doc._id).set("x-access-token",token).send({
             testo: "ciao",
@@ -179,8 +179,8 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
     //gestisci segnalazione
     it('POST /api/v1/segnalazione/gestisci/:id', async()=>{
-        Utente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
-        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+        Utente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((criteria, change)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
 
         const res = await request(app).post('/api/v1/segnalazione/gestisci/'+segnalazione_doc._id).set("x-access-token",token_ad).send({
             testo: "ciao",
@@ -192,8 +192,8 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
     //gestisci segnalazione ma l'utente autenticato non è un admin
     it('POST /api/v1/segnalazione/gestisci/:id ma il loggedUser non è admin', async()=>{
-        Cliente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
+        Cliente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((criteria, change)=>{return{exec:jest.fn().mockResolvedValue(segnalazione_doc)}})
 
         const res = await request(app).post('/api/v1/segnalazione/gestisci/'+segnalazione_doc._id).set("x-access-token",token).send({
             testo: "ciao",
@@ -205,8 +205,8 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
     //gestisci segnalazione ma l'id della segnalazione non è valido
     it('POST /api/v1/segnalazione/gestisci/:id', async()=>{
-        Utente.findById = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
-        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((_id,filter)=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Utente.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(admin_doc)}})
+        Segnalazione.findOneAndUpdate = jest.fn().mockImplementation((criteria, update)=>{return{exec:jest.fn().mockResolvedValue(null)}})
 
         const res = await request(app).post('/api/v1/segnalazione/gestisci/'+"8888").set("x-access-token",token_ad).send({
             testo: "ciao",

@@ -44,7 +44,7 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
         }
 
         mongoose.connect= jest.fn().mockImplementation((conn_string)=>Promise.resolve(true)) //bypass del connect
-        Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(null)}})
+        Utente.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(null)}})
         Cliente.create= jest.fn().mockImplementation((doc)=>Promise.resolve(true)) //bypass della create
         Terapeuta.create= jest.fn().mockImplementation((doc)=>Promise.resolve(true))
     })
@@ -61,7 +61,20 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
 
     it('POST /registrazione terapeuta ok',async()=>{
         
-        const res = await request(app).post('/api/v1/registrazione').send(giovi_doc)
+        const res = await request(app).post('/api/v1/registrazione').send({
+            username:"giovi",
+            password:"abcABC123$$",
+            ruolo:"2",
+            nome:"Giovanna",
+            cognome:"Bianchi",
+            email:"giovannabianchi@gmail.com",
+            codice_fiscale: "BNCGVN",
+            foto_profilo:"img",
+            data_nascita:"2020-12-12",
+            limite_clienti:30,
+            indirizzo:"via bella 32",
+            documenti:["a"]
+        })
         expect(res.status).toBe(200)
         expect(res.body).toHaveProperty("token")
     })
@@ -87,21 +100,21 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
     })
 
     it('POST /registrazione di un utente già registrato',async()=>{
-        Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(true)}})
+        Utente.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(true)}})
 
         const res = await request(app).post('/api/v1/registrazione').send(mario_doc)
         expect(res.status).toBe(409)
     })
 
     it(('POST /login di un utente registrato con campi corretti'),async ()=>{
-        Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue({
+        Utente.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue({
             _id:123,
             username:"mario_rossi",
             password:"$2b$08$eZn3ZBFTgjqO9Y.7IKrEOukAj3nsPbec/gMPwWnV2gim.yhVmawSi",
             ruolo:1
         })}})
-        Cliente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
-        Terapeuta.findOne = jest.fn().mockImplementation(()=>{return {exec:jest.fn().mockResolvedValue(giovi_doc)}})
+        Cliente.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findOne = jest.fn().mockImplementation((criteria)=>{return {exec:jest.fn().mockResolvedValue(giovi_doc)}})
         
         const res = await request(app).post('/api/v1/login').send({
             username:'mario_rossi',
@@ -126,7 +139,7 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
     })
 
     it(('POST /login di un utente registrato, password non corretta'),async ()=>{
-        Utente.findOne = jest.fn().mockImplementation(()=>{return{exec:jest.fn().mockResolvedValue({
+        Utente.findOne = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue({
             _id:123,
             username:"mario_rossi",
             password:"$2b$08$eZn3ZBFTgjqO9Y.7IKrEOukAj3nsPbec/gMPwWnV2gim.yhVmawSi",
@@ -144,8 +157,8 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
             email: mario_doc.email,
             ruolo: mario_doc.ruolo
         },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
-        Cliente.findOneAndUpdate = jest.fn().mockImplementation(()=>{return {exec:jest.fn().mockResolvedValue(mario_doc)}})
-        Terapeuta.findOneAndUpdate = jest.fn().mockImplementation(()=>{return {exec:jest.fn().mockResolvedValue(giovi_doc)}})
+        Cliente.findOneAndUpdate = jest.fn().mockImplementation((criteria,update)=>{return {exec:jest.fn().mockResolvedValue(mario_doc)}})
+        Terapeuta.findOneAndUpdate = jest.fn().mockImplementation((criteria,update)=>{return {exec:jest.fn().mockResolvedValue(giovi_doc)}})
 
         const res = await request(app).post('/api/v1/conferma_mail/'+ver_token).send()
         expect(res.status).toBe(200)
@@ -168,7 +181,7 @@ describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
             email: mario_doc.email,
             ruolo: mario_doc.ruolo
         },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
-        Cliente.findOneAndUpdate = jest.fn().mockImplementation(()=>{return {exec:jest.fn().mockResolvedValue(null)}})
+        Cliente.findOneAndUpdate = jest.fn().mockImplementation((criteria, update)=>{return {exec:jest.fn().mockResolvedValue(null)}})
         
         const res = await request(app).post('/api/v1/conferma_mail/'+ver_token).send()
         expect(res.status).toBe(404)
