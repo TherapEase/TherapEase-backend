@@ -35,8 +35,9 @@ export async function registrazione(req:Request,res:Response) {
    const doc=req.body.documenti
    const lim=req.body.limite_clienti
    const ind=req.body.indirizzo
-   
-   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||fp||!dn) {       
+   console.log(req.body)
+   console.log(username,password,ruolo,nome,cognome,email,cf,fp,dn,doc,lim,ind)
+   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||!fp||!dn) {       
     res.status(400).json({
         successful:false,
         message:"Not enough arguments!"
@@ -68,6 +69,7 @@ export async function registrazione(req:Request,res:Response) {
                 foto_profilo:fp,
                 data_nascita:dn
             })
+            await Cliente.create(utente_schema)
         }
         else if (ruolo==2){
             if(!doc||!lim){
@@ -92,8 +94,8 @@ export async function registrazione(req:Request,res:Response) {
                 limite_clienti: lim,
                 indirizzo:ind
             })
+            await Terapeuta.create(utente_schema)
         }
-        await Utente.create(utente_schema)
         await send_confirmation_mail(utente_schema._id.toString(),utente_schema.email.toString(),utente_schema.ruolo.valueOf())
         //se fallisce non è un problema, verrà fatto un nuovo tentativo al prossimo login, non mi sembra corretto fermare il tutto perché ha fallito l'invio mail  
         const token = createToken(utente_schema._id.toString(),utente_schema.username.toString(),utente_schema.ruolo) 
