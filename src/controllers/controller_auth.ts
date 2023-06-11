@@ -35,7 +35,7 @@ export async function registrazione(req:Request,res:Response) {
    const doc=req.body.documenti
    const lim=req.body.limite_clienti
    const ind=req.body.indirizzo
-   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||!fp||!dn) {       
+   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||!dn) {       
     res.status(400).json({
         successful:false,
         message:"Not enough arguments!"

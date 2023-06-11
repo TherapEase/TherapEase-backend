@@ -26,4 +26,4 @@ const schema= new Schema({
     letto:{type:Boolean, default:false}
 })
 
-export const Messaggio = model<Messaggio>('Messaggio', schema)
+export const Messaggio = model<Messaggio>('Messaggio', schema, "Messaggi")

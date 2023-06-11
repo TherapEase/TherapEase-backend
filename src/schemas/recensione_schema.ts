@@ -16,4 +16,4 @@ const schema = new Schema({
     recensito: { type: String, required: true },
 })
 
-export const Recensione = model<IRecensione>('Recensione', schema)
+export const Recensione = model<IRecensione>('Recensione', schema, "Recensioni")

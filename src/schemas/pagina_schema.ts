@@ -12,4 +12,4 @@ const schema= new Schema({
     cliente: {type:String, required:true}
 })
 
-export const Pagina = model<IPagina>('Pagina', schema)
+export const Pagina = model<IPagina>('Pagina', schema, "Pagine")

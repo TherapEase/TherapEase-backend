@@ -17,4 +17,4 @@ const schema= new Schema({
 })
 
 
-export const Seduta= model<ISeduta>("Seduta", schema)
+export const Seduta= model<ISeduta>("Seduta", schema, "Sedute")
