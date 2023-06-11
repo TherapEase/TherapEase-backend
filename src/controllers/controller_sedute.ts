@@ -104,12 +104,7 @@ export async function elimina_slot_seduta(req:Request,res:Response) {
             if(seduta_presente.cliente!=""){
                 let cliente = await Cliente.findById(seduta_presente.cliente).exec()
                 aggiungi_gettoni(seduta_presente.cliente as string,1)
-                if(! await send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())){
-                    res.status(500).json({
-                        successful:false,
-                        message:"Cannot send mail"
-                    })
-                }
+                await send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
             }
             res.status(200).json({
                 successful: true,
@@ -242,12 +237,7 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
             }
             // email di conferma annullamento
             let cliente = await Cliente.findById(seduta.cliente).exec() 
-            if(! await send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())){
-                res.status(500).json({
-                    successful:false,
-                    message:"Cannot send mail"
-                })
-            }
+            await send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
 
             res.status(200).json({
                 successful: true,
