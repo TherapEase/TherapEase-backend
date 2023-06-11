@@ -10,4 +10,4 @@ const schema= new Schema({
     cliente: {type:String, required:true}
 })
 
-export const Diario = model<IDiario>('Diario', schema)
+export const Diario = model<IDiario>('Diario', schema, "Diari")

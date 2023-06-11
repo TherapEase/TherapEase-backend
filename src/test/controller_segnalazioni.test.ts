@@ -93,7 +93,7 @@ describe('test /api/v1/catalogo_segnalazioni /api/v1/segnalazione/:id /segnalazi
 
     //get all segnalazioni correttamente funzionante -> funziona sul codice aggiornato
     it('GET /api/v1/catalogo_segnalazioni',async ()=>{
-        Segnalazione.find = jest.fn().mockImplementation((criteria)=>{return{exec:jest.fn().mockResolvedValue([segnalazione_doc])}})
+        Segnalazione.find = jest.fn().mockImplementation((filter)=>{return{exec:jest.fn().mockResolvedValue([segnalazione_doc])}})
 
         const res = await request(app).get('/api/v1/catalogo_segnalazioni').set("x-access-token",token_ad).send()
         expect(res.status).toBe(200)

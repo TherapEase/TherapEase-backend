@@ -20,11 +20,17 @@ async function setup_transporter() {
 }
 
 export async function send_mail(oggetto:string, testo:string, destinatario: string) {
-    let gmailTransporter = await setup_transporter()
-    gmailTransporter.sendMail({
-        from:process.env.email_address,
-        to:destinatario,
-        subject:oggetto,
-        text:testo
-    })
+    try {
+        let gmailTransporter = await setup_transporter()
+        await gmailTransporter.sendMail({
+            from:process.env.email_address,
+            to:destinatario,
+            subject:oggetto,
+            text:testo
+        })
+        return true    
+    } catch (error) {
+        return false
+    }
+    
 }

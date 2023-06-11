@@ -7,21 +7,6 @@ import { Terapeuta } from '../schemas/terapeuta_schema'
 import { send_mail } from '../services/gmail_connector'
 
 export async function registrazione(req:Request,res:Response) {
-    /* STRUTTURA RICHIESTA: utente base
-    *  username: string
-    *  password :string
-    *  ruolo: num
-    *  nome: string
-    *  cognome: string
-    *  email: string
-    *  codice_fiscale: string
-    *  foto_profilo: Image
-    *  data_nascita: Date
-    *               SOLO PER IL TERAPEUTA
-    *  documenti: string[]
-    *  limite_clienti: num
-    *  indirizzo:string
-    */
 
    const username=req.body.username
    const password=req.body.password
@@ -35,7 +20,7 @@ export async function registrazione(req:Request,res:Response) {
    const doc=req.body.documenti
    const lim=req.body.limite_clienti
    const ind=req.body.indirizzo
-   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||!fp||!dn) {       
+   if(!username||!password||!ruolo||!nome||!cognome||!email||!cf||!dn) {       
     res.status(400).json({
         successful:false,
         message:"Not enough arguments!"
@@ -203,8 +188,8 @@ async function send_confirmation_mail(_id:string, email:string, ruolo:number){
             email: email,
             ruolo: ruolo
         },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
-        const testo="Clicca sul link seguente per verificare il tuo indirizzo di posta elettronica: "+process.env.API_URL+'/conferma_mail/'+ver_token //mettere il link a cui si viene ridiretti al front
-        await send_mail("Verify your email address",testo,email)
+        const testo="Clicca sul link seguente per verificare il tuo indirizzo di posta elettronica: "+process.env.DEPLOY_BACK+'/conferma_mail/'+ver_token //mettere il link a cui si viene ridiretti al front
+        if(!await send_mail("Verify your email address",testo,email)) return false
         return true
     } catch (error) {
         return false

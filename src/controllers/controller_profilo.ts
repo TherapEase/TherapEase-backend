@@ -55,27 +55,13 @@ export async function get_my_profilo(req:Request,res:Response){
 }
 
 export async function modify_profilo(req:Request,res:Response) {
-    /**
-     * CAMPI MODIFICABILI:
-     * nome
-     * cognome
-     * email -->non più verificata
-     * cf
-     * foto_profilo
-     * data_nascita
-     * 
-     * PER IL TERAPEUTA
-     * limite_clienti
-     * indirizzo
-     * documenti
-     */
 
     try {
         if(req.body.loggedUser.ruolo==1){
             const cliente = await Cliente.findById(req.body.loggedUser._id).exec()
             let updated_data ={
                 nome: req.body.nome?req.body.nome : cliente.nome,
-                cognome: req.body.cognome?req.body.cognome : cliente.nome,
+                cognome: req.body.cognome?req.body.cognome : cliente.cognome,
                 email:req.body.email?req.body.email : cliente.email,
                 mail_confermata:req.body.email?false:cliente.mail_confermata,
                 cf:req.body.cf?req.body.cf : cliente.cf,

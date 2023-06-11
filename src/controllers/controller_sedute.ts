@@ -38,7 +38,6 @@ export async function crea_slot_seduta(req:Request,res:Response) {
     try{
         //controllo che non sia già presente
         let seduta_presente = await Seduta.findOne({data:data, terapeuta:req.body.loggedUser._id}).exec()
-        console.log(seduta_presente)
         if(!seduta_presente){
             let terapeuta= await Terapeuta.findById(req.body.loggedUser._id).exec()
             //inserisco
@@ -105,7 +104,7 @@ export async function elimina_slot_seduta(req:Request,res:Response) {
             if(seduta_presente.cliente!=""){
                 let cliente = await Cliente.findById(seduta_presente.cliente).exec()
                 aggiungi_gettoni(seduta_presente.cliente as string,1)
-                send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
+                await send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
             }
             res.status(200).json({
                 successful: true,
@@ -166,7 +165,7 @@ export async function prenota_seduta(req:Request,res:Response) {
         
             const job = scheduler.scheduleJob(promemoria_prenotazione,async function(seduta:ISeduta) {
                 //mail di promemoria
-                send_mail("Promemoria Prenotazione","Le ricordiamo la sua prenotazione in data: "+seduta.data,cliente.email.toString())
+                await send_mail("Promemoria Prenotazione","Le ricordiamo la sua prenotazione in data: "+seduta.data,cliente.email.toString())
                 //set annullabile a false
                 await Seduta.findOneAndUpdate({data:seduta.data,terapeuta:seduta.terapeuta},{abilitato:false}).exec()
             }.bind(null,seduta))
@@ -232,13 +231,13 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
             })
             return
         }else{
-            if(seduta.abilitato==true){
+            if((new Date(seduta.data).getTime()<=Date.now()+86400000)){
                 // riaccredita gettoni al cliente
                 await aggiungi_gettoni(req.body.loggedUser._id, 1)
             }
             // email di conferma annullamento
             let cliente = await Cliente.findById(seduta.cliente).exec() 
-            send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
+            await send_mail("Annullamento Prenotazione","La sua prenotazione è stata annullata",cliente.email.toString())
 
             res.status(200).json({
                 successful: true,

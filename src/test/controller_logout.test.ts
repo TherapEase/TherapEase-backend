@@ -2,8 +2,6 @@ import request from 'supertest'
 import { app } from '../server'
 import mongoose from 'mongoose'
 
-import { Cliente } from '../schemas/cliente_schema'
-import { Terapeuta } from '../schemas/terapeuta_schema'
 import { Utente } from '../schemas/utente_schema'
 import { createToken } from '../controllers/controller_auth'
 import { JWTToken } from '../schemas/token_schema'

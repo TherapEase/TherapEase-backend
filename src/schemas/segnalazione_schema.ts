@@ -14,4 +14,4 @@ const schema = new Schema({
     gestita: { type: Boolean, required: true, default:false},
 })
 
-export const Segnalazione = model<ISegnalazione>('Segnalazione', schema)
+export const Segnalazione = model<ISegnalazione>('Segnalazione', schema, "Segnalazioni")

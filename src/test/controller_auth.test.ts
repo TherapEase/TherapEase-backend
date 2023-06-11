@@ -1,12 +1,11 @@
 import request from 'supertest'
 import { app } from '../server'
-// import { describe } from 'node:test'
-import { Utente, IUtente } from '../schemas/utente_schema'
+import { describe } from 'node:test'
+import { Utente } from '../schemas/utente_schema'
 import mongoose from 'mongoose'
 import { Cliente } from '../schemas/cliente_schema'
 import { Terapeuta } from '../schemas/terapeuta_schema'
 import jwt from 'jsonwebtoken'
-
 
 describe('POST /api/v1/registrazione, api/v1/login e api/v1/conferma_mail',()=>{
 
