@@ -173,8 +173,7 @@ describe('/api/v1/prodotto/inserisci, /api/v1/prodotto/rimuovi/:id, /api/v1/cata
 
     it('POST /api/prodotto/checkout_success/:id elemento non esistente',async() => {
         Sessione.findById = jest.fn().mockImplementation((_id)=>{return{exec:jest.fn().mockResolvedValue(null)}})
-        Response.redirect = jest.fn().mockImplementation((doc)=>Promise.resolve(true)) 
-
+        
         const res = await request(app).post('/api/v1/prodotto/checkout_success/'+"8888").send()
         expect(res.status).toBe(409)
     })
