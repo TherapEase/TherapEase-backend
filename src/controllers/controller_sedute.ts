@@ -257,6 +257,15 @@ export async function annulla_prenotazione_seduta(req:Request,res:Response) {
 
 export async function mostra_calendario_completo(req:Request, res:Response){
     try{
+
+        //elimina le sedute scadute
+        const tutteLeSedute = await Seduta.find().exec()
+        for (let i = 0; i < tutteLeSedute.length; i++) {
+            if (tutteLeSedute[i].data.getTime() < Date.now()) {
+                await Seduta.findOneAndDelete({ data: tutteLeSedute[i].data }).exec()
+            }
+        }
+        
         if(req.body.loggedUser.ruolo==1){
             res.status(200).json({
                 successful: true,
@@ -283,6 +292,15 @@ export async function mostra_calendario_completo(req:Request, res:Response){
 
 export async function mostra_calendario_disponibili(req:Request, res:Response){
     try{
+
+        //elimina le sedute scadute
+        const tutteLeSedute = await Seduta.find().exec()
+        for (let i = 0; i < tutteLeSedute.length; i++) {
+            if (tutteLeSedute[i].data.getTime() < Date.now()) {
+                await Seduta.findOneAndDelete({ data: tutteLeSedute[i].data }).exec()
+            }
+        }
+
         if(req.body.loggedUser.ruolo==1){
             let cliente=await Cliente.findById(req.body.loggedUser._id).exec()
 
@@ -311,6 +329,16 @@ export async function mostra_calendario_disponibili(req:Request, res:Response){
 
 export async function mostra_calendario_prenotate(req:Request, res:Response){
     try{
+
+        //elimina le sedute scadute
+        const tutteLeSedute = await Seduta.find().exec()
+        for (let i = 0; i < tutteLeSedute.length; i++) {
+            if (tutteLeSedute[i].data.getTime() < Date.now()) {
+                await Seduta.findOneAndDelete({ data: tutteLeSedute[i].data }).exec()
+            }
+        }
+
+
         if(req.body.loggedUser.ruolo==1){
             res.status(200).json({
                 successful: true,
