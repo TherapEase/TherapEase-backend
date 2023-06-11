@@ -1,6 +1,37 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
+ #name: Node.js CI
+# run-name: Node.js testing & deploy on render.com
+# on:
+#   push: 
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+#   workflow_dispatch:
+# jobs:
+#   test-ci:
+#     env:
+#       MONGO_URL: ${{ secrets.MONGO_URL }} # Must be set as a GitHub secret
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#       - uses: actions/setup-node@v3
+#         with:
+#           node-version: '18'
+#       - run: npm ci
+#       - run: npm run build --if-present
+#       - run: npm test
+#   build:
+#     runs-on: ubuntu-latest
+#     needs: test-ci
+#     steps:
+#       - name: Deploy to production
+#         uses: johnbeynon/render-deploy-action@v0.0.8
+#         with:
+#           service-id: ${{ secrets.RENDER_SERVICE_ID }}
+#           api-key: ${{ secrets.RENDER_API_KEY }}
+
 name: Node.js CI
 
 on:
@@ -10,15 +41,26 @@ on:
     branches: [ "main" ]
 
 jobs:
+  test-ci:
+    env:
+      API_VER: ${{ secrets.API_VER }}
+      DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+      SALT_ROUNDS: ${{ secrets.SALT_ROUNDS }}
+      TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
+      BASE_URL: ${{ secrets.BASE_URL }}
+      DEPLOY_BACK: ${{ secrets.DEPLOY_BACK }}
+      DEPLOY_FRONT: ${{ secrets.DEPLOY_FRONT }}
+      email_address: ${{ secrets.EMAIL_ADDRESS }}
+      gmail_password: ${{ secrets.GMAIL_PASSWORD }}
+      PK_STRIPE: ${{ secrets.PK_STRIPE}}
+      SK_STRIPE: ${{ secrets.SK_STRIPE }}
   build:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: '18.x'
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
+    needs: test-ci
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
