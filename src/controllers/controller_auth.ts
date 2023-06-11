@@ -204,7 +204,7 @@ async function send_confirmation_mail(_id:string, email:string, ruolo:number){
             ruolo: ruolo
         },process.env.TOKEN_SECRET,{expiresIn:"1 day"})
         const testo="Clicca sul link seguente per verificare il tuo indirizzo di posta elettronica: "+process.env.API_URL+'/conferma_mail/'+ver_token //mettere il link a cui si viene ridiretti al front
-        await send_mail("Verify your email address",testo,email)
+        if(!await send_mail("Verify your email address",testo,email)) return false
         return true
     } catch (error) {
         return false
