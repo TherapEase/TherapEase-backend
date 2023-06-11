@@ -12,8 +12,8 @@ prodotti_router.get('/catalogo_prodotti' ,get_prodotti)
 
 prodotti_router.post('/prodotto/checkout/:id' ,tokenCheck, checkout)
 
-prodotti_router.get('/prodotto/checkout_success/:id' ,checkout_success)
+prodotti_router.post('/prodotto/checkout_success/:id' ,checkout_success)
 
-prodotti_router.get('/prodotto/checkout_failed/:id', checkout_failed)
+prodotti_router.post('/prodotto/checkout_failed/:id', checkout_failed)
 
 
