@@ -177,4 +177,10 @@ describe('test /api/v1/il_mio_profilo /api/v1/il_mio_profilo/modifica /api/v1/pr
         expect(res.status).toBe(404)
     }) 
 
+
+    it('DELETE /api/v1/profilo/elimina route not found',async () => {
+        const res = await request(app).delete('/api/v1/profilo/elimina').set("x-access-token",token).send()
+        expect(res.status).toBe(404)
+    }) 
+
 })

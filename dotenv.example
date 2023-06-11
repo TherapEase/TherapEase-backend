@@ -18,3 +18,6 @@ gmail_password="your_google_16char_pass"
 
 PK_STRIPE="data_from_stripe"
 SK_STRIPE="data_from_stripe"
+
+DEPLOY_FRONT="data_from_frontend_server"
+DEPLOY_BACK="data_from_backend_server"

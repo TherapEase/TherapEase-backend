@@ -41,7 +41,7 @@ export async function recupero_password(req: Request, res: Response) {
             exclude: '"#^()+_\-=}{[\]|:;"/.><,`~"',
             strict: true
         })
-        console.log(new_password)
+        
         const hashed_password = await check_and_hash(new_password)
         let utente_completo
         if (utente.ruolo == 1)
