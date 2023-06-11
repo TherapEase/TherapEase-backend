@@ -57,12 +57,12 @@ export async function recupero_password(req: Request, res: Response) {
             return
         }
 
-        if(send_mail("CAMBIO PASSWORD", "La tua nuova password è " + new_password, utente_completo.email.toString())){
+        if( await send_mail("CAMBIO PASSWORD", "La tua nuova password è " + new_password, utente_completo.email.toString())){
             res.status(200).json({
                 successful: true,
                 message: "Password restored correctly!"
             })
-        return
+            return
         }
         else{
             res.status(500).json({
